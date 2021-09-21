@@ -1,6 +1,5 @@
 package twilio.flutter.twilio_conversations.methods
 
-import com.google.gson.Gson
 import com.twilio.conversations.CallbackListener
 import com.twilio.conversations.Conversation
 import com.twilio.conversations.ErrorInfo
@@ -24,7 +23,7 @@ object ParticipantMethods {
                 }
 
                 participant?.getAndSubscribeUser {
-                    result.success(Gson().toJson(Mapper.userToMap(it)))
+                    result.success(Mapper.userToMap(it))
                 } ?: result.success(null)
             }
 

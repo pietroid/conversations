@@ -10,12 +10,13 @@ public class SwiftTwilioConversationsPlugin: NSObject, FlutterPlugin {
     public var client: TwilioConversationsClient?
     
     public static var clientListener: ClientListener?
-    public static var conversationChannels: [String: FlutterEventChannel] = [:]
+    public static var conversationSink: FlutterEventSink?
     public static var conversationListeners: [String: ConversationListener] = [:]
     
     public static var messenger: FlutterBinaryMessenger?
     private var methodChannel: FlutterMethodChannel?
     private var clientChannel: FlutterEventChannel?
+    private var conversationChannel: FlutterEventChannel?
     private var loggingChannel: FlutterEventChannel?
     private var notificationChannel: FlutterEventChannel?
     
@@ -40,12 +41,15 @@ public class SwiftTwilioConversationsPlugin: NSObject, FlutterPlugin {
     
     public func onRegister(_ registrar: FlutterPluginRegistrar) {
         SwiftTwilioConversationsPlugin.messenger = registrar.messenger()
-        let pluginHandler = PluginMethodCallHandler()
+        let pluginHandler = PluginHandler()
         methodChannel = FlutterMethodChannel(name: "twilio_conversations", binaryMessenger: registrar.messenger())
         methodChannel?.setMethodCallHandler(pluginHandler.handle)
 
         clientChannel = FlutterEventChannel(name: "twilio_conversations/client", binaryMessenger: registrar.messenger())
         clientChannel?.setStreamHandler(ClientStreamHandler())
+        
+        conversationChannel = FlutterEventChannel(name: "twilio_conversations/conversations", binaryMessenger: registrar.messenger())
+        conversationChannel?.setStreamHandler(ConversationStreamHandler())
 
         loggingChannel = FlutterEventChannel(
             name: "twilio_conversations/logging", binaryMessenger: registrar.messenger())
@@ -113,7 +117,7 @@ public class SwiftTwilioConversationsPlugin: NSObject, FlutterPlugin {
         let eventData = ["name": name, "data": data, "error": Mapper.errorToDict(error)] as [String: Any?]
 
         if let notificationSink = SwiftTwilioConversationsPlugin.notificationSink {
-            notificationSink(Mapper.encode(eventData))
+            notificationSink(eventData)
         }
     }
 
@@ -130,10 +134,25 @@ public class SwiftTwilioConversationsPlugin: NSObject, FlutterPlugin {
             SwiftTwilioConversationsPlugin.debug("ClientStreamHandler.onCancel => Client eventChannel detached")
             guard let clientListener = SwiftTwilioConversationsPlugin.clientListener else { return nil }
             clientListener.events = nil
+            
             return nil
         }
     }
-    
+
+    class ConversationStreamHandler: NSObject, FlutterStreamHandler {
+        func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+            SwiftTwilioConversationsPlugin.debug("ConversationStreamHandler.onListen => Conversation eventChannel attached")
+            conversationSink = events
+            return nil
+        }
+
+        func onCancel(withArguments arguments: Any?) -> FlutterError? {
+            SwiftTwilioConversationsPlugin.debug("ConversationStreamHandler.onCancel => Conversation eventChannel detached")
+            conversationSink = nil
+            return nil
+        }
+    }
+
     class LoggingStreamHandler: NSObject, FlutterStreamHandler {
             func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
                 SwiftTwilioConversationsPlugin.debug("LoggingStreamHandler.onListen => Logging eventChannel attached")

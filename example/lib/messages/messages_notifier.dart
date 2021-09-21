@@ -17,15 +17,10 @@ class MessagesNotifier extends ChangeNotifier {
   var startingIndex = 0;
   var currentlyTyping = Set<String>();
 
-  MessagesNotifier() {
+  MessagesNotifier(this.conversation) {
     messageInputTextController.addListener(notifyListeners);
     listScrollController.addListener(onListScrolled);
-  }
 
-  void init(Conversation conversation) {
-    assert(conversation != null, 'Conversation must not be null');
-    reset();
-    this.conversation = conversation;
     messageInputTextController.addListener(conversation.typing);
 
     startingIndex = conversation.lastMessageIndex ?? 0;
@@ -33,18 +28,32 @@ class MessagesNotifier extends ChangeNotifier {
       messages.insert(0, message);
     });
     conversation.onTypingStarted.listen((event) {
-      currentlyTyping.add(event.participant.identity);
-      notifyListeners();
+      final identity = event.participant.identity;
+      if (identity != null) {
+        currentlyTyping.add(identity);
+        notifyListeners();
+      }
     });
     conversation.onTypingEnded.listen((event) {
-      currentlyTyping.remove(event.participant.identity);
-      notifyListeners();
+      final identity = event.participant.identity;
+      if (identity != null) {
+        currentlyTyping.remove(identity);
+        notifyListeners();
+      }
     });
+  }
+
+  void init() {
+    reset();
     fetchMore();
   }
 
+  Future addUserByIdentity(String identity) async {
+    await conversation.addParticipantByIdentity(identity);
+    notifyListeners();
+  }
+
   void reset() {
-    conversation = null;
     messages = [];
     isLoading = false;
     _areAllMessagesRetrieved = false;
@@ -52,7 +61,7 @@ class MessagesNotifier extends ChangeNotifier {
   }
 
   void refetchAfterError() {
-    init(conversation);
+    init();
   }
 
   void onListScrolled() {
@@ -69,8 +78,8 @@ class MessagesNotifier extends ChangeNotifier {
     notifyListeners();
 
     final index = startingIndex - messages.length;
-    final nextMessages = await conversation.messages
-        .getMessagesBefore(index: index, count: limit);
+    final nextMessages =
+        await conversation.getMessagesBefore(index: index, count: limit);
 
     _areAllMessagesRetrieved = nextMessages.length < limit;
     messages.addAll(nextMessages.reversed);
@@ -80,15 +89,15 @@ class MessagesNotifier extends ChangeNotifier {
   }
 
   void onSendMessagePressed() async {
-    if (messageInputTextController.text?.isEmpty ?? true) {
+    if (messageInputTextController.text.isEmpty) {
       return;
     }
     isSendingMessage = true;
     notifyListeners();
 
-    Message message;
+    Message? message;
     try {
-      message = await conversation.messages.sendMessage(
+      message = await conversation.sendMessage(
         messageInputTextController.text,
       );
     } catch (e) {

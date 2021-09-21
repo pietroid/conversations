@@ -78,7 +78,7 @@ object ConversationMethods {
                 override fun onSuccess(conversation: Conversation) {
                     TwilioConversationsPlugin.debug("${call.method} => onSuccess")
                     conversation.typing()
-                    result.success(true)
+                    result.success(null)
                 }
 
                 override fun onError(errorInfo: ErrorInfo) {

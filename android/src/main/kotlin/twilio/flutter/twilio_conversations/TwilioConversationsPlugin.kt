@@ -4,7 +4,6 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import androidx.annotation.NonNull
-import com.google.gson.Gson
 import com.twilio.conversations.ConversationListener
 import com.twilio.conversations.ConversationsClient
 import com.twilio.conversations.ErrorInfo
@@ -20,6 +19,7 @@ import twilio.flutter.twilio_conversations.listeners.ClientListener
 class TwilioConversationsPlugin : FlutterPlugin {
     private lateinit var methodChannel: MethodChannel
     private lateinit var clientChannel: EventChannel
+    private lateinit var conversationChannel: EventChannel
     private lateinit var loggingChannel: EventChannel
     private lateinit var notificationChannel: EventChannel
 
@@ -35,9 +35,9 @@ class TwilioConversationsPlugin : FlutterPlugin {
 
         lateinit var clientListener: ClientListener
 
-        var conversationChannels: HashMap<String, EventChannel> = hashMapOf()
         var conversationListeners: HashMap<String, ConversationListener> = hashMapOf()
 
+        var conversationSink: EventChannel.EventSink? = null
         var loggingSink: EventChannel.EventSink? = null
         var notificationSink: EventChannel.EventSink? = null
 
@@ -62,7 +62,7 @@ class TwilioConversationsPlugin : FlutterPlugin {
         messenger = flutterPluginBinding.binaryMessenger
 
         methodChannel = MethodChannel(flutterPluginBinding.binaryMessenger, "twilio_conversations")
-        val methodCallHandler = PluginMethodCallHandler(flutterPluginBinding.applicationContext)
+        val methodCallHandler = PluginHandler(flutterPluginBinding.applicationContext)
         methodChannel.setMethodCallHandler(methodCallHandler)
 
         clientChannel = EventChannel(messenger, "twilio_conversations/client")
@@ -77,6 +77,19 @@ class TwilioConversationsPlugin : FlutterPlugin {
             override fun onCancel(arguments: Any?) {
                 debug("TwilioConversationsPlugin.onAttachedToEngine => Client eventChannel detached")
                 clientListener.events = null
+            }
+        })
+
+        conversationChannel = EventChannel(messenger, "twilio_conversations/conversations")
+        conversationChannel.setStreamHandler(object: EventChannel.StreamHandler {
+            override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                debug("TwilioConversationsPlugin.onAttachedToEngine => Conversations eventChannel attached")
+                conversationSink = events
+            }
+
+            override fun onCancel(arguments: Any?) {
+                debug("TwilioConversationsPlugin.onAttachedToEngine => Conversations eventChannel detached")
+                conversationSink = null
             }
         })
 
@@ -153,6 +166,6 @@ class TwilioConversationsPlugin : FlutterPlugin {
 
     private fun sendNotificationEvent(name: String, data: Any?, e: ErrorInfo? = null) {
         val eventData = mapOf("name" to name, "data" to data, "error" to Mapper.errorInfoToMap(e))
-        notificationSink?.success(Gson().toJson(eventData))
+        notificationSink?.success(eventData)
     }
 }

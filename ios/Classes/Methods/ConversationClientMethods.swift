@@ -27,6 +27,12 @@ public class ConversationClientMethods {
     
     public static func shutdown(_ call: FlutterMethodCall,_ result: @escaping FlutterResult) {
         SwiftTwilioConversationsPlugin.instance?.client?.shutdown()
+        disposeListeners()
         result(nil)
+    }
+    
+    private static func disposeListeners() {
+        SwiftTwilioConversationsPlugin.clientListener = nil
+        SwiftTwilioConversationsPlugin.conversationListeners.removeAll()
     }
 }

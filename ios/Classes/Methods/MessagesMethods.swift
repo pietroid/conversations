@@ -8,7 +8,11 @@ public class MessagesMethods {
             let options = arguments["options"] as? [String: Any?] else {
                 return flutterResult(FlutterError(code: "MISSING_PARAMS", message: "Missing parameters", details: nil))
         }
-        
+
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return flutterResult(FlutterError(code: "ERROR", message: "Client is not initialized", details: nil))
+        }
+
         let messageOptions = TCHMessageOptions()
         
         if let messageBody = options["body"] as? String {
@@ -39,14 +43,14 @@ public class MessagesMethods {
         }
         
         
-        SwiftTwilioConversationsPlugin.instance?.client?.conversation(withSidOrUniqueName: conversationSid, completion: { (result: TCHResult, conversation: TCHConversation?) in
+        client.conversation(withSidOrUniqueName: conversationSid, completion: { (result: TCHResult, conversation: TCHConversation?) in
             if result.isSuccessful,
                let conversation = conversation {
                 conversation.sendMessage(with: messageOptions, completion: { (result: TCHResult, message: TCHMessage?) in
                     if result.isSuccessful,
                        let message = message {
                         SwiftTwilioConversationsPlugin.debug("\(call.method) (Message.sendMessage) => onSuccess")
-                        flutterResult(Mapper.encode(Mapper.messageToDict(message, conversationSid: conversationSid)))
+                        flutterResult(Mapper.messageToDict(message, conversationSid: conversationSid))
                     } else {
                         SwiftTwilioConversationsPlugin.debug("\(call.method) (Message.sendMessage) => onError: \(result.error.debugDescription)")
                         flutterResult(FlutterError(code: "ERROR", message: "Error sending message with options `\(String(describing: messageOptions))`", details: nil))
@@ -72,7 +76,7 @@ public class MessagesMethods {
                         let messagesMap = messages.map { message in
                             Mapper.messageToDict(message, conversationSid: conversationSid)
                         }
-                        flutterResult(Mapper.encode(messagesMap))
+                        flutterResult(messagesMap)
                     } else {
                         SwiftTwilioConversationsPlugin.debug("\(call.method) (Messages.getBefore) => onError: \(String(describing: result.error))")
                         flutterResult(FlutterError(code: "ERROR", message: "Error retrieving \(count) messages before message (index: \(index)) from conversation (sid: \(conversationSid))", details: nil))
@@ -97,7 +101,7 @@ public class MessagesMethods {
                         let messagesMap = messages.map { message in
                             Mapper.messageToDict(message, conversationSid: conversationSid)
                         }
-                        flutterResult(Mapper.encode(messagesMap))
+                        flutterResult(messagesMap)
                     } else {
                         flutterResult(FlutterError(code: "ERROR", message: "Error retrieving last \(count) messages for conversation with sid '\(conversationSid)'", details: nil))
                     }

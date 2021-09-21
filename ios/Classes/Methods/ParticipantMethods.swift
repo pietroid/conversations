@@ -21,7 +21,7 @@ class ParticipantMethods {
                 let participant = conversation.participants().first(where: {$0.sid == participantSid})
                 participant?.subscribedUser() { result, user in
                     if result.isSuccessful {
-                        flutterResult(Mapper.encode(Mapper.userToDict(user)))
+                        flutterResult(Mapper.userToDict(user))
                     } else {
                         flutterResult(nil)
                     }

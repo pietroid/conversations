@@ -1,6 +1,5 @@
 package twilio.flutter.twilio_conversations.methods
 
-import com.google.gson.Gson
 import com.twilio.conversations.*
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -25,8 +24,8 @@ object MessagesMethods {
                                 onSuccess(messages: List<Message>) {
                             TwilioConversationsPlugin.debug("${call.method} => onSuccess")
 
-                            val jsonMap = Gson().toJson(messages.map { Mapper.messageToMap(it) })
-                            result.success(jsonMap)
+                            val messagesMap = messages.map { Mapper.messageToMap(it) }
+                            result.success(messagesMap)
                         }
 
                         override fun onError(errorInfo: ErrorInfo) {
@@ -47,12 +46,16 @@ object MessagesMethods {
             return result.error("IllegalArgumentException", err.message, null)
         }
     }
+
     fun sendMessage(call: MethodCall, result: MethodChannel.Result) {
         val options = call.argument<Map<String, Any>>("options")
                 ?: return result.error("ERROR", "Missing 'options'", null)
 
         val conversationSid = call.argument<String>("conversationSid")
                 ?: return result.error("ERROR", "Missing 'conversationSid'", null)
+
+        val client = TwilioConversationsPlugin.client
+            ?: return result.error("ERROR", "Client is not initialized", null)
 
         val messageOptions = Message.options()
         if (options["body"] != null) {
@@ -71,14 +74,24 @@ object MessagesMethods {
         }
 
         try {
-            TwilioConversationsPlugin.client?.getConversation(conversationSid, object : CallbackListener<Conversation> {
+            client.getConversation(conversationSid, object : CallbackListener<Conversation> {
                 override fun onSuccess(conversation: Conversation) {
-                    conversation.sendMessage(messageOptions) { message ->
-                        TwilioConversationsPlugin.debug("${call.method} => onSuccess")
+                    conversation.sendMessage(messageOptions, object : CallbackListener<Message> {
+                        override fun onSuccess(message: Message?) {
+                            TwilioConversationsPlugin.debug("${call.method} => onSuccess")
+                            if (message != null) {
+                                val messageMap = Mapper.messageToMap(message)
+                                result.success(messageMap)
+                            } else {
+                                result.success(null)
+                            }
+                        }
 
-                        val jsonMap = Gson().toJson(Mapper.messageToMap(message))
-                        result.success(jsonMap)
-                    }
+                        override fun onError(errorInfo: ErrorInfo) {
+                            TwilioConversationsPlugin.debug("${call.method} => onError: $errorInfo")
+                            result.error("ERROR", errorInfo.message, errorInfo.status)
+                        }
+                    })
                 }
 
                 override fun onError(errorInfo: ErrorInfo) {
@@ -103,8 +116,8 @@ object MessagesMethods {
             override fun onSuccess(conversation: Conversation) {
                 conversation.getMessagesBefore(index, count, object : CallbackListener<List<Message>> {
                     override fun onSuccess(messages: List<Message>) {
-                        val jsonMap = Gson().toJson(messages.map { Mapper.messageToMap(it) })
-                        result.success(jsonMap)
+                        val messagesMap = messages.map { Mapper.messageToMap(it) }
+                        result.success(messagesMap)
                     }
 
                     override fun onError(errorInfo: ErrorInfo) {

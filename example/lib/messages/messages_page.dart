@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
-import 'package:twilio_conversations_example/main.dart';
+import 'package:twilio_conversations_example/messages/messages_notifier.dart';
+import 'package:twilio_conversations_example/util.dart';
 
 class MessagesPage extends StatefulWidget {
   final Conversation conversation;
@@ -14,30 +14,99 @@ class MessagesPage extends StatefulWidget {
 }
 
 class _MessagesPageState extends State<MessagesPage> {
+  late final messagesNotifier;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read(messagesNotifierProvider).init(widget.conversation);
-    });
+    messagesNotifier = MessagesNotifier(widget.conversation);
+    messagesNotifier.init();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.conversation.friendlyName ?? ''),
-      ),
-      body: Center(
-        child: _PageBody(),
+    return ChangeNotifierProvider<MessagesNotifier>.value(
+      value: messagesNotifier,
+      child: Consumer<MessagesNotifier>(
+        builder: (BuildContext context, messagesNotifier, Widget? child) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(widget.conversation.friendlyName ?? ''),
+              actions: [
+                _buildInviteUser(),
+              ],
+            ),
+            body: Center(
+              child: _buildBody(messagesNotifier),
+            ),
+          );
+        },
       ),
     );
   }
-}
 
-class _PageBody extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildInviteUser() {
+    return IconButton(
+      icon: Icon(Icons.add),
+      onPressed: () async {
+        final userName = await _getUserNameForInvite();
+        if (userName != null) {
+          messagesNotifier.addUserByIdentity(userName);
+        }
+      },
+    );
+  }
+
+  Future<String?> _getUserNameForInvite() async {
+    final controller = TextEditingController();
+
+    return showDialog<String?>(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: 8.0,
+              horizontal: 30,
+            ),
+            child: Container(
+              height: 140,
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  TextField(
+                    decoration: InputDecoration(label: Text('User Identity')),
+                    controller: controller,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Text('Cancel'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(controller.text);
+                        },
+                        child: Text('Add User'),
+                      )
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildBody(MessagesNotifier messagesNotifier) {
     return SafeArea(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -48,38 +117,33 @@ class _PageBody extends StatelessWidget {
             onTap: () => FocusScope.of(context).unfocus(),
             child: Container(
               color: Colors.grey[100],
-              child: _ListStates(),
+              child: _buildListStates(messagesNotifier),
             ),
           )),
-          _ParticipantsTyping(),
-          _MessageInputBar(),
+          _buildParticipantsTyping(messagesNotifier),
+          _buildMessageInputBar(messagesNotifier),
         ],
       ),
     );
   }
-}
 
-class _ListStates extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final _provider = watch(messagesNotifierProvider);
-
-    if (_provider.isLoading && _provider.messages.isEmpty) {
+  Widget _buildListStates(MessagesNotifier messagesNotifier) {
+    if (messagesNotifier.isLoading && messagesNotifier.messages.isEmpty) {
       return Center(child: CircularProgressIndicator());
     }
 
-    if (_provider.isError) {
+    if (messagesNotifier.isError) {
       return Center(
         child: IconButton(
           icon: Icon(Icons.replay),
           onPressed: () {
-            _provider.refetchAfterError();
+            messagesNotifier.refetchAfterError();
           },
         ),
       );
     }
 
-    if (_provider.messages.isEmpty) {
+    if (messagesNotifier.messages.isEmpty) {
       return Center(
         child: Icon(
           Icons.speaker_notes_off,
@@ -88,74 +152,55 @@ class _ListStates extends ConsumerWidget {
       );
     }
 
-    return _List();
+    return _buildList(messagesNotifier);
   }
-}
 
-class _List extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final _provider = watch(messagesNotifierProvider);
-
-    var listCount = _provider.messages.length;
-    if (_provider.isLoading) {
+  Widget _buildList(MessagesNotifier messagesNotifier) {
+    var listCount = messagesNotifier.messages.length;
+    if (messagesNotifier.isLoading) {
       //Increment list count by 1
       // so that loading spinner can be shown above existing messages
       // when retrieving the next page
       listCount += 1;
     }
     return ListView.builder(
-      controller: _provider.listScrollController,
+      controller: messagesNotifier.listScrollController,
       reverse: true,
       itemCount: listCount,
       itemBuilder: (_, index) {
-        if (listCount == _provider.messages.length + 1 && index == listCount - 1) {
+        if (listCount == messagesNotifier.messages.length + 1 &&
+            index == listCount - 1) {
           return Center(child: CircularProgressIndicator());
         }
-        return _ListItem(_provider.messages[index]);
+        return _buildListItem(messagesNotifier.messages[index]);
       },
     );
   }
-}
 
-class _ListItem extends StatelessWidget {
-  final Message message;
-
-  _ListItem(this.message);
-
-  @override
-  Widget build(BuildContext context) {
-    final isMyMessage = message.author == TwilioConversations.conversationClient.myIdentity;
+  Widget _buildListItem(Message message) {
+    final isMyMessage =
+        message.author == TwilioConversations.conversationClient?.myIdentity;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
       child: Column(
-        crossAxisAlignment: isMyMessage ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment:
+            isMyMessage ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
-          _ChatBubble(this.message),
+          _buildChatBubble(message),
         ],
       ),
     );
   }
-}
 
-class _ChatBubble extends StatelessWidget {
-  final Message message;
-
-  _ChatBubble(this.message);
-
-  String parseDateTime(DateTime timestamp, {String format = 'MMM d, h:mm a'}) {
-    final dateTime = timestamp?.toLocal();
-    return dateTime != null ? DateFormat(format).format(dateTime).toString() : null;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isMyMessage = message.author == TwilioConversations.conversationClient.myIdentity;
+  Widget _buildChatBubble(Message message) {
+    final isMyMessage =
+        message.author == TwilioConversations.conversationClient?.myIdentity;
 
     final textColor = isMyMessage ? Colors.white : Colors.black;
 
     return Column(
-      crossAxisAlignment: isMyMessage ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      crossAxisAlignment:
+          isMyMessage ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
         Container(
           padding: EdgeInsets.only(bottom: 4.0),
@@ -164,13 +209,19 @@ class _ChatBubble extends StatelessWidget {
               color: isMyMessage ? Colors.blue : Colors.grey,
               borderRadius: BorderRadius.circular(8.0)),
           child: Padding(
-            padding: const EdgeInsets.only(left: 8, right: 8, top: 8, bottom: 4),
+            padding:
+                const EdgeInsets.only(left: 8, right: 8, top: 8, bottom: 4),
             child: Column(
-              crossAxisAlignment: isMyMessage ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              crossAxisAlignment: isMyMessage
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
               children: [
-                _AuthorName(message: message, isMyMessage: isMyMessage, textColor: textColor),
+                _buildAuthorName(
+                    message: message,
+                    isMyMessage: isMyMessage,
+                    textColor: textColor),
                 Text(
-                  message.messageBody ?? '',
+                  message.body ?? '',
                   style: TextStyle(
                     color: textColor,
                     fontSize: 13,
@@ -182,7 +233,9 @@ class _ChatBubble extends StatelessWidget {
         ),
         SizedBox(height: 4.0),
         Text(
-          parseDateTime(message.dateCreated) ?? '',
+          message.dateCreated != null
+              ? ConversationsUtil.parseDateTime(message.dateCreated!)
+              : '',
           textAlign: isMyMessage ? TextAlign.start : TextAlign.end,
           style: TextStyle(
             color: Colors.black,
@@ -193,53 +246,43 @@ class _ChatBubble extends StatelessWidget {
       ],
     );
   }
-}
 
-class _AuthorName extends ConsumerWidget {
-  final bool isMyMessage;
-  final Color textColor;
-  final Message message;
-
-  const _AuthorName(
-      {Key key, @required this.isMyMessage, @required this.textColor, @required this.message})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context, ScopedReader watch) {
+  Widget _buildAuthorName({
+    required bool isMyMessage,
+    required Color textColor,
+    required Message message,
+  }) {
+    // TODO: revisit logic, seems wonky
     return (isMyMessage)
         ? Container(
             width: 0,
           )
         : Column(
-            crossAxisAlignment: isMyMessage ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            crossAxisAlignment:
+                isMyMessage ? CrossAxisAlignment.end : CrossAxisAlignment.start,
             children: [
               Text(
-                (!isMyMessage) ? message.author : '',
-                style: TextStyle(color: textColor, fontSize: 14, fontWeight: FontWeight.bold),
+                (!isMyMessage) ? message.author! : '',
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               SizedBox(height: 6),
             ],
           );
   }
-}
 
-class _ParticipantsTyping extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final _provider = watch(messagesNotifierProvider);
-    final _currentlyTypingParticipants = _provider.currentlyTyping;
+  Widget _buildParticipantsTyping(MessagesNotifier messagesNotifier) {
+    final _currentlyTypingParticipants = messagesNotifier.currentlyTyping;
 
     return _currentlyTypingParticipants.isNotEmpty
         ? Text('${_currentlyTypingParticipants.join(', ')} is typing...')
         : Container();
   }
-}
 
-class _MessageInputBar extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final _provider = watch(messagesNotifierProvider);
-
+  Widget _buildMessageInputBar(MessagesNotifier messagesNotifier) {
     return Padding(
       padding: const EdgeInsets.only(top: 4, left: 8, bottom: 4),
       child: Row(
@@ -249,34 +292,32 @@ class _MessageInputBar extends ConsumerWidget {
             child: Container(
               clipBehavior: Clip.hardEdge,
               decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey[400]),
+                  border: Border.all(color: Colors.grey[400]!),
                   borderRadius: BorderRadius.all(Radius.circular(20))),
               child: TextField(
-                controller: _provider.messageInputTextController,
+                controller: messagesNotifier.messageInputTextController,
                 textCapitalization: TextCapitalization.sentences,
                 minLines: 1,
                 maxLines: 8,
                 decoration: InputDecoration(
                   border: InputBorder.none,
                   hintText: 'Enter Message',
-                  contentPadding: EdgeInsets.only(left: 12.0, right: 12.0, bottom: 4, top: 0),
+                  contentPadding: EdgeInsets.only(
+                      left: 12.0, right: 12.0, bottom: 4, top: 0),
                 ),
               ),
             ),
           ),
-          _SendButton(),
+          _buildSendButton(messagesNotifier),
         ],
       ),
     );
   }
-}
 
-class _SendButton extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final _provider = watch(messagesNotifierProvider);
-    final isEmptyInput = (_provider.messageInputTextController.text ?? '').isEmpty;
-    if (_provider.isSendingMessage) {
+  Widget _buildSendButton(MessagesNotifier messagesNotifier) {
+    final isEmptyInput =
+        messagesNotifier.messageInputTextController.text.isEmpty;
+    if (messagesNotifier.isSendingMessage) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: SizedBox(
@@ -295,7 +336,7 @@ class _SendButton extends ConsumerWidget {
           : IconButton(
               color: Colors.blue,
               icon: Icon(Icons.send),
-              onPressed: _provider.onSendMessagePressed,
+              onPressed: messagesNotifier.onSendMessagePressed,
             ),
     );
   }

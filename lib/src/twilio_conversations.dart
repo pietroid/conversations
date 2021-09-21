@@ -1,19 +1,7 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/services.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
-
-Map<String, dynamic> decodeMethodResultToMap(dynamic result) {
-  return Map<String, dynamic>.from(
-      jsonDecode(result.toString()) as Map<String, dynamic>);
-}
-
-List<Map<String, dynamic>> decodeMethodResultToList(dynamic result) {
-  return (jsonDecode(result.toString()) as List)
-      ?.map((i) => i as Map<String, dynamic>)
-      ?.toList();
-}
 
 class TwilioConversations {
   factory TwilioConversations() => _instance;
@@ -21,40 +9,55 @@ class TwilioConversations {
   TwilioConversations._();
 
   static const MethodChannel methodChannel =
-      const MethodChannel('twilio_conversations');
+      MethodChannel('twilio_conversations');
   static const EventChannel clientChannel =
       EventChannel('twilio_conversations/client');
+  static const EventChannel conversationChannel =
+      EventChannel('twilio_conversations/conversations');
   static const EventChannel notificationChannel =
       EventChannel('twilio_conversations/notification');
   static const EventChannel loggingChannel =
       EventChannel('twilio_conversations/logging');
+  static const EventChannel mediaProgressChannel =
+      EventChannel('twilio_programmable_chat/media_progress');
 
   static bool _dartDebug = false;
-  static StreamSubscription<bool> _clientListener;
-  static StreamSubscription loggingStream;
-  static ConversationClient conversationClient;
+  static StreamSubscription<bool>? _clientListener;
+  static StreamSubscription? loggingStream;
+  static ConversationClient? conversationClient;
 
   /// Create a [ConversationClient].
-  Future<ConversationClient> create({String jwtToken}) async {
-    conversationClient = ConversationClient();
-    final completer = Completer<ConversationClient>();
+  Future<ConversationClient?> create({
+    required String jwtToken,
+  }) async {
+    assert(jwtToken.isNotEmpty);
 
-    _clientListener?.cancel();
+    conversationClient = ConversationClient();
+    final completer = Completer<ConversationClient?>();
+
+    await _clientListener?.cancel();
     _clientListener =
-        conversationClient.onClientListenerAttached.listen((event) async {
+        conversationClient?.onClientListenerAttached.listen((event) async {
       //TODO Needs to throw a better error when trying
       // to create with a bad jwtToken. The current error is "Client timeout reached"
       // (happens in iOS, not sure about Android)
-      _clientListener?.cancel();
-      final result =
-          await methodChannel.invokeMethod('create', {'jwtToken': jwtToken});
-      if (result == null) {
-        return completer.complete(null);
-      }
+      await _clientListener?.cancel();
+      final result;
+      try {
+        result =
+            await methodChannel.invokeMethod('create', {'jwtToken': jwtToken});
 
-      conversationClient
-          .updateFromMap(jsonDecode(result.toString()) as Map<String, dynamic>);
-      completer.complete(conversationClient);
+        if (result == null) {
+          conversationClient = null;
+          return completer.completeError(
+              Exception('Unknown error creating ConversationClient'));
+        }
+
+        conversationClient?.updateFromMap(Map<String, dynamic>.from(result));
+        completer.complete(conversationClient);
+      } catch (e) {
+        completer.completeError(e);
+      }
     });
 
     return completer.future;
@@ -91,11 +94,13 @@ class TwilioConversations {
     bool native = false,
     bool sdk = false,
   }) async {
-    assert(dart != null);
-    assert(native != null);
-    assert(sdk != null);
     _dartDebug = dart;
-    await methodChannel.invokeMethod('debug', {'native': native, 'sdk': sdk});
+    try {
+      await methodChannel.invokeMethod('debug', {'native': native, 'sdk': sdk});
+    } catch (e) {
+      TwilioConversations.log(
+          'TwilioConversations::debug => Caught Exception: $e');
+    }
     if (native && loggingStream == null) {
       loggingStream =
           loggingChannel.receiveBroadcastStream().listen((dynamic event) {
@@ -104,7 +109,7 @@ class TwilioConversations {
         }
       });
     } else if (!native && loggingStream != null) {
-      await loggingStream.cancel();
+      await loggingStream?.cancel();
       loggingStream = null;
     }
   }

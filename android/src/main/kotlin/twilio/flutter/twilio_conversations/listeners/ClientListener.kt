@@ -1,6 +1,5 @@
 package twilio.flutter.twilio_conversations.listeners
 
-import com.google.gson.Gson
 import com.twilio.conversations.*
 import io.flutter.plugin.common.EventChannel
 import twilio.flutter.twilio_conversations.Mapper
@@ -29,17 +28,17 @@ class ClientListener : ConversationsClientListener {
     }
 
     override fun onUserSubscribed(user: User?) {
-        TwilioConversationsPlugin.debug("ClientListener.onUserSubscribed => user '${user?.friendlyName}'")
+        TwilioConversationsPlugin.debug("ClientListener.onUserSubscribed => user '${user?.identity}'")
         sendEvent("userSubscribed", mapOf("user" to Mapper.userToMap(user)))
     }
 
     override fun onUserUnsubscribed(user: User?) {
-        TwilioConversationsPlugin.debug("ClientListener.onUserUnsubscribed => user '${user?.friendlyName}'")
+        TwilioConversationsPlugin.debug("ClientListener.onUserUnsubscribed => user '${user?.identity}'")
         sendEvent("userUnsubscribed", mapOf("user" to Mapper.userToMap(user)))
     }
 
     override fun onUserUpdated(user: User?, reason: User.UpdateReason?) {
-        TwilioConversationsPlugin.debug("ClientListener.onUserUpdated => user '${user?.friendlyName}' updated, $reason")
+        TwilioConversationsPlugin.debug("ClientListener.onUserUpdated => user '${user?.identity}' updated, $reason")
         sendEvent("userUpdated", mapOf(
                 "user" to Mapper.userToMap(user),
                 "reason" to mapOf(
@@ -112,8 +111,8 @@ class ClientListener : ConversationsClientListener {
         sendEvent("tokenAboutToExpire")
     }
 
-    private fun sendEvent(name: String, data: Any? = null, e: ErrorInfo? = null) {
-        val eventData = Gson().toJson(mapOf("name" to name, "data" to data, "error" to Mapper.errorInfoToMap(e)))
+    private fun sendEvent(name: String, data: Any? = mapOf<String, Any>(), e: ErrorInfo? = null) {
+        val eventData = mapOf("name" to name, "data" to data, "error" to Mapper.errorInfoToMap(e))
         events?.success(eventData)
     }
 }

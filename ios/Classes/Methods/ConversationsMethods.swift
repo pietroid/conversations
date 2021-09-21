@@ -11,15 +11,19 @@ public class ConversationsMethods {
             return flutterResult(FlutterError(code: "MISSING_PARAMS", message: "Missing 'friendlyName' parameter", details: nil))
         }
 
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return flutterResult(FlutterError(code: "ERROR", message: "Client has not been initialized.", details: nil))
+        }
+
         let conversationOptions: [String: Any] = [
             TCHConversationOptionFriendlyName: friendlyName
         ]
 
-        SwiftTwilioConversationsPlugin.instance?.client?.createConversation(options: conversationOptions, completion: { (result: TCHResult, conversation: TCHConversation?) in
+        client.createConversation(options: conversationOptions, completion: { (result: TCHResult, conversation: TCHConversation?) in
             if result.isSuccessful, let conversation = conversation {
                 SwiftTwilioConversationsPlugin.debug("\(call.method) => onSuccess")
                 let conversationDict = Mapper.conversationToDict(conversation)
-                flutterResult(Mapper.encode(conversationDict))
+                flutterResult(conversationDict)
             } else {
                 SwiftTwilioConversationsPlugin.debug("\(call.method) => onError: \(String(describing: result.error))")
                 flutterResult(FlutterError(code: "ERROR", message: "Error creating conversation with friendlyName '\(friendlyName)': \(String(describing: result.error))", details: nil))
@@ -30,7 +34,7 @@ public class ConversationsMethods {
     public static func getMyConversations(_ call: FlutterMethodCall, _ flutterResult: @escaping FlutterResult) {
         let myConversations =  SwiftTwilioConversationsPlugin.instance?.client?.myConversations()
         let dict = Mapper.conversationsToDict(myConversations)
-        flutterResult(Mapper.encode(dict))
+        flutterResult(dict)
     }
 
     public static func getConversation(_ call: FlutterMethodCall, _ flutterResult: @escaping FlutterResult) {
@@ -45,7 +49,7 @@ public class ConversationsMethods {
         SwiftTwilioConversationsPlugin.instance?.client?.conversation(withSidOrUniqueName: conversationSidOrUniqueName, completion: { (result: TCHResult, conversation: TCHConversation?) in
             if result.isSuccessful, let conversation = conversation {
                 SwiftTwilioConversationsPlugin.debug("\(call.method) => onSuccess")
-                flutterResult(Mapper.encode(Mapper.conversationToDict(conversation)))
+                flutterResult(Mapper.conversationToDict(conversation))
             } else {
                 SwiftTwilioConversationsPlugin.debug("\(call.method) => onError: \(String(describing: result.error))")
                 flutterResult(FlutterError(code: "ERROR", message: "Error retrieving conversation with sid or uniqueName '\(conversationSidOrUniqueName)'", details: nil))

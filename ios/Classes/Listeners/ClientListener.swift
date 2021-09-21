@@ -135,11 +135,11 @@ public class ClientListener: NSObject, TwilioConversationsClientDelegate {
         return nil
     }
     
-    private func sendEvent(_ name: String, data: [String: Any]? = nil, error: Error? = nil) {
+    private func sendEvent(_ name: String, data: [String: Any]? = [:], error: Error? = nil) {
         let eventData = ["name": name, "data": data, "error": errorToDict(error)] as [String: Any?]
         
         if let events = events {
-            events(Mapper.encode(eventData))
+            events(eventData)
         }
     }
 }

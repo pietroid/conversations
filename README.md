@@ -28,4 +28,7 @@ Read the [Frequently Asked Questions](https://gitlab.com/twilio-flutter/conversa
 - Token retrieval must be handled by the user of the plugin, and then registered with Twilio using `ConversationClient.registerForNotification(String token)`
 - Notification handling must also be set up by the user of the plugin
 
+### Code Gen
+`flutter packages pub run build_runner build --delete-conflicting-outputs`
+
 # Contributions By

@@ -2,7 +2,6 @@ package twilio.flutter.twilio_conversations
 
 import ConversationMethods
 import android.content.Context
-import com.google.gson.Gson
 import com.twilio.conversations.CallbackListener
 import com.twilio.conversations.ConversationsClient
 import com.twilio.conversations.ErrorInfo
@@ -10,8 +9,9 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import twilio.flutter.twilio_conversations.methods.*
 
-class PluginMethodCallHandler(private val applicationContext: Context) : MethodChannel.MethodCallHandler {
+class PluginHandler(private val applicationContext: Context) : MethodChannel.MethodCallHandler {
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+        TwilioConversationsPlugin.debug("PluginHandler.onMethodCall => received: ${call.method}")
         when (call.method) {
             "debug" -> debug(call, result)
             "create" -> create(call, result)
@@ -59,8 +59,8 @@ class PluginMethodCallHandler(private val applicationContext: Context) : MethodC
             override fun onSuccess(conversationsClient: ConversationsClient) {
                 TwilioConversationsPlugin.client = conversationsClient
                 conversationsClient.addListener(TwilioConversationsPlugin.clientListener)
-                val jsonMap = Gson().toJson(Mapper.conversationsClientToMap(conversationsClient))
-                result.success(jsonMap)
+                val clientMap = Mapper.conversationsClientToMap(conversationsClient)
+                result.success(clientMap)
             }
 
             override fun onError(errorInfo: ErrorInfo) {

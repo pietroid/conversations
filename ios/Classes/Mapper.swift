@@ -21,9 +21,9 @@ public class Mapper {
             return nil
         }
         
-        if !SwiftTwilioConversationsPlugin.conversationChannels.keys.contains(sid) {
-            SwiftTwilioConversationsPlugin.conversationChannels[sid] = FlutterEventChannel(name: "twilio_conversations/\(sid)", binaryMessenger: SwiftTwilioConversationsPlugin.messenger!)
-            SwiftTwilioConversationsPlugin.conversationChannels[sid]?.setStreamHandler(ChannelStreamHandler(conversation))
+        if !SwiftTwilioConversationsPlugin.conversationListeners.keys.contains(sid) {
+            SwiftTwilioConversationsPlugin.conversationListeners[sid] = ConversationListener(sid)
+            conversation.delegate = SwiftTwilioConversationsPlugin.conversationListeners[sid]
         }
         
         return [
@@ -353,47 +353,5 @@ public class Mapper {
             return formatter.string(from: date)
         }
         return nil
-    }
-    
-    class func encode(_ value: Any?) -> String? {
-        guard let value = value else {
-            return nil
-        }
-        
-        do {
-            let jsonData = try JSONSerialization.data(withJSONObject: value, options: .prettyPrinted)
-            
-            return String(data: jsonData, encoding: .utf8)
-        } catch {
-            print("error encoding value")
-            print(error.localizedDescription)
-            return nil
-        }
-    }
-    
-    class ChannelStreamHandler: NSObject, FlutterStreamHandler {
-        let conversation: TCHConversation
-        
-        init(_ conversation: TCHConversation) {
-            self.conversation = conversation
-        }
-        
-        func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
-            if let sid = conversation.sid {
-                SwiftTwilioConversationsPlugin.debug("Mapper.conversationToDict => EventChannel for Conversation($\(String(describing: sid)) attached")
-                SwiftTwilioConversationsPlugin.conversationListeners[sid] = ConversationListener(events)
-                conversation.delegate = SwiftTwilioConversationsPlugin.conversationListeners[sid]
-            }
-            return nil
-        }
-        
-        func onCancel(withArguments arguments: Any?) -> FlutterError? {
-            if let sid = conversation.sid {
-                SwiftTwilioConversationsPlugin.debug("Mapper.conversationToDict => EventChannel for Conversation($\(String(describing: sid)) detached")
-                conversation.delegate = nil
-                SwiftTwilioConversationsPlugin.conversationListeners.removeValue(forKey: sid)
-            }
-            return nil
-        }
     }
 }

@@ -32,4 +32,8 @@ object ConversationClientMethods {
             result.error("ERROR", err.message, null)
         }
     }
+
+    private fun disposeListeners() {
+        TwilioConversationsPlugin.conversationListeners.clear()
+    }
 }

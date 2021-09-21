@@ -1,9 +1,4 @@
-import 'package:json_annotation/json_annotation.dart';
-
-part 'error_info.g.dart';
-
 /// Representation of a Conversation Error Object.
-@JsonSerializable()
 class ErrorInfo implements Exception {
   //#region Error codes
   /// This status is set if error occurred in the SDK and is not related to network operations.
@@ -26,24 +21,17 @@ class ErrorInfo implements Exception {
   final int code;
 
   /// Message containing a short explanation.
-  final String message;
+  final String? message;
 
   /// Get error category as a classifier.
   ///
   /// Local client errors get status 0, network related errors have their HTTP error code as a status.
   final int status;
 
-  ErrorInfo(this.code, this.message, this.status)
-      : assert(code != null),
-        assert(message != null),
-        assert(status != null);
+  ErrorInfo(this.code, this.message, this.status);
 
   @override
   String toString() {
     return 'ErrorInfo: code: $code, message: $message, status: $status';
   }
-
-  factory ErrorInfo.fromJson(Map<String, dynamic> json) => _$ErrorInfoFromJson(json);
-
-  Map<String, dynamic> toJson() => _$ErrorInfoToJson(this);
 }

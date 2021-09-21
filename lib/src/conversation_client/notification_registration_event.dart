@@ -1,8 +1,8 @@
-import 'package:twilio_conversations/src/parts/error_info.dart';
+import 'package:twilio_conversations/twilio_conversations.dart';
 
 class NotificationRegistrationEvent {
   final bool isSuccessful;
-  final ErrorInfo error;
+  final ErrorInfo? error;
 
   NotificationRegistrationEvent(this.isSuccessful, this.error);
 

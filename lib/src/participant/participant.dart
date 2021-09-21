@@ -1,9 +1,5 @@
-import 'dart:convert';
-
-import 'package:json_annotation/json_annotation.dart';
+import 'package:enum_to_string/enum_to_string.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
-
-part 'participant.g.dart';
 
 enum UpdateReason {
   /// Participant last read message index has changed.
@@ -33,38 +29,51 @@ enum Type {
   UNKNOWN,
 }
 
-@JsonSerializable()
 class Participant {
-  final Attributes attributes;
-  final String conversationSid;
-  final String dateCreated;
-  final String dateUpdated;
-  final String identity;
-  final int lastReadMessageIndex;
-  final String lastReadTimestamp;
   final String sid;
+  final String conversationSid;
   final Type type;
+  Attributes attributes;
+  String? dateCreated;
+  String? dateUpdated;
+  String? identity;
+  int? lastReadMessageIndex;
+  String? lastReadTimestamp;
 
-  @JsonKey(ignore: true)
-  User _user;
+  User? _user;
 
-  Participant({
-    this.attributes,
+  Participant(
+    this.sid,
+    this.type,
     this.conversationSid,
+    this.attributes,
     this.dateCreated,
     this.dateUpdated,
     this.identity,
     this.lastReadMessageIndex,
     this.lastReadTimestamp,
-    this.sid,
-    this.type,
-  });
+  );
 
-  factory Participant.fromJson(Map<String, dynamic> json) =>
-      _$ParticipantFromJson(json);
-  Map<String, dynamic> toJson() => _$ParticipantToJson(this);
+  /// Construct from a map.
+  factory Participant.fromMap(Map<String, dynamic> map) {
+    final participant = Participant(
+      map['sid'],
+      EnumToString.fromString(Type.values, map['type']) ?? Type.UNKNOWN,
+      map['conversationSid'],
+      map['attributes'] != null
+          ? Attributes.fromMap(map['attributes'].cast<String, dynamic>())
+          : Attributes(AttributesType.NULL, null),
+      map['dateCreated'],
+      map['dateUpdated'],
+      map['identity'],
+      map['lastReadMessageIndex'],
+      map['lastReadTimestamp'],
+    );
+    // member._updateFromMap(map);
+    return participant;
+  }
 
-  Future<User> getUser() async {
+  Future<User?> getUser() async {
     if (_user != null) {
       return _user;
     }
@@ -75,7 +84,6 @@ class Participant {
     if (result == null) {
       return null;
     }
-    return _user =
-        User.fromJson(jsonDecode(result.toString()) as Map<String, dynamic>);
+    return _user = User.fromMap(Map<String, dynamic>.from(result));
   }
 }

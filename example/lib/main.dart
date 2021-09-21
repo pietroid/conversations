@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:provider/provider.dart';
+import 'package:twilio_conversations/twilio_conversations.dart';
 import 'package:twilio_conversations_example/conversations/conversations_notifier.dart';
 import 'package:twilio_conversations_example/conversations/conversations_page.dart';
-import 'package:twilio_conversations_example/messages/messages_notifier.dart';
-
-final conversationsNotifierProvider =
-    ChangeNotifierProvider((_) => ConversationsNotifier());
-final messagesNotifierProvider =
-    ChangeNotifierProvider((_) => MessagesNotifier());
+import 'package:twilio_conversations_example/models/twilio_chat_token_request.dart';
+import 'package:twilio_conversations_example/services/backend_service.dart';
 
 void main() {
-  runApp(
-    ProviderScope(child: MyApp()),
-  );
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -24,61 +19,96 @@ class MyApp extends StatelessWidget {
           title: const Text('Twilio Conversations Example'),
         ),
         body: Center(
-          child: _TestingButtons(),
+          child: Column(
+            children: [
+              // _buildUserIdField(),
+              _buildButtons(),
+            ],
+          ),
         ),
       ),
     );
   }
-}
 
-class _TestingButtons extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final _provider = watch(conversationsNotifierProvider);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        ElevatedButton(
-          child: Text('Initialize Client'),
-          onPressed: () {
-            final jwtToken = ''; // <Set your JWT token here>
+  Widget _buildButtons() {
+    return ChangeNotifierProvider<ConversationsNotifier>(
+      create: (_) => ConversationsNotifier(),
+      child: Consumer<ConversationsNotifier>(
+        builder: (BuildContext context, conversationsNotifier, Widget? child) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: conversationsNotifier.identityController,
+                onChanged: conversationsNotifier.updateIdentity,
+              ),
+              ElevatedButton(
+                onPressed: conversationsNotifier.identity.isNotEmpty &&
+                        !conversationsNotifier.isClientInitialized
+                    ? () async {
+                        await TwilioConversations.debug(
+                            dart: true, native: true, sdk: false);
 
-            if (jwtToken.isEmpty) {
-              _showInvalidJWTDialog(context);
-              return;
-            }
-            _provider.create(jwtToken: jwtToken);
-          },
-        ),
-        ElevatedButton(
-          child: Text('See My Conversations'),
-          onPressed: _provider.isClientInitialized
-              ? () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ConversationsPage(),
-                    ),
-                  )
-              : null,
-        ),
-      ],
+                        final jwtToken = (await BackendService.createToken(
+                                TwilioChatTokenRequest(
+                                    identity: conversationsNotifier.identity)))
+                            ?.token; // <Set your JWT token here>
+
+                        if (jwtToken == null) {
+                          return;
+                        }
+
+                        if (jwtToken.isEmpty) {
+                          _showInvalidJWTDialog(context);
+                          return;
+                        }
+                        await conversationsNotifier.create(jwtToken: jwtToken);
+                      }
+                    : null,
+                child: Text('Start Client'),
+              ),
+              ElevatedButton(
+                onPressed: conversationsNotifier.isClientInitialized
+                    ? () async {
+                        await conversationsNotifier.shutdown();
+                      }
+                    : null,
+                child: Text('Shutdown Client'),
+              ),
+              ElevatedButton(
+                onPressed: conversationsNotifier.isClientInitialized
+                    ? () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ConversationsPage(
+                              conversationsNotifier: conversationsNotifier,
+                            ),
+                          ),
+                        )
+                    : null,
+                child: Text('See My Conversations'),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
-}
 
-void _showInvalidJWTDialog(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (_) => AlertDialog(
-      title: new Text("Error: No JWT provided"),
-      content: new Text(
-          'To create the conversations client, a JWT must be supplied on line 44 of `main.dart`'),
-      actions: [
-        TextButton(
-          child: Text('OK'),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ],
-    ),
-  );
+  void _showInvalidJWTDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('Error: No JWT provided'),
+        content: Text(
+            'To create the conversations client, a JWT must be supplied on line 44 of `main.dart`'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
 }

@@ -1,6 +1,5 @@
 package twilio.flutter.twilio_conversations.methods
 
-import com.google.gson.Gson
 import com.twilio.conversations.CallbackListener
 import com.twilio.conversations.Conversation
 import com.twilio.conversations.ErrorInfo
@@ -23,7 +22,7 @@ object ConversationsMethods {
         TwilioConversationsPlugin.client?.getConversation(conversationSidOrUniqueName, object : CallbackListener<Conversation> {
             override fun onSuccess(conversation: Conversation) {
                 TwilioConversationsPlugin.debug("${call.method} => onSuccess")
-                result.success(Gson().toJson(Mapper.conversationToMap(conversation)))
+                result.success(Mapper.conversationToMap(conversation))
             }
 
             override fun onError(errorInfo: ErrorInfo) {
@@ -46,8 +45,8 @@ object ConversationsMethods {
                         return
                     }
                     TwilioConversationsPlugin.debug("${call.method} => onSuccess")
-                    val jsonMap = Gson().toJson(Mapper.conversationToMap(conversation))
-                    result.success(jsonMap)
+                    val conversationMap = Mapper.conversationToMap(conversation)
+                    result.success(conversationMap)
                 }
 
                 override fun onError(errorInfo: ErrorInfo) {
@@ -78,8 +77,8 @@ object ConversationsMethods {
 
             launch(Dispatchers.Main) {
                 TwilioConversationsPlugin.debug("${call.method} => onSuccess")
-                val jsonMap = Gson().toJson(Mapper.conversationsToMap(myConversations))
-                result.success(jsonMap)
+                val conversationsMap = Mapper.conversationsToMap(myConversations)
+                result.success(conversationsMap)
             }
         }
     }

@@ -2,10 +2,10 @@ import Flutter
 import TwilioConversationsClient
 
 public class ConversationListener: NSObject, TCHConversationDelegate {
-    let events: FlutterEventSink
+    let conversationSid: String
     
-    init(_ events: @escaping FlutterEventSink) {
-        self.events = events
+    init(_ conversationSid: String) {
+        self.conversationSid = conversationSid
     }
     
     // onConversationDeleted
@@ -13,6 +13,7 @@ public class ConversationListener: NSObject, TCHConversationDelegate {
         SwiftTwilioConversationsPlugin.debug(
             "ConversationListener.onConversationDeleted => conversationSid = \(String(describing: conversation.sid))")
         sendEvent("conversationDeleted", data: [
+            "conversationSid": conversationSid,
             "conversation": Mapper.conversationToDict(conversation) as Any
         ])
     }
@@ -22,6 +23,7 @@ public class ConversationListener: NSObject, TCHConversationDelegate {
         SwiftTwilioConversationsPlugin.debug(
             "ConversationListener.onConversationUpdated => conversationSid = \(String(describing: conversation.sid))")
         sendEvent("conversationUpdated", data: [
+            "conversationSid": conversationSid,
             "conversation": Mapper.conversationToDict(conversation) as Any
         ])
     }
@@ -31,6 +33,7 @@ public class ConversationListener: NSObject, TCHConversationDelegate {
         SwiftTwilioConversationsPlugin.debug(
             "ConversationListener.onMessageAdded => messageSid = \(String(describing: message.sid))")
         sendEvent("messageAdded", data: [
+            "conversationSid": conversationSid,
             "message": Mapper.messageToDict(message, conversationSid: conversation.sid)
         ])
     }
@@ -40,6 +43,7 @@ public class ConversationListener: NSObject, TCHConversationDelegate {
         SwiftTwilioConversationsPlugin.debug(
             "ConversationListener.onMessageDeleted => messageSid = \(String(describing: message.sid))")
         sendEvent("messageDeleted", data: [
+            "conversationSid": conversationSid,
             "message": Mapper.messageToDict(message, conversationSid: conversation.sid)
         ])
     }
@@ -50,6 +54,7 @@ public class ConversationListener: NSObject, TCHConversationDelegate {
             "ConversationListener.onMessageUpdated => messageSid = \(String(describing: message.sid)), " +
                 "updated = \(String(describing: updated))")
         sendEvent("messageUpdated", data: [
+            "conversationSid": conversationSid,
             "message": Mapper.messageToDict(message, conversationSid: conversation.sid),
             "reason": [
                 "type": "message",
@@ -63,6 +68,7 @@ public class ConversationListener: NSObject, TCHConversationDelegate {
         SwiftTwilioConversationsPlugin.debug(
             "ConversationListener.onParticipantDeleted => participantSid = \(String(describing: participant.sid))")
         sendEvent("participantDeleted", data: [
+            "conversationSid": conversationSid,
             "participant": Mapper.participantToDict(participant, conversationSid: conversation.sid) as Any
         ])
     }
@@ -72,6 +78,7 @@ public class ConversationListener: NSObject, TCHConversationDelegate {
         SwiftTwilioConversationsPlugin.debug(
             "ConversationListener.onParticipantAdded => participantSid = \(String(describing: participant.sid))")
         sendEvent("participantAdded", data: [
+            "conversationSid": conversationSid,
             "participant": Mapper.participantToDict(participant, conversationSid: conversation.sid) as Any
         ])
     }
@@ -82,6 +89,7 @@ public class ConversationListener: NSObject, TCHConversationDelegate {
             "ConversationListener.onParticipantUpdated => participantSid = \(String(describing: participant.sid)), " +
                 "updated = \(String(describing: updated))")
         sendEvent("participantUpdated", data: [
+            "conversationSid": conversationSid,
             "participant": Mapper.participantToDict(participant, conversationSid: conversation.sid) as Any,
             "reason": [
                 "type": "participant",
@@ -96,6 +104,7 @@ public class ConversationListener: NSObject, TCHConversationDelegate {
             "ConversationListener.onTypingEnded => conversationSid = \(String(describing: conversation.sid)), " +
                 "participantSid = \(String(describing: participant.sid))")
         sendEvent("typingEnded", data: [
+            "conversationSid": conversationSid,
             "conversation": Mapper.conversationToDict(conversation) as Any,
             "participant": Mapper.participantToDict(participant, conversationSid: conversation.sid) as Any
         ])
@@ -107,6 +116,7 @@ public class ConversationListener: NSObject, TCHConversationDelegate {
             "ConversationListener.onTypingStarted => conversationSid = \(String(describing: conversation.sid)), " +
                 "participantSid = \(String(describing: participant.sid))")
         sendEvent("typingStarted", data: [
+            "conversationSid": conversationSid,
             "conversation": Mapper.conversationToDict(conversation) as Any,
             "participant": Mapper.participantToDict(participant, conversationSid: conversation.sid) as Any
         ])
@@ -117,6 +127,7 @@ public class ConversationListener: NSObject, TCHConversationDelegate {
         SwiftTwilioConversationsPlugin.debug(
             "ConversationListener.onSynchronizationChanged => conversationSid = \(String(describing: conversation.sid))")
         sendEvent("synchronizationChanged", data: [
+            "conversationSid": conversationSid,
             "conversation": Mapper.conversationToDict(conversation) as Any
         ])
     }
@@ -136,12 +147,14 @@ public class ConversationListener: NSObject, TCHConversationDelegate {
     
     private func sendEvent(_ name: String, data: [String: Any]? = nil, error: Error? = nil) {
         let eventData =
-            Mapper.encode([
+            [
                 "name": name,
                 "data": data,
                 "error": Mapper.errorToDict(error)
-            ] as [String: Any?])
+            ] as [String: Any?]
         
-        events(eventData)
+        if let events = SwiftTwilioConversationsPlugin.conversationSink {
+            events(eventData)
+        }
     }
 }

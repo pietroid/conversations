@@ -1,6 +1,5 @@
 package twilio.flutter.twilio_conversations.methods
 
-import com.google.gson.Gson
 import com.twilio.conversations.*
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -82,7 +81,7 @@ object ParticipantsMethods {
         TwilioConversationsPlugin.client?.getConversation(conversationSid, object : CallbackListener<Conversation> {
             override fun onSuccess(conversation: Conversation) {
                 TwilioConversationsPlugin.debug("ParticipantsMethods.getParticipantsList (Conversation.getConversation) => onSuccess")
-                val participantsListMap = Gson().toJson(Mapper.participantListToMap(conversation.participantsList))
+                val participantsListMap = Mapper.participantListToMap(conversation.participantsList)
                 result.success(participantsListMap)
             }
 
@@ -105,7 +104,7 @@ object ParticipantsMethods {
                     it.getAndSubscribeUser { user ->
                         users.add(user)
                         if (users.size == conversation.participantsList.size) {
-                            val userListMap = Gson().toJson(users.mapNotNull { Mapper.userToMap(it) })
+                            val userListMap = users.mapNotNull { Mapper.userToMap(it) }
                             result.success(userListMap)
                         }
                     }

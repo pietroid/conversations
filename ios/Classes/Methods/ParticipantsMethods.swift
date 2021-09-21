@@ -17,7 +17,7 @@ class ParticipantsMethods {
                         users.append(user)
                         if users.count == conversation.participants().count {
                             let userList = users.compactMap { Mapper.userToDict($0) }
-                            flutterResult(Mapper.encode(userList))
+                            flutterResult(userList)
                         }
                     }
                 })
@@ -38,7 +38,7 @@ class ParticipantsMethods {
             if result.isSuccessful, let conversation = conversation {
                 SwiftTwilioConversationsPlugin.debug("\(call.method) => onSuccess")
                 let participantsMap = conversation.participants().map { Mapper.participantToDict($0, conversationSid: conversationSid)}
-                flutterResult(Mapper.encode(participantsMap))
+                flutterResult(participantsMap)
             } else {
                 SwiftTwilioConversationsPlugin.debug("\(call.method) => onError: \(String(describing: result.error))")
                 flutterResult(FlutterError(code: "ERROR", message: "Error retrieving conversation with sid '\(conversationSid)'", details: nil))

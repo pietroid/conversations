@@ -33,21 +33,12 @@ object Mapper {
 
     fun conversationToMap(conversation: Conversation?): Map<String, Any?>? {
         if (conversation == null) return null
-        if (!TwilioConversationsPlugin.conversationChannels.containsKey(conversation.sid)) {
-            TwilioConversationsPlugin.conversationChannels[conversation.sid] = EventChannel(TwilioConversationsPlugin.messenger, "twilio_conversations/${conversation.sid}")
-            TwilioConversationsPlugin.conversationChannels[conversation.sid]?.setStreamHandler(object : EventChannel.StreamHandler {
-                override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
-                    TwilioConversationsPlugin.debug("Mapper.conversationToMap => EventChannel for Conversation(${conversation.sid}) attached")
-                    TwilioConversationsPlugin.conversationListeners[conversation.sid] = ConversationListener(events)
-                    conversation.addListener(TwilioConversationsPlugin.conversationListeners[conversation.sid])
-                }
 
-                override fun onCancel(arguments: Any?) {
-                    TwilioConversationsPlugin.debug("Mapper.conversationToMap => EventChannel for Conversation(${conversation.sid}) detached")
-                    conversation.removeListener(TwilioConversationsPlugin.conversationListeners[conversation.sid])
-                    TwilioConversationsPlugin.conversationListeners.remove(conversation.sid)
-                }
-            })
+        // Setting flutter event listener for the given channel if one does not yet exist.
+        if (conversation.sid != null && !TwilioConversationsPlugin.conversationListeners.containsKey(conversation.sid)) {
+            TwilioConversationsPlugin.debug("Creating ConversationListener for conversation: '${conversation.sid}'")
+            TwilioConversationsPlugin.conversationListeners[conversation.sid] = ConversationListener(conversation.sid)
+            conversation.addListener(TwilioConversationsPlugin.conversationListeners[conversation.sid])
         }
 
         return mapOf(
@@ -57,7 +48,9 @@ object Mapper {
                 "dateUpdated" to dateToString(conversation.dateUpdatedAsDate),
                 "friendlyName" to conversation.friendlyName,
                 "lastMessageDate" to dateToString(conversation.lastMessageDate),
-                "lastReadMessageIndex" to conversation.lastReadMessageIndex,
+                "lastReadMessageIndex" to
+                        if (conversation.synchronizationStatus.isAtLeast(Conversation.SynchronizationStatus.METADATA))
+                            conversation.lastReadMessageIndex else null,
                 "lastMessageIndex" to conversation.lastMessageIndex,
                 "sid" to conversation.sid,
                 "status" to conversation.status.toString(),
@@ -71,6 +64,7 @@ object Mapper {
                 "sid" to message.sid,
                 "author" to message.author,
                 "dateCreated" to dateToString(message.dateCreatedAsDate),
+                "subject" to message.subject,
                 "messageBody" to message.messageBody,
                 "conversationSid" to message.conversation.sid,
                 "participantSid" to message.participantSid,
