@@ -1,44 +1,28 @@
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
 
-enum UpdateReason {
-  /// Participant last read message index has changed.
-  /// <p>
-  /// This update event is fired when participant's read horizon changes. This usually
-  /// indicates that some messages were read by that participant.
-  LAST_READ_MESSAGE_INDEX,
-
-  /// Participant last read message timestamp has changed.
-  /// <p>
-  /// This update event is fired when participant's read horizon changes (or just set to the same position again).
-  /// This usually indicates that some messages were read by that participant.
-  LAST_READ_TIMESTAMP,
-
-  /// Participant attributes have changed.
-  /// <p>
-  /// This update event is fired when participant's attributes change.
-  ATTRIBUTES
-}
-
-enum Type {
-  CHAT,
-  OTHER,
-  SMS,
-  UNSET,
-  WHATSAPP,
-  UNKNOWN,
-}
-
 class Participant {
   final String sid;
   final String conversationSid;
   final Type type;
-  Attributes attributes;
-  String? dateCreated;
-  String? dateUpdated;
-  String? identity;
-  int? lastReadMessageIndex;
-  String? lastReadTimestamp;
+
+  Attributes _attributes;
+  Attributes get attributes => _attributes;
+
+  String? _dateCreated;
+  String? get dateCreated => _dateCreated;
+
+  String? _dateUpdated;
+  String? get dateUpdated => _dateUpdated;
+
+  String? _identity;
+  String? get identity => _identity;
+
+  int? _lastReadMessageIndex;
+  int? get lastReadMessageIndex => _lastReadMessageIndex;
+
+  String? _lastReadTimestamp;
+  String? get lastReadTimestamp => _lastReadTimestamp;
 
   User? _user;
 
@@ -46,12 +30,12 @@ class Participant {
     this.sid,
     this.type,
     this.conversationSid,
-    this.attributes,
-    this.dateCreated,
-    this.dateUpdated,
-    this.identity,
-    this.lastReadMessageIndex,
-    this.lastReadTimestamp,
+    this._attributes,
+    this._dateCreated,
+    this._dateUpdated,
+    this._identity,
+    this._lastReadMessageIndex,
+    this._lastReadTimestamp,
   );
 
   /// Construct from a map.
@@ -86,4 +70,8 @@ class Participant {
     }
     return _user = User.fromMap(Map<String, dynamic>.from(result));
   }
+
+  //TODO: implement setAttributes
+  //TODO: implement updateFromMap, and use as appropriate
+  //TODO: implement remove
 }

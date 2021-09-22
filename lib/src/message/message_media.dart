@@ -3,10 +3,11 @@ import 'package:twilio_conversations/twilio_conversations.dart';
 class MessageMedia {
   final String _sid;
   final String? _fileName;
-  final String _type;
+  final String? _type;
   final int _size;
   final String? _conversationSid;
-  final int _messageIndex;
+  final String? _messageSid;
+  final int? _messageIndex;
 
   //#region Public API properties
   /// Get SID of media stream.
@@ -20,7 +21,7 @@ class MessageMedia {
   }
 
   /// Get mime-type of media stream.
-  String get type {
+  String? get type {
     return _type;
   }
 
@@ -36,12 +37,21 @@ class MessageMedia {
     this._type,
     this._size,
     this._conversationSid,
+    this._messageSid,
     this._messageIndex,
   );
 
   /// Construct from a map.
   factory MessageMedia.fromMap(Map<String, dynamic> map) {
-    return MessageMedia(map['sid'], map['fileName'], map['type'], map['size'], map['conversationSid'], map['messageIndex']);
+    return MessageMedia(
+      map['sid'],
+      map['fileName'],
+      map['type'],
+      map['size'],
+      map['conversationSid'],
+      map['messageSid'],
+      map['messageIndex'],
+    );
   }
 
   //#region Public API methods

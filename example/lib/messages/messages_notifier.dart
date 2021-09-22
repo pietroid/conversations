@@ -15,7 +15,7 @@ class MessagesNotifier extends ChangeNotifier {
   List<Message> messages = [];
   bool _areAllMessagesRetrieved = false;
   var startingIndex = 0;
-  var currentlyTyping = Set<String>();
+  var currentlyTyping = <String>{};
 
   MessagesNotifier(this.conversation) {
     messageInputTextController.addListener(notifyListeners);
@@ -97,9 +97,9 @@ class MessagesNotifier extends ChangeNotifier {
 
     Message? message;
     try {
-      message = await conversation.sendMessage(
-        messageInputTextController.text,
-      );
+      final messageOptions = MessageOptions()
+        ..withBody(messageInputTextController.text);
+      message = await conversation.sendMessage(messageOptions);
     } catch (e) {
       print('Failed to send message Error: $e');
     }

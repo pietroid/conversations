@@ -1,40 +1,17 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/services.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
-
-class ConversationUpdatedEvent {
-  final Conversation conversation;
-  final ConversationUpdateReason reason;
-
-  ConversationUpdatedEvent(this.conversation, this.reason);
-}
-
-class UserUpdatedEvent {
-  final User user;
-
-  final UserUpdateReason reason;
-
-  UserUpdatedEvent(this.user, this.reason);
-}
-
-class NewMessageNotificationEvent {
-  final String conversationSid;
-  final String messageSid;
-  final int messageIndex;
-
-  NewMessageNotificationEvent(
-      this.conversationSid, this.messageSid, this.messageIndex);
-}
 
 class ConversationClient {
   Map<String, Conversation> conversations = <String, Conversation>{};
 
   String? myIdentity;
   ConnectionState connectionState = ConnectionState.UNKNOWN;
-  bool isReachabilityEnabled = false;
+
+  bool _isReachabilityEnabled = false;
+  bool get isReachabilityEnabled => _isReachabilityEnabled;
 
   /// Stream for the native client events.
   late StreamSubscription<dynamic> _clientStream;
@@ -174,28 +151,37 @@ class ConversationClient {
   late Stream<UserUpdatedEvent> onUserUpdated;
 
   ConversationClient() {
+    // TODO: Only used to ensure initialization completion, should not be exposed publicly
     onClientListenerAttached = _onClientListenerAttachedCtrl.stream;
-    onAddedToConversationNotification =
-        _onAddedToConversationNotificationCtrl.stream;
-    onClientSynchronization = _onClientSynchronizationCtrl.stream;
-    onConnectionState = _onConnectionStateCtrl.stream;
+
+    // Conversation events
     onConversationAdded = _onConversationAddedCtrl.stream;
     onConversationDeleted = _onConversationDeletedCtrl.stream;
     onConversationSynchronizationChange =
         _onConversationSynchronizationChangeCtrl.stream;
     onConversationUpdated = _onConversationUpdatedCtrl.stream;
+
+    // Conversation client events
     onError = _onErrorCtrl.stream;
-    onNewMessageNotification = _onNewMessageNotificationCtrl.stream;
-    onNotificationDeregistered = _onNotificationDeregisteredCtrl.stream;
-    onNotificationFailed = _onNotificationFailedCtrl.stream;
-    onNotificationRegistered = _onNotificationRegisteredCtrl.stream;
-    onRemovedFromConversationNotification =
-        _onRemovedFromConversationNotificationCtrl.stream;
+    onClientSynchronization = _onClientSynchronizationCtrl.stream;
+    onConnectionState = _onConnectionStateCtrl.stream;
     onTokenExpired = _onTokenExpiredCtrl.stream;
     onTokenAboutToExpire = _onTokenAboutToExpireCtrl.stream;
+
+    // User Events
     onUserSubscribed = _onUserSubscribedCtrl.stream;
     onUserUnsubscribed = _onUserUnsubscribedCtrl.stream;
     onUserUpdated = _onUserUpdatedCtrl.stream;
+
+    // Push notification events
+    onNewMessageNotification = _onNewMessageNotificationCtrl.stream;
+    onAddedToConversationNotification =
+        _onAddedToConversationNotificationCtrl.stream;
+    onRemovedFromConversationNotification =
+        _onRemovedFromConversationNotificationCtrl.stream;
+    onNotificationDeregistered = _onNotificationDeregisteredCtrl.stream;
+    onNotificationFailed = _onNotificationFailedCtrl.stream;
+    onNotificationRegistered = _onNotificationRegisteredCtrl.stream;
 
     _clientStream = TwilioConversations.clientChannel
         .receiveBroadcastStream(0)
@@ -213,7 +199,7 @@ class ConversationClient {
     connectionState = EnumToString.fromString(
             ConnectionState.values, json['connectionState']) ??
         ConnectionState.UNKNOWN;
-    isReachabilityEnabled = json['isReachabilityEnabled'] ?? false;
+    _isReachabilityEnabled = json['isReachabilityEnabled'] ?? false;
   }
 
   /// Updates the authentication token for this client.
@@ -290,9 +276,8 @@ class ConversationClient {
   Future<List<Conversation>> getMyConversations() async {
     final result = await TwilioConversations.methodChannel
         .invokeMethod('ConversationsMethods.getMyConversations');
-    final conversationsMapList = result
-        .map((c) => Map<String, dynamic>.from(c))
-        .toList();
+    final conversationsMapList =
+        result.map((c) => Map<String, dynamic>.from(c)).toList();
 
     conversationsMapList.forEach((element) {
       updateConversationFromMap(element);
@@ -301,6 +286,7 @@ class ConversationClient {
     return conversations.values.toList();
   }
 
+  // TODO: Should not be publicly accessible
   void updateConversationFromMap(Map<String, dynamic> map) {
     var sid = map['sid'] as String;
     if (conversations[sid] == null) {
@@ -463,6 +449,7 @@ class ConversationClient {
         _onTokenExpiredCtrl.add(null);
         break;
       case 'userSubscribed':
+        //TODO: handle userSubscribed event
         //assert(userMap != null);
         // users._updateFromMap({
         //   'subscribedUsers': [userMap]
@@ -470,6 +457,7 @@ class ConversationClient {
         //_onUserSubscribedCtrl.add(User.fromJson(userMap));
         break;
       case 'userUnsubscribed':
+        //TODO: review handling of userUnsubscribed event
         if (userMap == null) {
           TwilioConversations.log(
               'ConversationClient => case \'userUnsubscribed\' => userMap is NULL.');
