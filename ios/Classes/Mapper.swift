@@ -47,6 +47,8 @@ public class Mapper {
             "sid": message.sid,
             "author": message.author,
             "dateCreated": message.dateCreated,
+            "dateUpdated": message.dateUpdated,
+            "lastUpdatedBy": message.lastUpdatedBy,
             "messageBody": message.body,
             "conversationSid": conversationSid,
             "participantSid": message.participantSid,
@@ -99,7 +101,8 @@ public class Mapper {
             "type": message.mediaType,
             "size": message.mediaSize,
             "conversationSid": conversationSid,
-            "messageIndex": message.index
+            "messageIndex": message.index,
+            "messageSid": message.sid
         ]
     }
     

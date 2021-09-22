@@ -1,10 +1,7 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/services.dart';
-import 'package:mime_type/mime_type.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
 
 class Conversation {
@@ -18,9 +15,16 @@ class Conversation {
   DateTime? dateCreated;
   String? createdBy;
   DateTime? dateUpdated;
-  DateTime? lastMessageDate;
-  int? lastMessageIndex;
-  int? lastReadMessageIndex;
+
+  //#region Message properties
+  DateTime? _lastMessageDate;
+  int? _lastMessageIndex;
+  int? _lastReadMessageIndex;
+
+  DateTime? get lastMessageDate => _lastMessageDate;
+  int? get lastMessageIndex => _lastMessageIndex;
+  int? get lastReadMessageIndex => _lastReadMessageIndex;
+  //#endregion
 
   bool get hasMessages => lastMessageIndex != null;
 
@@ -101,17 +105,25 @@ class Conversation {
   late Stream<Conversation> onSynchronizationChanged;
 
   Conversation(this.sid) {
+    // Message events
     onMessageAdded = _onMessageAddedCtrl.stream;
     onMessageUpdated = _onMessageUpdatedCtrl.stream;
     onMessageDeleted = _onMessageDeletedCtrl.stream;
+
+    // Participant events
     onParticipantAdded = _onParticipantAddedCtrl.stream;
     onParticipantUpdated = _onParticipantUpdatedCtrl.stream;
     onParticipantDeleted = _onParticipantDeletedCtrl.stream;
+
+    // Typing events
     onTypingStarted = _onTypingStartedCtrl.stream;
     onTypingEnded = _onTypingEndedCtrl.stream;
+
+    // Conversation status events
     onSynchronizationChanged = _onSynchronizationChangedCtrl.stream;
   }
 
+  // TODO: should be private, but needs to be accessed from ConversationClient
   void updateFromMap(Map<String, dynamic> map) {
     attributes = map['attributes'] == null
         ? null
@@ -135,11 +147,11 @@ class Conversation {
     dateUpdated = map['dateUpdated'] == null
         ? null
         : DateTime.parse(map['dateUpdated'] as String);
-    lastMessageDate = map['lastMessageDate'] == null
+    _lastMessageDate = map['lastMessageDate'] == null
         ? null
         : DateTime.parse(map['lastMessageDate'] as String);
-    lastReadMessageIndex = map['lastReadMessageIndex'] as int?;
-    lastMessageIndex = map['lastMessageIndex'] as int?;
+    _lastReadMessageIndex = map['lastReadMessageIndex'] as int?;
+    _lastMessageIndex = map['lastMessageIndex'] as int?;
   }
 
   /// Construct from a map.
@@ -151,6 +163,7 @@ class Conversation {
     return conversation;
   }
 
+  //#region Participants
   Future<bool?> addParticipantByIdentity(String identity) async {
     final result = await TwilioConversations.methodChannel.invokeMethod<bool>(
         'ParticipantsMethods.addParticipantByIdentity',
@@ -158,6 +171,11 @@ class Conversation {
 
     return result;
   }
+
+  // TODO: implement addParticipantByAddress
+  // TODO: implement removeParticipant
+  // TODO: implement getParticipantByIdentity
+  // TODO: implement getParticipantBySid
 
   Future<bool?> removeParticipantByIdentity(String identity) async {
     final result = await TwilioConversations.methodChannel.invokeMethod<bool>(
@@ -176,17 +194,21 @@ class Conversation {
         .toList();
     return participants;
   }
+  //#endregion
 
+  // TODO: `getUsers` not a part of the Conversations SDK, either deprecate, or ensure consistent behaviour across platforms
   Future<List<User>> getUsers() async {
     final result = await TwilioConversations.methodChannel
         .invokeMethod('ParticipantsMethods.getUsers', {'conversationSid': sid});
 
-    var users =
-        result.map<User>((e) => User.fromMap(Map<String, dynamic>.from(e))).toList();
+    var users = result
+        .map<User>((e) => User.fromMap(Map<String, dynamic>.from(e)))
+        .toList();
 
     return users;
   }
 
+  //#region Counts
   Future<int?> getUnreadMessagesCount() async {
     final result = await TwilioConversations.methodChannel.invokeMethod<int>(
         'ConversationMethods.getUnreadMessagesCount', {'conversationSid': sid});
@@ -194,6 +216,11 @@ class Conversation {
     return result;
   }
 
+  //TODO: implement getMessagesCount
+  //TODO: implement getParticipantsCount
+  //#endregion
+
+  //#region Actions
   Future<bool?> join() async {
     final result = await TwilioConversations.methodChannel.invokeMethod<bool>(
         'ConversationMethods.join', {'conversationSid': sid});
@@ -207,6 +234,70 @@ class Conversation {
 
     return result;
   }
+
+  // TODO: implement `destroy`
+
+  /// Indicate that Participant is typing in this conversation.
+  ///
+  /// You should call this method to indicate that a local user is entering a message into current conversation. The typing state is forwarded to users subscribed to this conversation through [Conversation.onTypingStarted] and [Conversation.onTypingEnded] callbacks.
+  /// After approximately 5 seconds after the last [Conversation.typing] call the SDK will emit [Conversation.onTypingEnded] signal.
+  /// One common way to implement this indicator is to call [Conversation.typing] repeatedly in response to key input events.
+  Future<void> typing() async {
+    try {
+      return await TwilioConversations.methodChannel
+          .invokeMethod('ConversationMethods.typing', {'conversationSid': sid});
+    } on PlatformException catch (err) {
+      throw TwilioConversations.convertException(err);
+    }
+  }
+  //#endregion
+
+  //#region Messages
+  Future<Message> sendMessage(MessageOptions options) async {
+    try {
+      final result = await TwilioConversations.methodChannel
+          .invokeMethod('MessagesMethods.sendMessage', {
+        'options': options.toMap(),
+        'conversationSid': sid,
+      });
+
+      return Message.fromMap(Map<String, dynamic>.from(result));
+    } on PlatformException catch (err) {
+      throw TwilioConversations.convertException(err);
+    }
+  }
+
+  //TODO: implement removeMessage
+
+  Future<int> setLastReadMessageIndex(int lastReadMessageIndex) async {
+    try {
+      return await TwilioConversations.methodChannel.invokeMethod(
+          'MessagesMethods.setLastReadMessageIndex', {
+        'conversationSid': sid,
+        'lastReadMessageIndex': lastReadMessageIndex
+      }) as int;
+    } on PlatformException catch (err) {
+      throw TwilioConversations.convertException(err);
+    }
+  }
+
+  //TODO: implement advanceLastReadMessageIndex
+
+  Future<int> setAllMessagesRead() async {
+    if (!hasMessages) {
+      return 0;
+    }
+    try {
+      return await TwilioConversations.methodChannel
+          .invokeMethod('MessagesMethods.setAllMessagesRead', {
+        'conversationSid': sid,
+      }) as int;
+    } on PlatformException catch (err) {
+      throw TwilioConversations.convertException(err);
+    }
+  }
+
+  //TODO: implement setAllMessagesUnread
 
   /// Fetch at most count messages including and prior to the specified index.
   Future<List<Message>> getMessagesBefore({
@@ -234,6 +325,8 @@ class Conversation {
     }
   }
 
+  //TODO: implement getMessagesAfter
+
   Future<List<Message>> getLastMessages(int count) async {
     if (!hasMessages) {
       return [];
@@ -250,49 +343,10 @@ class Conversation {
     return messages;
   }
 
-  Future<Message> sendMessage(String messageBody) async {
-    final messageOptions = MessageOptions()..withBody(messageBody);
+  //TODO: implement getMessageByIndex
+  //#endregion
 
-    final result = await TwilioConversations.methodChannel
-        .invokeMethod('MessagesMethods.sendMessage', {
-      'options': messageOptions.toMap(),
-      'conversationSid': sid,
-    });
-
-    return Message.fromMap(Map<String, dynamic>.from(result));
-  }
-
-  Future<Message> sendAttachment(File attachment) async {
-    final path = mime(attachment.path);
-
-    var messageOptions = MessageOptions();
-    if (path != null) {
-      messageOptions.withMedia(attachment, path);
-    }
-
-    final result = await TwilioConversations.methodChannel
-        .invokeMethod('MessagesMethods.sendMessage', {
-      'options': messageOptions.toMap(),
-      'conversationSid': sid,
-    });
-
-    return Message.fromMap(Map<String, dynamic>.from(result));
-  }
-
-  Future<int> setAllMessagesRead() async {
-    if (!hasMessages) {
-      return 0;
-    }
-    try {
-      return await TwilioConversations.methodChannel
-          .invokeMethod('MessagesMethods.setAllMessagesRead', {
-        'conversationSid': sid,
-      }) as int;
-    } on PlatformException catch (err) {
-      throw TwilioConversations.convertException(err);
-    }
-  }
-
+  //#region Setters
   Future<String> setFriendlyName(String friendlyName) async {
     final result = await TwilioConversations.methodChannel
         .invokeMethod('ConversationMethods.setFriendlyName', {
@@ -304,31 +358,10 @@ class Conversation {
     return friendlyName;
   }
 
-  Future<int> setLastReadMessageIndex(int lastReadMessageIndex) async {
-    try {
-      return await TwilioConversations.methodChannel.invokeMethod(
-          'MessagesMethods.setLastReadMessageIndex', {
-        'conversationSid': sid,
-        'lastReadMessageIndex': lastReadMessageIndex
-      }) as int;
-    } on PlatformException catch (err) {
-      throw TwilioConversations.convertException(err);
-    }
-  }
-
-  /// Indicate that Participant is typing in this conversation.
-  ///
-  /// You should call this method to indicate that a local user is entering a message into current conversation. The typing state is forwarded to users subscribed to this conversation through [Conversation.onTypingStarted] and [Conversation.onTypingEnded] callbacks.
-  /// After approximately 5 seconds after the last [Conversation.typing] call the SDK will emit [Conversation.onTypingEnded] signal.
-  /// One common way to implement this indicator is to call [Conversation.typing] repeatedly in response to key input events.
-  Future<void> typing() async {
-    try {
-      return await TwilioConversations.methodChannel
-          .invokeMethod('ConversationMethods.typing', {'conversationSid': sid});
-    } on PlatformException catch (err) {
-      throw TwilioConversations.convertException(err);
-    }
-  }
+  //TODO: implement setUniqueName
+  //TODO: implement setAttributes
+  //TODO: implement setNotificationLevel
+  //#endregion
 
   /// Parse native channel events to the right event streams.
   void parseEvents(dynamic event) {

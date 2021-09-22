@@ -1,3 +1,20 @@
+/// Represents client initialization status.
+enum ClientSynchronizationStatus {
+  /// [Client] Initialization is started.
+  STARTED,
+
+  /// [Conversation] list initialization is completed.
+  CONVERSATIONS_COMPLETED,
+
+  /// [Client] Initialization completed.
+  COMPLETED,
+
+  /// [Client] Initialization failed.
+  FAILED,
+
+  UNKNOWN,
+}
+
 /// Represents underlying twilsock connection state.
 enum ConnectionState {
   /// Transport is trying to connect and register or trying to recover.

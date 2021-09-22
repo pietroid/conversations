@@ -1,9 +1,9 @@
 import 'package:twilio_conversations/twilio_conversations.dart';
 
 class User {
+  final String _identity;
   Attributes _attributes;
   String? _friendlyName;
-  final String _identity;
   bool _isNotifiable = false;
   bool _isOnline = false;
   bool _isSubscribed = false;
@@ -20,13 +20,11 @@ class User {
   }
 
   /// Return user's online status, if available,
-  // TODO(WLFN): Should probaly be a async method for real time
   bool get isOnline {
     return _isOnline;
   }
 
   /// Return user's push reachability.
-  // TODO(WLFN): Should probaly be a async method for real time
   bool get isNotifiable {
     return _isNotifiable;
   }
@@ -63,6 +61,7 @@ class User {
     return user;
   }
 
+  //TODO: review _updateFromMap usage, and ensure used as needed
   /// Update properties from a map.
   void _updateFromMap(Map<String, dynamic> map) {
     _friendlyName = map['friendlyName'];
@@ -72,16 +71,6 @@ class User {
     _attributes = map['attributes'] != null ? Attributes.fromMap(map['attributes'].cast<String, dynamic>()) : _attributes;
   }
 
-  // factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
-  // Map<String, dynamic> toJson() => _$UserToJson(this);
-
-  // Future<void> unsubscribe() async {
-  //   try {
-  //     // TODO(WLFN): It is still in the [Users.subscribedUsers] list...
-  //     await TwilioConversations.methodChannel
-  //         .invokeMethod('User#unsubscribe', {'identity': _identity});
-  //   } on PlatformException catch (err) {
-  //     throw TwilioConversations.convertException(err);
-  //   }
-  // }
+  //TODO: implement setFriendlyName
+  //TODO: implement setAttributes
 }

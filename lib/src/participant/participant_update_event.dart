@@ -5,7 +5,5 @@ class ParticipantUpdatedEvent {
 
   final ParticipantUpdateReason reason;
 
-  ParticipantUpdatedEvent(this.participant, this.reason)
-      : assert(participant != null),
-        assert(reason != null);
+  ParticipantUpdatedEvent(this.participant, this.reason);
 }

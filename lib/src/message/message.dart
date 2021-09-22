@@ -3,24 +3,28 @@ import 'package:twilio_conversations/twilio_conversations.dart';
 
 class Message {
   final String? sid;
+  final int? messageIndex;
   final String? author;
-  final DateTime? dateCreated;
   final String? subject;
   final String? body;
-  final String conversationSid;
-  final String? participantSid;
-  // final Participant? participant;
-  final int? messageIndex;
   final MessageType type;
   final bool hasMedia;
   final MessageMedia? media;
-  //TODO Does not serialize currently
+  final String conversationSid;
+  final String? participantSid;
+  //TODO: review including Participant - as we are not maintaining a collection of them at the dart layer that we would want to update, simply constructing one may be sufficient. This should continue to remain the case so long as we are not distributing events via a Participant instance
+  // final Participant? participant;
+  final DateTime? dateCreated;
+  final DateTime? dateUpdated;
+  final String? lastUpdatedBy;
   final Attributes? attributes;
 
-  Message(
+  const Message(
     this.sid,
     this.author,
     this.dateCreated,
+    this.dateUpdated,
+    this.lastUpdatedBy,
     this.conversationSid,
     this.subject,
     this.body,
@@ -39,6 +43,8 @@ class Message {
       map['sid'],
       map['author'],
       DateTime.parse(map['dateCreated']),
+      DateTime.parse(map['dateUpdated']),
+      map['lastUpdatedBy'],
       map['conversationSid'],
       map['subject'],
       map['messageBody'],
@@ -57,4 +63,14 @@ class Message {
 
     return message;
   }
+
+  Future<Conversation?> getConversation() async {
+    return TwilioConversations.conversationClient
+        ?.getConversation(conversationSidOrUniqueName: conversationSid);
+  }
+
+  //TODO: implement getAggregatedDeliveryReceipt
+  //TODO: implement getDetailedDeliveryReceiptList
+  //TODO: implement updateMessageBody
+  //TODO: implement setAttributes
 }

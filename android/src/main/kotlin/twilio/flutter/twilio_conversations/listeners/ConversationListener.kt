@@ -82,7 +82,7 @@ class ConversationListener(private val conversationSid: String) : ConversationLi
     }
 
     override fun onSynchronizationChanged(conversation: Conversation) {
-        TwilioConversationsPlugin.debug("ConversationListener.onSynchronizationChanged => conversationSid = ${conversation.sid}")
+        TwilioConversationsPlugin.debug("ConversationListener.onSynchronizationChanged => sid: ${conversation.sid}, status: ${conversation.synchronizationStatus}")
         sendEvent("synchronizationChanged", mapOf(
             "conversationSid" to conversationSid,
             "conversation" to Mapper.conversationToMap(conversation)))

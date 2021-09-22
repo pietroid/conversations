@@ -64,6 +64,8 @@ object Mapper {
                 "sid" to message.sid,
                 "author" to message.author,
                 "dateCreated" to dateToString(message.dateCreatedAsDate),
+                "dateUpdated" to dateToString(message.dateUpdatedAsDate),
+                "lastUpdatedBy" to message.lastUpdatedBy,
                 "subject" to message.subject,
                 "messageBody" to message.messageBody,
                 "conversationSid" to message.conversation.sid,
@@ -129,8 +131,8 @@ object Mapper {
                 "type" to message.mediaType,
                 "size" to message.mediaSize,
                 "conversationSid" to message.conversationSid,
-                "messageIndex" to message.messageIndex
-
+                "messageIndex" to message.messageIndex,
+                "messageSid" to message.sid
         )
     }
 

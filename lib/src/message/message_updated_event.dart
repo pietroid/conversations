@@ -5,7 +5,5 @@ class MessageUpdatedEvent {
 
   final MessageUpdateReason reason;
 
-  MessageUpdatedEvent(this.message, this.reason)
-      : assert(message != null),
-        assert(reason != null);
+  MessageUpdatedEvent(this.message, this.reason);
 }

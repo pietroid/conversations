@@ -7,42 +7,12 @@ public class ConversationListener: NSObject, TCHConversationDelegate {
     init(_ conversationSid: String) {
         self.conversationSid = conversationSid
     }
-    
-    // onConversationDeleted
-    public func conversationsClient(_ client: TwilioConversationsClient, conversationDeleted conversation: TCHConversation) {
-        SwiftTwilioConversationsPlugin.debug(
-            "ConversationListener.onConversationDeleted => conversationSid = \(String(describing: conversation.sid))")
-        sendEvent("conversationDeleted", data: [
-            "conversationSid": conversationSid,
-            "conversation": Mapper.conversationToDict(conversation) as Any
-        ])
-    }
-    
-    // onConversationUpdated
-    public func conversationsClient(_ client: TwilioConversationsClient, conversation: TCHConversation, updated: TCHConversationUpdate) {
-        SwiftTwilioConversationsPlugin.debug(
-            "ConversationListener.onConversationUpdated => conversationSid = \(String(describing: conversation.sid))")
-        sendEvent("conversationUpdated", data: [
-            "conversationSid": conversationSid,
-            "conversation": Mapper.conversationToDict(conversation) as Any
-        ])
-    }
-    
+
     // onMessageAdded
     public func conversationsClient(_ client: TwilioConversationsClient, conversation: TCHConversation, messageAdded message: TCHMessage) {
         SwiftTwilioConversationsPlugin.debug(
             "ConversationListener.onMessageAdded => messageSid = \(String(describing: message.sid))")
         sendEvent("messageAdded", data: [
-            "conversationSid": conversationSid,
-            "message": Mapper.messageToDict(message, conversationSid: conversation.sid)
-        ])
-    }
-    
-    // onMessageDeleted
-    public func conversationsClient(_ client: TwilioConversationsClient, conversation: TCHConversation, messageDeleted message: TCHMessage) {
-        SwiftTwilioConversationsPlugin.debug(
-            "ConversationListener.onMessageDeleted => messageSid = \(String(describing: message.sid))")
-        sendEvent("messageDeleted", data: [
             "conversationSid": conversationSid,
             "message": Mapper.messageToDict(message, conversationSid: conversation.sid)
         ])
@@ -63,16 +33,16 @@ public class ConversationListener: NSObject, TCHConversationDelegate {
         ])
     }
 
-    // onParticipantDeleted
-    public func conversationsClient(_ client: TwilioConversationsClient, conversation: TCHConversation, participantLeft participant: TCHParticipant) {
+    // onMessageDeleted
+    public func conversationsClient(_ client: TwilioConversationsClient, conversation: TCHConversation, messageDeleted message: TCHMessage) {
         SwiftTwilioConversationsPlugin.debug(
-            "ConversationListener.onParticipantDeleted => participantSid = \(String(describing: participant.sid))")
-        sendEvent("participantDeleted", data: [
+            "ConversationListener.onMessageDeleted => messageSid = \(String(describing: message.sid))")
+        sendEvent("messageDeleted", data: [
             "conversationSid": conversationSid,
-            "participant": Mapper.participantToDict(participant, conversationSid: conversation.sid) as Any
+            "message": Mapper.messageToDict(message, conversationSid: conversation.sid)
         ])
     }
-    
+
     // onParticipantAdded
     public func conversationsClient(_ client: TwilioConversationsClient, conversation: TCHConversation, participantJoined participant: TCHParticipant) {
         SwiftTwilioConversationsPlugin.debug(
@@ -82,7 +52,7 @@ public class ConversationListener: NSObject, TCHConversationDelegate {
             "participant": Mapper.participantToDict(participant, conversationSid: conversation.sid) as Any
         ])
     }
-    
+
     // onParticipantUpdated
     public func conversationsClient(_ client: TwilioConversationsClient, conversation: TCHConversation, participant: TCHParticipant, updated: TCHParticipantUpdate) {
         SwiftTwilioConversationsPlugin.debug(
@@ -97,15 +67,13 @@ public class ConversationListener: NSObject, TCHConversationDelegate {
             ]
         ])
     }
-    
-    // onTypingEnded
-    public func conversationsClient(_ client: TwilioConversationsClient, typingEndedOn conversation: TCHConversation, participant: TCHParticipant) {
+
+    // onParticipantDeleted
+    public func conversationsClient(_ client: TwilioConversationsClient, conversation: TCHConversation, participantLeft participant: TCHParticipant) {
         SwiftTwilioConversationsPlugin.debug(
-            "ConversationListener.onTypingEnded => conversationSid = \(String(describing: conversation.sid)), " +
-                "participantSid = \(String(describing: participant.sid))")
-        sendEvent("typingEnded", data: [
+            "ConversationListener.onParticipantDeleted => participantSid = \(String(describing: participant.sid))")
+        sendEvent("participantDeleted", data: [
             "conversationSid": conversationSid,
-            "conversation": Mapper.conversationToDict(conversation) as Any,
             "participant": Mapper.participantToDict(participant, conversationSid: conversation.sid) as Any
         ])
     }
@@ -121,30 +89,29 @@ public class ConversationListener: NSObject, TCHConversationDelegate {
             "participant": Mapper.participantToDict(participant, conversationSid: conversation.sid) as Any
         ])
     }
-    
+
+    // onTypingEnded
+    public func conversationsClient(_ client: TwilioConversationsClient, typingEndedOn conversation: TCHConversation, participant: TCHParticipant) {
+        SwiftTwilioConversationsPlugin.debug(
+            "ConversationListener.onTypingEnded => conversationSid = \(String(describing: conversation.sid)), " +
+                "participantSid = \(String(describing: participant.sid))")
+        sendEvent("typingEnded", data: [
+            "conversationSid": conversationSid,
+            "conversation": Mapper.conversationToDict(conversation) as Any,
+            "participant": Mapper.participantToDict(participant, conversationSid: conversation.sid) as Any
+        ])
+    }
+
     // onSynchronizationChanged
     public func conversationsClient(_ client: TwilioConversationsClient, conversation: TCHConversation, synchronizationStatusUpdated status: TCHConversationSynchronizationStatus) {
         SwiftTwilioConversationsPlugin.debug(
-            "ConversationListener.onSynchronizationChanged => conversationSid = \(String(describing: conversation.sid))")
+            "ConversationListener.onSynchronizationChanged => sid: \(String(describing: conversation.sid)), status: \(Mapper.conversationSynchronizationStatusToString(conversation.synchronizationStatus))")
         sendEvent("synchronizationChanged", data: [
             "conversationSid": conversationSid,
             "conversation": Mapper.conversationToDict(conversation) as Any
         ])
     }
-    
-    //TODO figure out what these listeners are for. Are they duplicates of the ones in ClientListener
-    public func conversationsClient(_ client: TwilioConversationsClient, conversation: TCHConversation, participant: TCHParticipant, userSubscribed user: TCHUser) {
-        print("conversation.userSubscribed() [NOT IMPLEMENTED]")
-    }
-    
-    public func conversationsClient(_ client: TwilioConversationsClient, conversation: TCHConversation, participant: TCHParticipant, userUnsubscribed user: TCHUser) {
-        print("conversation.userUnsubscribed() [NOT IMPLEMENTED]")
-    }
-    
-    public func conversationsClient(_ client: TwilioConversationsClient, conversation: TCHConversation, participant: TCHParticipant, user: TCHUser, updated: TCHUserUpdate) {
-        print("conversation.userUpdated() [NOT IMPLEMENTED]")
-    }
-    
+
     private func sendEvent(_ name: String, data: [String: Any]? = nil, error: Error? = nil) {
         let eventData =
             [
@@ -156,5 +123,29 @@ public class ConversationListener: NSObject, TCHConversationDelegate {
         if let events = SwiftTwilioConversationsPlugin.conversationSink {
             events(eventData)
         }
+    }
+
+    // The ConversationListener Protocol for iOS duplicates some of the events
+    // that are provided via the ClientListener protocol on both Android and iOS.
+    // In the interest of functional parity and avoid duplicate notifications,
+    // we will not notify the dart layer of such event from the ConversationListener.
+    public func conversationsClient(_ client: TwilioConversationsClient, conversation: TCHConversation, participant: TCHParticipant, userSubscribed user: TCHUser) {
+        // userSubscribed
+    }
+
+    public func conversationsClient(_ client: TwilioConversationsClient, conversation: TCHConversation, participant: TCHParticipant, userUnsubscribed user: TCHUser) {
+        // userUnsubscribed
+    }
+
+    public func conversationsClient(_ client: TwilioConversationsClient, conversation: TCHConversation, participant: TCHParticipant, user: TCHUser, updated: TCHUserUpdate) {
+        // userUpdated
+    }
+
+    public func conversationsClient(_ client: TwilioConversationsClient, conversationDeleted conversation: TCHConversation) {
+        // onConversationDeleted
+    }
+
+    public func conversationsClient(_ client: TwilioConversationsClient, conversation: TCHConversation, updated: TCHConversationUpdate) {
+        // onConversationUpdated
     }
 }
