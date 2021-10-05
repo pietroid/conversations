@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/services.dart';
+import 'package:twilio_conversations/api.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
 
 class ConversationClient {
@@ -205,9 +206,7 @@ class ConversationClient {
   /// Updates the authentication token for this client.
   Future<void> updateToken(String token) async {
     try {
-      return await TwilioConversations.methodChannel.invokeMethod(
-          'ConversationClientMethods.updateToken',
-          <String, Object>{'token': token});
+      return TwilioConversations.conversationsClientApi.updateToken(token);
     } on PlatformException catch (err) {
       throw TwilioConversations.convertException(err);
     }
@@ -222,31 +221,33 @@ class ConversationClient {
       await _conversationStream.cancel();
       await _notificationStream.cancel();
       TwilioConversations.conversationClient = null;
-      return await TwilioConversations.methodChannel
-          .invokeMethod('ConversationClientMethods.shutdown', null);
+      await TwilioConversations.conversationsClientApi.shutdown();
     } on PlatformException catch (err) {
       throw TwilioConversations.convertException(err);
     }
   }
 
+  // TODO: test push notification registration/deregistration and delivery
   /// Registers for push notifications. Uses APNs on iOS and FCM on Android.
   ///
   /// Twilio iOS SDK handles receiving messages when app is in the background and displaying
   /// notifications.
-  Future<void> registerForNotification(String token) async {
+  Future<void> registerForNotification(String? token) async {
     try {
-      await TwilioConversations.methodChannel.invokeMethod(
-          'registerForNotification', <String, Object>{'token': token});
+      final tokenData = TokenData()..token = token;
+      await TwilioConversations.conversationsClientApi
+          .registerForNotification(tokenData);
     } on PlatformException catch (err) {
       throw TwilioConversations.convertException(err);
     }
   }
 
   /// Unregisters for push notifications.  Uses APNs on iOS and FCM on Android.
-  Future<void> unregisterForNotification(String token) async {
+  Future<void> unregisterForNotification(String? token) async {
     try {
-      await TwilioConversations.methodChannel.invokeMethod(
-          'unregisterForNotification', <String, Object>{'token': token});
+      final tokenData = TokenData()..token = token;
+      await TwilioConversations.conversationsClientApi
+          .unregisterForNotification(tokenData);
     } on PlatformException catch (err) {
       throw TwilioConversations.convertException(err);
     }
@@ -255,29 +256,36 @@ class ConversationClient {
   //#region Conversations
   Future<Conversation?> createConversation(
       {required String friendlyName}) async {
-    final result = await TwilioConversations.methodChannel.invokeMethod(
-        'ConversationsMethods.createConversation',
-        {'friendlyName': friendlyName});
-    final conversationMap = Map<String, dynamic>.from(result);
-    updateConversationFromMap(conversationMap);
-    return conversations[conversationMap['sid']];
+    final result = await TwilioConversations.conversationsClientApi
+        .createConversation(friendlyName);
+    if (result.sid == null) {
+      return null;
+    }
+
+    updateConversationFromMap(
+        Map<String, dynamic>.from(result.encode() as Map));
+    return conversations[result.sid];
   }
 
   Future<Conversation?> getConversation(
       {required String conversationSidOrUniqueName}) async {
-    final result = await TwilioConversations.methodChannel.invokeMethod(
-        'ConversationsMethods.getConversation',
-        {'conversationSidOrUniqueName': conversationSidOrUniqueName});
-    final conversationMap = Map<String, dynamic>.from(result);
+    final result = await TwilioConversations.conversationsClientApi
+        .getConversation(conversationSidOrUniqueName);
+    final conversationMap = Map<String, dynamic>.from(result.encode() as Map);
     updateConversationFromMap(conversationMap);
-    return conversations[conversationMap['sid']];
+    return conversations[result.sid];
   }
 
   Future<List<Conversation>> getMyConversations() async {
-    final result = await TwilioConversations.methodChannel
-        .invokeMethod('ConversationsMethods.getMyConversations');
-    final conversationsMapList =
-        result.map((c) => Map<String, dynamic>.from(c)).toList();
+    final result =
+        await TwilioConversations.conversationsClientApi.getMyConversations();
+
+    final conversationsMapList = result
+        .whereType<
+            ConversationData>() // converts list contents type to non-nullable
+        .map((ConversationData c) =>
+            Map<String, dynamic>.from(c.encode() as Map))
+        .toList();
 
     conversationsMapList.forEach((element) {
       updateConversationFromMap(element);
@@ -286,7 +294,7 @@ class ConversationClient {
     return conversations.values.toList();
   }
 
-  // TODO: Should not be publicly accessible
+  // // TODO: Should not be publicly accessible
   void updateConversationFromMap(Map<String, dynamic> map) {
     var sid = map['sid'] as String;
     if (conversations[sid] == null) {
@@ -497,13 +505,12 @@ class ConversationClient {
     final eventName = eventMap['name'] as String;
     TwilioConversations.log(
         'ConversationClient => Event \'$eventName\' => ${eventMap['data']}, error: ${eventMap['error']}');
-    final data =
-        Map<String, dynamic>.from(eventMap['data'] as Map<String, dynamic>);
+
+    final data = Map<String, dynamic>.from(eventMap['data']);
 
     ErrorInfo? exception;
     if (eventMap['error'] != null) {
-      final errorMap =
-          Map<String, dynamic>.from(eventMap['error'] as Map<dynamic, dynamic>);
+      final errorMap = Map<String, dynamic>.from(eventMap['error']);
       exception = ErrorInfo(errorMap['code'] as int,
           errorMap['message'] as String, errorMap['status'] as int);
     }

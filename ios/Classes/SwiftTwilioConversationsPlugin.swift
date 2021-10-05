@@ -4,6 +4,13 @@ import TwilioConversationsClient
 
 public class SwiftTwilioConversationsPlugin: NSObject, FlutterPlugin {
     public static var instance: SwiftTwilioConversationsPlugin?
+
+    static let pluginApi: PluginMethods = PluginMethods()
+    static let conversationClientApi: ConversationClientMethods = ConversationClientMethods()
+    static let conversationApi: ConversationMethods = ConversationMethods()
+    static let participantApi: ParticipantMethods = ParticipantMethods()
+    static let messageApi: MessageMethods = MessageMethods()
+    
     public static var loggingSink: FlutterEventSink?
     public static var notificationSink: FlutterEventSink?
     
@@ -14,7 +21,7 @@ public class SwiftTwilioConversationsPlugin: NSObject, FlutterPlugin {
     public static var conversationListeners: [String: ConversationListener] = [:]
     
     public static var messenger: FlutterBinaryMessenger?
-    private var methodChannel: FlutterMethodChannel?
+
     private var clientChannel: FlutterEventChannel?
     private var conversationChannel: FlutterEventChannel?
     private var loggingChannel: FlutterEventChannel?
@@ -41,9 +48,12 @@ public class SwiftTwilioConversationsPlugin: NSObject, FlutterPlugin {
     
     public func onRegister(_ registrar: FlutterPluginRegistrar) {
         SwiftTwilioConversationsPlugin.messenger = registrar.messenger()
-        let pluginHandler = PluginHandler()
-        methodChannel = FlutterMethodChannel(name: "twilio_conversations", binaryMessenger: registrar.messenger())
-        methodChannel?.setMethodCallHandler(pluginHandler.handle)
+
+        TWCONPluginApiSetup(registrar.messenger(),SwiftTwilioConversationsPlugin.pluginApi)
+        TWCONConversationClientApiSetup(registrar.messenger(), SwiftTwilioConversationsPlugin.conversationClientApi)
+        TWCONConversationApiSetup(registrar.messenger(), SwiftTwilioConversationsPlugin.conversationApi)
+        TWCONParticipantApiSetup(registrar.messenger(), SwiftTwilioConversationsPlugin.participantApi)
+        TWCONMessageApiSetup(registrar.messenger(), SwiftTwilioConversationsPlugin.messageApi)
 
         clientChannel = FlutterEventChannel(name: "twilio_conversations/client", binaryMessenger: registrar.messenger())
         clientChannel?.setStreamHandler(ClientStreamHandler())
@@ -62,33 +72,6 @@ public class SwiftTwilioConversationsPlugin: NSObject, FlutterPlugin {
         registrar.addApplicationDelegate(self)
     }
 
-    public func registerForNotification(_ call: FlutterMethodCall, _ flutterResult: @escaping FlutterResult) {
-        if #available(iOS 10.0, *) {
-            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { (granted: Bool, _: Error?) in
-                SwiftTwilioConversationsPlugin.debug("User responded to permissions request: \(granted)")
-                if granted {
-                    DispatchQueue.main.async {
-                        SwiftTwilioConversationsPlugin.debug("Requesting APNS token")
-                        SwiftTwilioConversationsPlugin.reasonForTokenRetrieval = "register"
-                        UIApplication.shared.registerForRemoteNotifications()
-                    }
-                }
-            }
-        }
-        flutterResult(nil)
-    }
-
-    public func unregisterForNotification(_ call: FlutterMethodCall, _ flutterResult: @escaping FlutterResult) {
-        if #available(iOS 10.0, *) {
-            DispatchQueue.main.async {
-                SwiftTwilioConversationsPlugin.debug("Requesting APNS token")
-                SwiftTwilioConversationsPlugin.reasonForTokenRetrieval = "deregister"
-                UIApplication.shared.registerForRemoteNotifications()
-            }
-        }
-        flutterResult(nil)
-    }
-    
     public func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         SwiftTwilioConversationsPlugin.debug("didRegisterForRemoteNotificationsWithDeviceToken => onSuccess: \((deviceToken as NSData).description)")
                 if let reason = SwiftTwilioConversationsPlugin.reasonForTokenRetrieval {

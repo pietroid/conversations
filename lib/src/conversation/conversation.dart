@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/services.dart';
+import 'package:collection/collection.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
 
 class Conversation {
@@ -165,9 +166,8 @@ class Conversation {
 
   //#region Participants
   Future<bool?> addParticipantByIdentity(String identity) async {
-    final result = await TwilioConversations.methodChannel.invokeMethod<bool>(
-        'ParticipantsMethods.addParticipantByIdentity',
-        {'identity': identity, 'conversationSid': sid});
+    final result = await TwilioConversations.conversationApi
+        .addParticipantByIdentity(sid, identity);
 
     return result;
   }
@@ -178,64 +178,58 @@ class Conversation {
   // TODO: implement getParticipantBySid
 
   Future<bool?> removeParticipantByIdentity(String identity) async {
-    final result = await TwilioConversations.methodChannel.invokeMethod<bool>(
-        'ParticipantsMethods.removeParticipantByIdentity',
-        {'identity': identity, 'conversationSid': sid});
+    final result = await TwilioConversations.conversationApi
+        .removeParticipantByIdentity(sid, identity);
 
     return result;
   }
 
   Future<List<Participant>> getParticipantsList() async {
-    final result = await TwilioConversations.methodChannel.invokeMethod(
-        'ParticipantsMethods.getParticipantsList', {'conversationSid': sid});
+    final result =
+        await TwilioConversations.conversationApi.getParticipantsList(sid);
 
     var participants = List.from(result)
-        .map((e) => Participant.fromMap(Map<String, dynamic>.from(e)))
+        .map((e) =>
+            Participant.fromMap(Map<String, dynamic>.from(e.encode() as Map)))
         .toList();
     return participants;
   }
   //#endregion
 
-  // TODO: `getUsers` not a part of the Conversations SDK, either deprecate, or ensure consistent behaviour across platforms
-  Future<List<User>> getUsers() async {
-    final result = await TwilioConversations.methodChannel
-        .invokeMethod('ParticipantsMethods.getUsers', {'conversationSid': sid});
-
-    var users = result
-        .map<User>((e) => User.fromMap(Map<String, dynamic>.from(e)))
-        .toList();
-
-    return users;
-  }
-
   //#region Counts
-  Future<int?> getUnreadMessagesCount() async {
-    final result = await TwilioConversations.methodChannel.invokeMethod<int>(
-        'ConversationMethods.getUnreadMessagesCount', {'conversationSid': sid});
+  Future<int?> getMessagesCount() async {
+    final result =
+        await TwilioConversations.conversationApi.getMessagesCount(sid);
 
-    return result;
+    return result.count;
   }
 
-  //TODO: implement getMessagesCount
+  Future<int?> getUnreadMessagesCount() async {
+    final result =
+        await TwilioConversations.conversationApi.getUnreadMessagesCount(sid);
+
+    return result.count;
+  }
+
   //TODO: implement getParticipantsCount
   //#endregion
 
   //#region Actions
   Future<bool?> join() async {
-    final result = await TwilioConversations.methodChannel.invokeMethod<bool>(
-        'ConversationMethods.join', {'conversationSid': sid});
+    final result = await TwilioConversations.conversationApi.join(sid);
 
     return result;
   }
 
   Future<bool?> leave() async {
-    final result = await TwilioConversations.methodChannel.invokeMethod<bool>(
-        'ConversationMethods.leave', {'conversationSid': sid});
+    final result = await TwilioConversations.conversationApi.leave(sid);
 
     return result;
   }
 
-  // TODO: implement `destroy`
+  Future<void> destroy() async {
+    return TwilioConversations.conversationApi.destroy(sid);
+  }
 
   /// Indicate that Participant is typing in this conversation.
   ///
@@ -244,8 +238,7 @@ class Conversation {
   /// One common way to implement this indicator is to call [Conversation.typing] repeatedly in response to key input events.
   Future<void> typing() async {
     try {
-      return await TwilioConversations.methodChannel
-          .invokeMethod('ConversationMethods.typing', {'conversationSid': sid});
+      return TwilioConversations.conversationApi.typing(sid);
     } on PlatformException catch (err) {
       throw TwilioConversations.convertException(err);
     }
@@ -255,13 +248,11 @@ class Conversation {
   //#region Messages
   Future<Message> sendMessage(MessageOptions options) async {
     try {
-      final result = await TwilioConversations.methodChannel
-          .invokeMethod('MessagesMethods.sendMessage', {
-        'options': options.toMap(),
-        'conversationSid': sid,
-      });
+      final optionsData = options.toPigeon();
+      final result = await TwilioConversations.conversationApi
+          .sendMessage(sid, optionsData);
 
-      return Message.fromMap(Map<String, dynamic>.from(result));
+      return Message.fromMap(Map<String, dynamic>.from(result.encode() as Map));
     } on PlatformException catch (err) {
       throw TwilioConversations.convertException(err);
     }
@@ -271,11 +262,10 @@ class Conversation {
 
   Future<int> setLastReadMessageIndex(int lastReadMessageIndex) async {
     try {
-      return await TwilioConversations.methodChannel.invokeMethod(
-          'MessagesMethods.setLastReadMessageIndex', {
-        'conversationSid': sid,
-        'lastReadMessageIndex': lastReadMessageIndex
-      }) as int;
+      final result = await TwilioConversations.conversationApi
+          .setLastReadMessageIndex(sid, lastReadMessageIndex);
+// TODO: decide if defaulting to 0 makes sense as `null` could indicate action that needs to be taken
+      return result.index ?? 0;
     } on PlatformException catch (err) {
       throw TwilioConversations.convertException(err);
     }
@@ -288,10 +278,9 @@ class Conversation {
       return 0;
     }
     try {
-      return await TwilioConversations.methodChannel
-          .invokeMethod('MessagesMethods.setAllMessagesRead', {
-        'conversationSid': sid,
-      }) as int;
+      final result =
+          await TwilioConversations.conversationApi.setAllMessagesRead(sid);
+      return result.index ?? 0;
     } on PlatformException catch (err) {
       throw TwilioConversations.convertException(err);
     }
@@ -308,15 +297,13 @@ class Conversation {
       return [];
     }
     try {
-      final result = await TwilioConversations.methodChannel
-          .invokeMethod('MessagesMethods.getMessagesBefore', {
-        'index': index,
-        'count': count,
-        'conversationSid': sid,
-      });
+      final result = await TwilioConversations.conversationApi
+          .getMessagesBefore(sid, index, count);
 
       final messages = result
-          .map<Message>((i) => Message.fromMap(Map<String, dynamic>.from(i)))
+          .whereNotNull()
+          .map<Message>((i) =>
+              Message.fromMap(Map<String, dynamic>.from(i.encode() as Map)))
           .toList();
 
       return messages;
@@ -331,15 +318,15 @@ class Conversation {
     if (!hasMessages) {
       return [];
     }
-    final result = await TwilioConversations.methodChannel
-        .invokeMethod('MessagesMethods.getLastMessages', {
-      'count': count,
-      'conversationSid': sid,
-    });
+    final result =
+        await TwilioConversations.conversationApi.getLastMessages(sid, count);
 
-    var messages = result
-        .map((e) => Message.fromMap(Map<String, dynamic>.from(e)))
+    final messages = result
+        .whereNotNull()
+        .map<Message>((i) =>
+            Message.fromMap(Map<String, dynamic>.from(i.encode() as Map)))
         .toList();
+
     return messages;
   }
 
@@ -348,11 +335,8 @@ class Conversation {
 
   //#region Setters
   Future<String> setFriendlyName(String friendlyName) async {
-    final result = await TwilioConversations.methodChannel
-        .invokeMethod('ConversationMethods.setFriendlyName', {
-      'conversationSid': sid,
-      'friendlyName': friendlyName,
-    });
+    final result = await TwilioConversations.conversationApi
+        .setFriendlyName(sid, friendlyName);
 
     this.friendlyName = result.toString();
     return friendlyName;

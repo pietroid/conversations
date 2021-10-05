@@ -1,15 +1,31 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'package:twilio_conversations/api.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
 
 class TwilioConversations {
   factory TwilioConversations() => _instance;
   static final TwilioConversations _instance = TwilioConversations._();
+
+  static final _pluginApi = PluginApi();
+  static PluginApi get pluginApi => _pluginApi;
+
+  static final _conversationsClientApi = ConversationClientApi();
+  static ConversationClientApi get conversationsClientApi =>
+      _conversationsClientApi;
+
+  static final _conversationApi = ConversationApi();
+  static ConversationApi get conversationApi => _conversationApi;
+
+  static final _participantApi = ParticipantApi();
+  static ParticipantApi get participantApi => _participantApi;
+
+  static final _messageApi = MessageApi();
+  static MessageApi get messageApi => _messageApi;
+
   TwilioConversations._();
 
-  static const MethodChannel methodChannel =
-      MethodChannel('twilio_conversations');
   static const EventChannel clientChannel =
       EventChannel('twilio_conversations/client');
   static const EventChannel conversationChannel =
@@ -44,8 +60,7 @@ class TwilioConversations {
       await _clientListener?.cancel();
       final result;
       try {
-        result =
-            await methodChannel.invokeMethod('create', {'jwtToken': jwtToken});
+        result = await pluginApi.create(jwtToken);
 
         if (result == null) {
           conversationClient = null;
@@ -53,7 +68,7 @@ class TwilioConversations {
               Exception('Unknown error creating ConversationClient'));
         }
 
-        conversationClient?.updateFromMap(Map<String, dynamic>.from(result));
+        conversationClient?.updateFromMap(Map<String, dynamic>.from(result.encode() as Map));
         completer.complete(conversationClient);
       } catch (e) {
         completer.completeError(e);
@@ -63,6 +78,7 @@ class TwilioConversations {
     return completer.future;
   }
 
+  //TODO: review error throwing/parsing from the native layer to this one
   static Exception convertException(PlatformException err) {
     var code = int.tryParse(err.code);
     // If code is an integer, then it is a Twilio ErrorInfo exception.
@@ -96,7 +112,7 @@ class TwilioConversations {
   }) async {
     _dartDebug = dart;
     try {
-      await methodChannel.invokeMethod('debug', {'native': native, 'sdk': sdk});
+      await pluginApi.debug(native, sdk);
     } catch (e) {
       TwilioConversations.log(
           'TwilioConversations::debug => Caught Exception: $e');

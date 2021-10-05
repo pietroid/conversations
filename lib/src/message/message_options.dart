@@ -1,11 +1,13 @@
 import 'dart:io';
 
+import 'package:enum_to_string/enum_to_string.dart';
+import 'package:twilio_conversations/api.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
 
 class MessageOptions {
   //#region Private API properties
   String? body;
-  Map<String, dynamic>? attributes;
+  Attributes? attributes;
   String? mimeType;
   String? filename;
   String? inputPath;
@@ -27,7 +29,7 @@ class MessageOptions {
   }
 
   /// Set new message attributes.
-  void withAttributes(Map<String, dynamic> attributes) {
+  void withAttributes(Attributes attributes) {
     this.attributes = attributes;
   }
 
@@ -47,14 +49,16 @@ class MessageOptions {
     this.filename = filename;
   }
 
-  //TODO
+  //TODO implement and test withMediaProgressListener
   void withMediaProgressListener({
     void Function()? onStarted,
     void Function(int bytes)? onProgress,
     void Function(String mediaSid)? onCompleted,
   }) {
     _mediaProgressListenerId = DateTime.now().millisecondsSinceEpoch;
-    TwilioConversations.mediaProgressChannel.receiveBroadcastStream().listen((dynamic event) {
+    TwilioConversations.mediaProgressChannel
+        .receiveBroadcastStream()
+        .listen((dynamic event) {
       var eventData = Map<String, dynamic>.from(event);
       if (eventData['mediaProgressListenerId'] == _mediaProgressListenerId) {
         switch (eventData['name']) {
@@ -79,15 +83,19 @@ class MessageOptions {
   }
   //#endregion
 
-  /// Create map from properties.
-  Map<String, dynamic> toMap() {
-    return {
-      'body': body,
-      'attributes': attributes,
-      'input': inputPath,
-      'mimeType': mimeType,
-      'filename': filename,
-      'mediaProgressListenerId': _mediaProgressListenerId,
-    };
+  // TODO: should be internal, or package-private only
+  MessageOptionsData toPigeon() {
+    final attributesData = AttributesData()
+      ..type =
+          EnumToString.convertToString(attributes?.type ?? AttributesType.NULL)
+      ..data = attributes?.data;
+    final optionsData = MessageOptionsData()
+      ..body = body
+      ..attributes = attributesData
+      ..inputPath = inputPath
+      ..mimeType = mimeType
+      ..filename = filename
+      ..mediaProgressListenerId = _mediaProgressListenerId;
+    return optionsData;
   }
 }

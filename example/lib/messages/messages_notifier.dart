@@ -1,5 +1,13 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+import 'package:mime_type/mime_type.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
 
 class MessagesNotifier extends ChangeNotifier {
@@ -12,35 +20,48 @@ class MessagesNotifier extends ChangeNotifier {
 
   final limit = 20;
   Conversation conversation;
+  ConversationClient client;
   List<Message> messages = [];
-  bool _areAllMessagesRetrieved = false;
+  List<Participant>? participants;
   var startingIndex = 0;
   var currentlyTyping = <String>{};
+  final subscriptions = <StreamSubscription>[];
+  final messageMedia = <String, Uint8List>{};
 
-  MessagesNotifier(this.conversation) {
+  MessagesNotifier(this.conversation, this.client) {
     messageInputTextController.addListener(notifyListeners);
-    listScrollController.addListener(onListScrolled);
 
     messageInputTextController.addListener(conversation.typing);
 
     startingIndex = conversation.lastMessageIndex ?? 0;
-    conversation.onMessageAdded.listen((message) {
+    subscriptions.add(conversation.onMessageAdded.listen((message) {
       messages.insert(0, message);
-    });
-    conversation.onTypingStarted.listen((event) {
+      final messageIndex = message.messageIndex;
+      if (messageIndex != null) {
+        conversation.setLastReadMessageIndex(messageIndex);
+      }
+
+      if (message.type == MessageType.MEDIA) {
+        _getMedia(message);
+      }
+    }));
+    subscriptions.add(conversation.onTypingStarted.listen((event) {
       final identity = event.participant.identity;
       if (identity != null) {
         currentlyTyping.add(identity);
         notifyListeners();
       }
-    });
-    conversation.onTypingEnded.listen((event) {
+    }));
+    subscriptions.add(conversation.onTypingEnded.listen((event) {
       final identity = event.participant.identity;
       if (identity != null) {
         currentlyTyping.remove(identity);
         notifyListeners();
       }
-    });
+    }));
+    subscriptions.add(client.onConversationUpdated.listen((event) {
+      notifyListeners();
+    }));
   }
 
   void init() {
@@ -50,40 +71,84 @@ class MessagesNotifier extends ChangeNotifier {
 
   Future addUserByIdentity(String identity) async {
     await conversation.addParticipantByIdentity(identity);
+    await getParticipants();
     notifyListeners();
+  }
+
+  Future<void> getParticipants() async {
+    participants = await conversation.getParticipantsList();
+    if (participants?.isNotEmpty ?? false) {
+      final user = await participants?.first.getUser();
+      print('MessagesNotifier::getParticipants => gotUser: $user');
+    }
+    // artificial delay
+    Timer(Duration(seconds: 3), notifyListeners);
+  }
+
+  Future<void> removeParticipant(Participant participant) async {
+    final uIdentity = participant.identity;
+    if (uIdentity != null) {
+      await conversation.removeParticipantByIdentity(uIdentity);
+      await getParticipants();
+    }
+  }
+
+  Future<void> setFriendlyName(String name) async {
+    await conversation.setFriendlyName(name);
+    notifyListeners();
+  }
+
+  Future<void> destroy() async {
+    return conversation.destroy();
   }
 
   void reset() {
     messages = [];
     isLoading = false;
-    _areAllMessagesRetrieved = false;
     startingIndex = 0;
+  }
+
+  bool hasMedia(String messageSid) {
+    return messageMedia[messageSid] != null;
+  }
+
+  Uint8List? media(String messageSid) {
+    return messageMedia[messageSid];
+  }
+
+  Future _getMedia(Message message) async {
+    print('_getMedia => message: ${message.sid}');
+    final url = await message.getMediaUrl();
+    if (url != null) {
+      final uri = Uri.parse(url);
+      final response = await http.get(uri);
+      messageMedia[message.sid!] = response.bodyBytes;
+      print('_getMedia => url: $url');
+      notifyListeners();
+    }
   }
 
   void refetchAfterError() {
     init();
   }
 
-  void onListScrolled() {
-    if (listScrollController.offset >
-        listScrollController.position.maxScrollExtent - 100) {
-      if (!isLoading && !_areAllMessagesRetrieved) {
-        fetchMore();
-      }
-    }
-  }
-
   void fetchMore() async {
     isLoading = true;
     notifyListeners();
 
-    final index = startingIndex - messages.length;
-    final nextMessages =
-        await conversation.getMessagesBefore(index: index, count: limit);
+    final numberOfMessages = await conversation.getMessagesCount();
+    if (numberOfMessages != null) {
+      final nextMessages = await conversation.getLastMessages(numberOfMessages);
 
-    _areAllMessagesRetrieved = nextMessages.length < limit;
-    messages.addAll(nextMessages.reversed);
+      messages.addAll(nextMessages.reversed);
+      messages.forEach((message) {
+        if (message.type == MessageType.MEDIA) {
+          _getMedia(message);
+        }
+      });
+    }
 
+    await conversation.setAllMessagesRead();
     isLoading = false;
     notifyListeners();
   }
@@ -97,8 +162,16 @@ class MessagesNotifier extends ChangeNotifier {
 
     Message? message;
     try {
+      // set arbitrary attributes
+      final attributesData = <String, dynamic>{
+        'name': 'test',
+        'arbitraryNumber': -13,
+      };
+      final attributes =
+          Attributes(AttributesType.OBJECT, jsonEncode(attributesData));
       final messageOptions = MessageOptions()
-        ..withBody(messageInputTextController.text);
+        ..withBody(messageInputTextController.text)
+        ..withAttributes(attributes);
       message = await conversation.sendMessage(messageOptions);
     } catch (e) {
       print('Failed to send message Error: $e');
@@ -110,5 +183,23 @@ class MessagesNotifier extends ChangeNotifier {
       messageInputTextController.clear();
     }
     notifyListeners();
+  }
+
+  Future onSendMediaMessagePressed() async {
+    final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+    final mimeType = mime(image?.path);
+    if (image != null && mimeType != null) {
+      final messageOptions = MessageOptions()
+        ..withMedia(File(image.path), mimeType);
+      await conversation.sendMessage(messageOptions);
+    }
+  }
+
+  void cancelSubscriptions() {
+    messageInputTextController.removeListener(notifyListeners);
+    messageInputTextController.removeListener(conversation.typing);
+    subscriptions.forEach((sub) {
+      sub.cancel();
+    });
   }
 }

@@ -53,17 +53,4 @@ class MessageMedia {
       map['messageIndex'],
     );
   }
-
-  //#region Public API methods
-  /// Save media content stream that could be streamed or downloaded by client.
-  ///
-  /// Provided file could be an existing file and a none existing file.
-  Future<String> getMediaUrl() async {
-    final response = await TwilioConversations.methodChannel
-        .invokeMethod('MessageMethods.getMediaContentTemporaryUrl', {
-      'conversationSid': _conversationSid,
-      'messageIndex': _messageIndex,
-    });
-    return response as String;
-  }
 }

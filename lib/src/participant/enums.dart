@@ -38,10 +38,9 @@ enum UpdateReason {
 }
 
 enum Type {
-  CHAT,
-  OTHER,
-  SMS,
   UNSET,
+  OTHER,
+  CHAT,
+  SMS,
   WHATSAPP,
-  UNKNOWN,
 }

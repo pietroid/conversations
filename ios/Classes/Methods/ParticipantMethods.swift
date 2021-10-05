@@ -1,36 +1,42 @@
 import Flutter
 import TwilioConversationsClient
 
-class ParticipantMethods {
-    public static func getUser(_ call: FlutterMethodCall, _ flutterResult: @escaping FlutterResult) {
-        guard let arguments = call.arguments as? [String: Any?] else {
-            return flutterResult(FlutterError(code: "MISSING_PARAMS", message: "Missing arguments", details: nil))
+class ParticipantMethods: NSObject, TWCONParticipantApi {
+    let TAG = "ParticipantMethods"
+
+    func getUserConversationSid(_ conversationSid: String?, participantSid: String?, completion: @escaping (TWCONUserData?, FlutterError?) -> Void) {
+        debug("getUser => conversationSid: \(String(describing: conversationSid))")
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(nil, FlutterError(code: "ERROR", message: "Client has not been initialized.", details: nil))
         }
 
-        guard let conversationSid = arguments["conversationSid"] as? String else {
-            return flutterResult(FlutterError(code: "MISSING_PARAMS", message: "Missing conversationSid", details: nil))
+        guard let conversationSid = conversationSid else {
+            return completion(nil, FlutterError(code: "MISSING_PARAMS", message: "Missing conversationSid", details: nil))
         }
 
-        guard let participantSid = arguments["participantSid"] as? String else {
-            return flutterResult(FlutterError(code: "MISSING_PARAMS", message: "Missing participantSid", details: nil))
+        guard let participantSid = participantSid else {
+            return completion(nil, FlutterError(code: "MISSING_PARAMS", message: "Missing participantSid", details: nil))
         }
         
-        SwiftTwilioConversationsPlugin.instance?.client?.conversation(withSidOrUniqueName: conversationSid, completion: { (result: TCHResult, conversation: TCHConversation?) in
+        client.conversation(withSidOrUniqueName: conversationSid, completion: { (result: TCHResult, conversation: TCHConversation?) in
             if result.isSuccessful, let conversation = conversation {
-                SwiftTwilioConversationsPlugin.debug("\(call.method) => onSuccess")
+                self.debug("getUser => onSuccess")
                 let participant = conversation.participants().first(where: {$0.sid == participantSid})
                 participant?.subscribedUser() { result, user in
                     if result.isSuccessful {
-                        flutterResult(Mapper.userToDict(user))
+                        completion(Mapper.userToPigeon(user), nil)
                     } else {
-                        flutterResult(nil)
+                        completion(nil, FlutterError(code: "NOT_FOUND", message: "No participant found with sid: \(participantSid)", details: nil))
                     }
                 }
             } else {
-                SwiftTwilioConversationsPlugin.debug("\(call.method) => onError: \(String(describing: result.error))")
-                flutterResult(FlutterError(code: "ERROR", message: "Error retrieving conversation with sid '\(conversationSid)'", details: nil))
+                self.debug("getUser => onError: \(String(describing: result.error))")
+                completion(nil, FlutterError(code: "ERROR", message: "Error retrieving conversation with sid '\(conversationSid)'", details: nil))
             }
         })
     }
-    
+
+    private func debug(_ msg: String) {
+        SwiftTwilioConversationsPlugin.debug("\(TAG)::\(msg)")
+    }
 }

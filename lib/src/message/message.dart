@@ -69,6 +69,18 @@ class Message {
         ?.getConversation(conversationSidOrUniqueName: conversationSid);
   }
 
+  /// Save media content stream that could be streamed or downloaded by client.
+  ///
+  /// Provided file could be an existing file and a none existing file.
+  Future<String?> getMediaUrl() async {
+    final uMessageIndex = messageIndex;
+    if (uMessageIndex != null) {
+      final result = await TwilioConversations.messageApi
+          .getMediaContentTemporaryUrl(conversationSid, uMessageIndex);
+      return result;
+    }
+  }
+
   //TODO: implement getAggregatedDeliveryReceipt
   //TODO: implement getDetailedDeliveryReceiptList
   //TODO: implement updateMessageBody

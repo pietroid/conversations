@@ -6,8 +6,9 @@ import 'package:twilio_conversations_example/util.dart';
 
 class MessagesPage extends StatefulWidget {
   final Conversation conversation;
+  final ConversationClient client;
 
-  MessagesPage(this.conversation);
+  MessagesPage(this.conversation, this.client);
 
   @override
   _MessagesPageState createState() => _MessagesPageState();
@@ -19,7 +20,7 @@ class _MessagesPageState extends State<MessagesPage> {
   @override
   void initState() {
     super.initState();
-    messagesNotifier = MessagesNotifier(widget.conversation);
+    messagesNotifier = MessagesNotifier(widget.conversation, widget.client);
     messagesNotifier.init();
   }
 
@@ -29,15 +30,24 @@ class _MessagesPageState extends State<MessagesPage> {
       value: messagesNotifier,
       child: Consumer<MessagesNotifier>(
         builder: (BuildContext context, messagesNotifier, Widget? child) {
-          return Scaffold(
-            appBar: AppBar(
-              title: Text(widget.conversation.friendlyName ?? ''),
-              actions: [
-                _buildInviteUser(),
-              ],
-            ),
-            body: Center(
-              child: _buildBody(messagesNotifier),
+          return WillPopScope(
+            onWillPop: () async {
+              messagesNotifier.cancelSubscriptions();
+              return true;
+            },
+            child: Scaffold(
+              appBar: AppBar(
+                title: InkWell(
+                    onLongPress: _updateName,
+                    child: Text(widget.conversation.friendlyName ?? '')),
+                actions: [
+                  _buildManageParticipants(),
+                  _buildDestroyConversation(),
+                ],
+              ),
+              body: Center(
+                child: _buildBody(messagesNotifier),
+              ),
             ),
           );
         },
@@ -45,63 +55,169 @@ class _MessagesPageState extends State<MessagesPage> {
     );
   }
 
-  Widget _buildInviteUser() {
+  Widget _buildManageParticipants() {
     return IconButton(
-      icon: Icon(Icons.add),
-      onPressed: () async {
-        final userName = await _getUserNameForInvite();
-        if (userName != null) {
-          messagesNotifier.addUserByIdentity(userName);
-        }
-      },
+      icon: Icon(Icons.person),
+      onPressed: _showManageParticipantsDialog,
     );
   }
 
-  Future<String?> _getUserNameForInvite() async {
+  Future _showManageParticipantsDialog() async {
     final controller = TextEditingController();
-
-    return showDialog<String?>(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              vertical: 8.0,
-              horizontal: 30,
+    messagesNotifier.getParticipants();
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Manage Participants'),
+            content: ChangeNotifierProvider<MessagesNotifier>.value(
+              value: messagesNotifier,
+              child: Consumer<MessagesNotifier>(builder:
+                  (BuildContext context, messagesNotifier, Widget? child) {
+                final participants = messagesNotifier.participants;
+                if (participants != null) {
+                  return Container(
+                      height: 200,
+                      width: 140,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount: participants.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                final participant = participants[index];
+                                return Row(
+                                  children: [
+                                    Text(participant.identity ?? 'UNKNOWN'),
+                                    InkWell(
+                                      onTap: () async {
+                                        await messagesNotifier
+                                            .removeParticipant(participant);
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Icon(Icons.close),
+                                      ),
+                                    )
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  decoration: InputDecoration(
+                                      label: Text('User Identity')),
+                                  controller: controller,
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: () async {
+                                  await messagesNotifier
+                                      .addUserByIdentity(controller.text);
+                                  controller.text = '';
+                                },
+                                icon: Icon(Icons.add),
+                              )
+                            ],
+                          ),
+                        ],
+                      ));
+                } else {
+                  return Container(
+                    height: 200,
+                    width: 140,
+                    child: Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
+              }),
             ),
-            child: Container(
-              height: 140,
+            actions: <Widget>[
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('CLOSE'),
+              )
+            ],
+          );
+        });
+  }
+
+  Future _updateName() async {
+    final newConversationName = await _showUpdateNameDialog();
+    if (newConversationName != null) {
+      return messagesNotifier.setFriendlyName(newConversationName);
+    }
+  }
+
+  Future<String?> _showUpdateNameDialog() async {
+    final controller =
+        TextEditingController(text: messagesNotifier.conversation.friendlyName);
+    final name = await showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('New Conversation Name'),
+            content: Container(
+              height: 200,
+              width: 140,
               child: Column(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  TextField(
-                    decoration: InputDecoration(label: Text('User Identity')),
-                    controller: controller,
-                  ),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: Text('Cancel'),
+                      Expanded(
+                        child: TextField(
+                          decoration: InputDecoration(label: Text('Name')),
+                          controller: controller,
+                        ),
                       ),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.of(context).pop(controller.text);
+                      IconButton(
+                        onPressed: () async {
+                          await messagesNotifier
+                              .addUserByIdentity(controller.text);
+                          controller.text = '';
                         },
-                        child: Text('Add User'),
+                        icon: Icon(Icons.add),
                       )
                     ],
                   ),
                 ],
               ),
             ),
-          ),
-        );
+            actions: <Widget>[
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('CANCEL'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop(controller.text);
+                },
+                child: Text('UPDATE'),
+              ),
+            ],
+          );
+        });
+    return name;
+  }
+
+  Widget _buildDestroyConversation() {
+    return IconButton(
+      icon: Icon(Icons.delete),
+      onPressed: () async {
+        await messagesNotifier.destroy();
+        Navigator.of(context).pop();
       },
     );
   }
@@ -217,15 +333,13 @@ class _MessagesPageState extends State<MessagesPage> {
                   : CrossAxisAlignment.start,
               children: [
                 _buildAuthorName(
-                    message: message,
-                    isMyMessage: isMyMessage,
-                    textColor: textColor),
-                Text(
-                  message.body ?? '',
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: 13,
-                  ),
+                  message: message,
+                  isMyMessage: isMyMessage,
+                  textColor: textColor,
+                ),
+                _buildMessageContents(
+                  message: message,
+                  textColor: textColor,
                 ),
               ],
             ),
@@ -274,6 +388,27 @@ class _MessagesPageState extends State<MessagesPage> {
           );
   }
 
+  Widget _buildMessageContents({
+    required Color textColor,
+    required Message message,
+  }) {
+    if (message.type == MessageType.TEXT) {
+      return Text(
+        message.body ?? '',
+        style: TextStyle(
+          color: textColor,
+          fontSize: 13,
+        ),
+      );
+    } else if (messagesNotifier.hasMedia(message.sid)) {
+      return Center(child: Image.memory(messagesNotifier.media(message.sid)!));
+    } else {
+      return Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+  }
+
   Widget _buildParticipantsTyping(MessagesNotifier messagesNotifier) {
     final _currentlyTypingParticipants = messagesNotifier.currentlyTyping;
 
@@ -309,6 +444,7 @@ class _MessagesPageState extends State<MessagesPage> {
             ),
           ),
           _buildSendButton(messagesNotifier),
+          _buildMediaMessageButton(),
         ],
       ),
     );
@@ -338,6 +474,14 @@ class _MessagesPageState extends State<MessagesPage> {
               icon: Icon(Icons.send),
               onPressed: messagesNotifier.onSendMessagePressed,
             ),
+    );
+  }
+
+  Widget _buildMediaMessageButton() {
+    return IconButton(
+      color: Colors.blue,
+      icon: Icon(Icons.add_photo_alternate_outlined),
+      onPressed: messagesNotifier.onSendMediaMessagePressed,
     );
   }
 }

@@ -10,9 +10,24 @@ public class Mapper {
             "isReachabilityEnabled": client?.isReachabilityEnabled() as Any
         ]
     }
-    
+
+    public static func conversationsClientToPigeon(_ client: TwilioConversationsClient?) -> TWCONConversationClientData? {
+        guard let client = client else {
+            return nil
+        }
+        let result = TWCONConversationClientData()
+        result.myIdentity = client.user?.identity
+        result.connectionState = clientConnectionStateToString(client.connectionState)
+        result.isReachabilityEnabled = NSNumber(value: client.isReachabilityEnabled())
+        return result
+    }
+
     public static func conversationsToDict(_ conversations: [TCHConversation]?) -> [[String: Any]?]? {
         return conversations?.map { conversationToDict($0) }
+    }
+    
+    public static func conversationsList(_ conversations: [TCHConversation]?) -> [TWCONConversationData]? {
+        return conversations?.compactMap { conversationToPigeon($0) }
     }
     
     public static func conversationToDict(_ conversation: TCHConversation?) -> [String: Any]? {
@@ -22,6 +37,7 @@ public class Mapper {
         }
         
         if !SwiftTwilioConversationsPlugin.conversationListeners.keys.contains(sid) {
+            SwiftTwilioConversationsPlugin.debug("Creating ConversationListener for conversation: '\(String(describing: conversation.sid))'")
             SwiftTwilioConversationsPlugin.conversationListeners[sid] = ConversationListener(sid)
             conversation.delegate = SwiftTwilioConversationsPlugin.conversationListeners[sid]
         }
@@ -42,6 +58,53 @@ public class Mapper {
         ]
     }
     
+    public static func conversationToPigeon(_ conversation: TCHConversation?) -> TWCONConversationData? {
+        guard let conversation = conversation,
+              let sid = conversation.sid else {
+            return nil
+        }
+        
+        if !SwiftTwilioConversationsPlugin.conversationListeners.keys.contains(sid) {
+            SwiftTwilioConversationsPlugin.debug("Creating ConversationListener for conversation: '\(String(describing: conversation.sid))'")
+            SwiftTwilioConversationsPlugin.conversationListeners[sid] = ConversationListener(sid)
+            conversation.delegate = SwiftTwilioConversationsPlugin.conversationListeners[sid]
+        }
+        
+        let result = TWCONConversationData()
+        result.attributes = attributesToPigeon(conversation.attributes())
+        result.createdBy = conversation.createdBy
+        result.dateCreated = dateToString(conversation.dateCreatedAsDate)
+        result.dateUpdated = dateToString(conversation.dateUpdatedAsDate)
+        result.friendlyName = conversation.friendlyName
+        result.lastMessageDate = dateToString(conversation.lastMessageDate)
+        result.lastMessageIndex = conversation.lastMessageIndex
+        result.lastReadMessageIndex = conversation.lastReadMessageIndex
+        result.sid = sid
+        result.status = conversationStatusToString(conversation.status)
+        result.synchronizationStatus = conversationSynchronizationStatusToString(conversation.synchronizationStatus)
+        result.uniqueName = conversation.uniqueName
+        return result
+    }
+
+    public static func messageToPigeon(_ message: TCHMessage, conversationSid: String?) -> TWCONMessageData {
+        let result = TWCONMessageData()
+        result.sid = message.sid
+        result.author = message.author
+        result.dateCreated = message.dateCreated
+        result.dateUpdated = message.dateUpdated
+        result.lastUpdatedBy = message.lastUpdatedBy
+        result.messageBody = message.body
+        result.conversationSid = conversationSid
+        result.participantSid = message.participantSid
+//        result.participant = participantToDict(message.participant, conversationSid: conversationSid)
+        result.messageIndex = message.index
+        result.type = messageTypeToString(message.messageType)
+        result.hasMedia = NSNumber(value: message.hasMedia())
+        result.media = mediaToPigeon(message, conversationSid)
+        result.attributes = attributesToPigeon(message.attributes())
+        return result
+    }
+
     public static func messageToDict(_ message: TCHMessage, conversationSid: String?) -> [String: Any?] {
         return [
             "sid": message.sid,
@@ -77,6 +140,24 @@ public class Mapper {
         ]
     }
     
+    public static func participantToPigeon(_ participant: TCHParticipant?, conversationSid: String?) -> TWCONParticipantData? {
+        guard let participant = participant else {
+            return nil
+        }
+        
+        let result = TWCONParticipantData()
+        result.sid = participant.sid
+        result.conversationSid = conversationSid
+        result.lastReadMessageIndex = participant.lastReadMessageIndex
+        result.lastReadTimestamp = participant.lastReadTimestamp
+        result.dateCreated = participant.dateCreated
+        result.dateUpdated = participant.dateUpdated
+        result.identity = participant.identity
+        result.type = participantTypeToString(participant.type)
+        result.attributes = attributesToPigeon(participant.attributes())
+        return result
+    }
+
     public static func userToDict(_ user: TCHUser?) -> [String: Any]? {
         guard let user = user else {
             return nil
@@ -89,6 +170,20 @@ public class Mapper {
             "isNotifiable": user.isNotifiable(),
             "isSubscribed": user.isSubscribed()
         ]
+    }
+    
+    public static func userToPigeon(_ user: TCHUser?) -> TWCONUserData? {
+        guard let user = user else {
+            return nil
+        }
+        let result = TWCONUserData()
+        result.friendlyName = user.friendlyName
+        result.attributes = attributesToPigeon(user.attributes())
+        result.identity = user.identity
+        result.isOnline = NSNumber(value: user.isOnline())
+        result.isNotifiable = NSNumber(value: user.isNotifiable())
+        result.isSubscribed = NSNumber(value: user.isSubscribed())
+        return result
     }
     
     public static func mediaToDict(_ message: TCHMessage, _ conversationSid: String?) -> [String: Any?]? {
@@ -104,6 +199,22 @@ public class Mapper {
             "messageIndex": message.index,
             "messageSid": message.sid
         ]
+    }
+    
+    public static func mediaToPigeon(_ message: TCHMessage, _ conversationSid: String?) -> TWCONMessageMediaData? {
+        if !message.hasMedia() {
+            return nil
+        }
+        
+        let result = TWCONMessageMediaData()
+        result.sid = message.mediaSid
+        result.fileName = message.mediaFilename
+        result.type = message.mediaType
+        result.size = NSNumber(value: message.mediaSize)
+        result.conversationSid = conversationSid
+        result.messageIndex = message.index
+        result.messageSid = message.sid
+        return result
     }
     
     public static func attributesToDict(_ attributes: TCHJsonAttributes?) -> [String: Any?]? {
@@ -142,6 +253,35 @@ public class Mapper {
             }
         }
         return nil
+    }
+    
+    public static func attributesToPigeon(_ attributes: TCHJsonAttributes?) -> TWCONAttributesData? {
+        let result = TWCONAttributesData()
+        result.type = "NULL"
+        result.data = nil
+        
+        if let attr = attributes as TCHJsonAttributes? {
+            if attr.isNumber {
+                result.type = "NUMBER"
+                result.data = attr.number?.stringValue
+            } else if attr.isArray {
+                guard let jsonData = try? JSONSerialization.data(withJSONObject: attr.array as Any) else {
+                    return result
+                }
+                result.type = "ARRAY"
+                result.data = String(data: jsonData, encoding: String.Encoding.utf8)
+            } else if attr.isString {
+                result.type = "STRING"
+                result.data = attr.string
+            } else if attr.isDictionary {
+                guard let jsonData = try? JSONSerialization.data(withJSONObject: attr.dictionary as Any) else {
+                    return result
+                }
+                result.type = "OBJECT"
+                result.data = String(data: jsonData, encoding: String.Encoding.utf8)
+            }
+        }
+        return result
     }
     
     public static func dictToAttributes(_ dict: [String: Any?]) -> TCHJsonAttributes {
@@ -310,6 +450,8 @@ public class Mapper {
             updateString = "BODY"
         case .deliveryReceipt:
             updateString = "DELIVERY_RECEIPT"
+        case .subject:
+            updateString = "SUBJECT"
         @unknown default:
             updateString = "UNKNOWN"
         }

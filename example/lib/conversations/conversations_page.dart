@@ -28,15 +28,23 @@ class _ConversationsPageState extends State<ConversationsPage> {
       value: widget.conversationsNotifier,
       child: Consumer<ConversationsNotifier>(
         builder: (BuildContext context, conversationsNotifier, Widget? child) {
-          return Scaffold(
-            appBar: AppBar(
-              title: Text('Conversations'),
-              actions: [
-                _buildCreateConversation(),
-              ],
-            ),
-            body: Center(
-              child: _buildBody(),
+          return WillPopScope(
+            onWillPop: () async {
+              conversationsNotifier.cancelSubscriptions();
+              return true;
+            },
+            child: Scaffold(
+              appBar: AppBar(
+                title: Text('Conversations'),
+                actions: [
+                  _buildCreateConversation(),
+                  _buildRegisterForNotifications(),
+                  _buildUnregisterForNotifications(),
+                ],
+              ),
+              body: Center(
+                child: _buildBody(),
+              ),
             ),
           );
         },
@@ -52,12 +60,29 @@ class _ConversationsPageState extends State<ConversationsPage> {
         if (conversationName != null) {
           final conversation = await widget.conversationsNotifier
               .createConversation(friendlyName: conversationName);
-          // var joined = await conversation?.join();
           print(
               'Successfully created conversation: ${conversation?.friendlyName}');
         } else {
           print('Create conversation cancelled');
         }
+      },
+    );
+  }
+
+  Widget _buildRegisterForNotifications() {
+    return IconButton(
+      icon: Icon(Icons.cloud),
+      onPressed: () async {
+        await widget.conversationsNotifier.registerForNotification();
+      },
+    );
+  }
+
+  Widget _buildUnregisterForNotifications() {
+    return IconButton(
+      icon: Icon(Icons.cloud_off),
+      onPressed: () async {
+        await widget.conversationsNotifier.unregisterForNotification();
       },
     );
   }
@@ -136,16 +161,15 @@ class _ConversationsPageState extends State<ConversationsPage> {
   Widget _buildConversationListItem(Conversation conversation) {
     return InkWell(
       onLongPress: () async {
-        var a = await conversation.addParticipantByIdentity('+17175555555');
-        print('User added: $a');
-        // var newMessage = await conversation.messages.sendMessage("Test texts");
-        // print('New Message text is: ${newMessage.messageBody}');
+        var r = await widget.conversationsNotifier.client
+            ?.getConversation(conversationSidOrUniqueName: conversation.sid);
+        print('Conversation details: ${r}');
       },
-      onTap: () async {
+      onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => MessagesPage(conversation),
+            builder: (context) => MessagesPage(conversation, widget.conversationsNotifier.client!),
           ),
         );
       },
@@ -159,8 +183,18 @@ class _ConversationsPageState extends State<ConversationsPage> {
                   horizontal: 20,
                 ),
                 child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(conversation.friendlyName ?? ''),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Text('Conversation: ${conversation.friendlyName}'),
+                          Text(
+                              'Unread Messages: ${widget.conversationsNotifier.unreadMessageCounts[conversation.sid]}'),
+                        ],
+                      ),
+                    ),
                     InkWell(
                       onTap: () async {
                         if (conversation.status != ConversationStatus.JOINED) {

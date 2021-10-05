@@ -24,8 +24,6 @@ class Participant {
   String? _lastReadTimestamp;
   String? get lastReadTimestamp => _lastReadTimestamp;
 
-  User? _user;
-
   Participant(
     this.sid,
     this.type,
@@ -42,7 +40,7 @@ class Participant {
   factory Participant.fromMap(Map<String, dynamic> map) {
     final participant = Participant(
       map['sid'],
-      EnumToString.fromString(Type.values, map['type']) ?? Type.UNKNOWN,
+      EnumToString.fromString(Type.values, map['type']) ?? Type.UNSET,
       map['conversationSid'],
       map['attributes'] != null
           ? Attributes.fromMap(map['attributes'].cast<String, dynamic>())
@@ -58,17 +56,10 @@ class Participant {
   }
 
   Future<User?> getUser() async {
-    if (_user != null) {
-      return _user;
-    }
+    final result =
+        await TwilioConversations.participantApi.getUser(conversationSid, sid);
 
-    final result = await TwilioConversations.methodChannel.invokeMethod(
-        'ParticipantMethods.getUser',
-        {'conversationSid': conversationSid, 'participantSid': sid});
-    if (result == null) {
-      return null;
-    }
-    return _user = User.fromMap(Map<String, dynamic>.from(result));
+    return User.fromMap(Map<String, dynamic>.from(result.encode() as Map));
   }
 
   //TODO: implement setAttributes

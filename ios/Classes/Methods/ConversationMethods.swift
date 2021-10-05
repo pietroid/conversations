@@ -1,118 +1,494 @@
 import Flutter
 import TwilioConversationsClient
 
-public class ConversationMethods {
-    public static func getUnreadMessagesCount(_ call: FlutterMethodCall, _ flutterResult: @escaping FlutterResult) {
-        guard let arguments = call.arguments as? [String: Any?],
-              let conversationSid = arguments["conversationSid"] as? String else {
-            return flutterResult(FlutterError(code: "MISSING_PARAMS", message: "Missing parameters", details: nil))
+class ConversationMethods: NSObject, TWCONConversationApi {
+    let TAG = "ConversationMethods"
+    
+    func joinConversationSid(_ conversationSid: String?, completion: @escaping (NSNumber?, FlutterError?) -> Void) {
+        debug("join => conversationSid: \(String(describing: conversationSid))")
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(nil, FlutterError(code: "ERROR", message: "Client has not been initialized.", details: nil))
         }
         
-        SwiftTwilioConversationsPlugin.instance?.client?.conversation(withSidOrUniqueName: conversationSid, completion: { (result: TCHResult, conversation: TCHConversation?) in
+        guard let conversationSid = conversationSid else {
+            return completion(nil, FlutterError(code: "MISSING_PARAMS", message: "Missing 'conversationSid' parameter", details: nil))
+        }
+        
+        client.conversation(withSidOrUniqueName: conversationSid, completion: { (result: TCHResult, conversation: TCHConversation?) in
+            if result.isSuccessful, let conversation = conversation {
+                conversation.join { (result: TCHResult) in
+                    if result.isSuccessful {
+                        self.debug("join => onSuccess")
+                        completion(true, nil)
+                    } else {
+                        self.debug("join => onError: \(String(describing: result.error))")
+                        completion(nil, FlutterError(code: "ERROR", message: "Error joining conversation (conversation.join) with sid \(conversationSid): \(String(describing: result.error))", details: nil))
+                    }
+                }
+            } else {
+                self.debug("join => onError: \(String(describing: result.error))")
+                completion(nil, FlutterError(code: "ERROR", message: "Error joining conversation with sid \(conversationSid): \(String(describing: result.error))", details: nil))
+            }
+        })
+    }
+    
+    func leaveConversationSid(_ conversationSid: String?, completion: @escaping (NSNumber?, FlutterError?) -> Void) {
+        debug("leave => conversationSid: \(String(describing: conversationSid))")
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(nil, FlutterError(code: "ERROR", message: "Client has not been initialized.", details: nil))
+        }
+        
+        guard let conversationSid = conversationSid else {
+            return completion(nil, FlutterError(code: "MISSING_PARAMS", message: "Missing 'conversationSid' parameter", details: nil))
+        }
+        
+        client.conversation(withSidOrUniqueName: conversationSid, completion: { (result: TCHResult, conversation: TCHConversation?) in
+            if result.isSuccessful,
+               let conversation = conversation {
+                conversation.leave { (result: TCHResult) in
+                    if result.isSuccessful {
+                        self.debug("leave => onSuccess")
+                        completion(true, nil)
+                    } else {
+                        self.debug("leave => onError: \(result.error.debugDescription)")
+                        completion(nil, FlutterError(code: "ERROR", message: "leave => Error leaving conversation (conversation.leave) with sid \(conversationSid): \(String(describing: result.error))", details: nil))
+                    }
+                }
+            } else {
+                self.debug("leave => onError: \(String(describing: result.error))")
+                completion(nil, FlutterError(code: "ERROR", message: "leave => Error leaving conversation with sid \(conversationSid): \(String(describing: result.error))", details: nil))
+            }
+        })
+    }
+    
+    func destroyConversationSid(_ conversationSid: String?, completion: @escaping (FlutterError?) -> Void) {
+        debug("destroy => conversationSid: \(String(describing: conversationSid))")
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(FlutterError(code: "ERROR", message: "Client has not been initialized.", details: nil))
+        }
+        
+        guard let conversationSid = conversationSid else {
+            return completion(FlutterError(code: "MISSING_PARAMS", message: "Missing 'conversationSid' parameter", details: nil))
+        }
+        
+        client.conversation(withSidOrUniqueName: conversationSid, completion: { (result: TCHResult, conversation: TCHConversation?) in
+            if result.isSuccessful, let conversation = conversation {
+                conversation.destroy(completion: { (result: TCHResult) in
+                    if result.isSuccessful {
+                        self.debug("destroy => onSuccess")
+                        completion(nil)
+                    } else {
+                        self.debug("destroy => onError: \(String(describing: result.error))")
+                        completion(FlutterError(code: "ERROR", message: "ChannelMethods.destroy => Error destroying channel \(conversationSid): \(String(describing: result.error))", details: nil))
+                    }
+                })
+            } else {
+                self.debug("destroy => onError: \(String(describing: result.error))")
+                completion(FlutterError(code: "ERROR", message: "ChannelMethods.destroy => Error retrieving channel with sid \(conversationSid): \(String(describing: result.error))", details: nil))
+            }
+        })
+    }
+    
+    func typingConversationSid(_ conversationSid: String?, completion: @escaping (FlutterError?) -> Void) {
+        debug("typing => conversationSid: \(String(describing: conversationSid))")
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(FlutterError(code: "ERROR", message: "Client has not been initialized.", details: nil))
+        }
+        
+        guard let conversationSid = conversationSid else {
+            return completion(FlutterError(code: "MISSING_PARAMS", message: "Missing 'conversationSid' parameter", details: nil))
+        }
+        
+        client.conversation(withSidOrUniqueName: conversationSid, completion: { (result: TCHResult, conversation: TCHConversation?) in
+            if result.isSuccessful, let conversation = conversation {
+                self.debug("typing => onSuccess")
+                conversation.typing()
+                completion(nil)
+            } else {
+                self.debug("typing => onError: \(String(describing: result.error))")
+                completion(FlutterError(code: "ERROR", message: "typing => Error retrieving conversation with sid \(conversationSid): \(result.error?.description ?? "")", details: nil))
+            }
+        })
+    }
+    
+    func sendMessageConversationSid(_ conversationSid: String?, options: TWCONMessageOptionsData?, completion: @escaping (TWCONMessageData?, FlutterError?) -> Void) {
+        debug("sendMessage => conversationSid: \(String(describing: conversationSid))")
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(nil, FlutterError(code: "ERROR", message: "Client has not been initialized.", details: nil))
+        }
+        
+        guard let conversationSid = conversationSid else {
+            return completion(nil, FlutterError(code: "MISSING_PARAMS", message: "Missing 'conversationSid' parameter", details: nil))
+        }
+        
+        guard let options = options else {
+            return completion(nil, FlutterError(code: "MISSING_PARAMS", message: "Missing 'options' parameter", details: nil))
+        }
+        
+        let messageOptions = TCHMessageOptions()
+        
+        if let messageBody = options.body {
+            messageOptions.withBody(messageBody)
+        }
+        if let input = options.inputPath {
+            guard let mimeType = options.mimeType else {
+                return completion(nil, FlutterError(code: "ERROR", message: "Missing 'mimeType' in MessageOptions", details: nil))
+            }
+
+            if let inputStream = InputStream(fileAtPath: input) {
+                messageOptions.withMediaStream(inputStream, contentType: mimeType, defaultFilename: options.filename,
+                                               onStarted: {
+                    // TODO
+                                                
+                },
+                                               onProgress: { (bytes: UInt) in
+                    // TODO
+                                                
+                },
+                                               onCompleted: { (mediaSid: String) in
+                    // TODO
+                                                
+                })
+            } else {
+                return completion(nil, FlutterError(code: "ERROR", message: "Error retrieving file for upload from `\(input)`", details: nil))
+            }
+        }
+        
+        
+        client.conversation(withSidOrUniqueName: conversationSid, completion: { (result: TCHResult, conversation: TCHConversation?) in
+            if result.isSuccessful,
+               let conversation = conversation {
+                conversation.sendMessage(with: messageOptions, completion: { (result: TCHResult, message: TCHMessage?) in
+                    if result.isSuccessful,
+                       let message = message {
+                        self.debug("sendMessage => onSuccess")
+                        completion(Mapper.messageToPigeon(message, conversationSid: conversationSid), nil)
+                    } else {
+                        self.debug("sendMessage => onError: \(result.error.debugDescription)")
+                        completion(nil, FlutterError(code: "ERROR", message: "Error sending message with options `\(String(describing: messageOptions))`", details: nil))
+                    }
+                })
+            }
+        })
+    }
+    
+    func addParticipant(byIdentityConversationSid conversationSid: String?, identity: String?, completion: @escaping (NSNumber?, FlutterError?) -> Void) {
+        debug("addParticipantByIdentity => conversationSid: \(String(describing: conversationSid))")
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(nil, FlutterError(code: "ERROR", message: "Client has not been initialized.", details: nil))
+        }
+
+        guard let conversationSid = conversationSid else {
+            return completion(nil, FlutterError(code: "MISSING_PARAMS", message: "Missing 'conversationSid' parameter", details: nil))
+        }
+
+        guard let identity = identity else {
+            return completion(nil, FlutterError(code: "MISSING_PARAMS", message: "Missing 'identity' parameter", details: nil))
+        }
+
+        client.conversation(withSidOrUniqueName: conversationSid, completion: { (result: TCHResult, conversation: TCHConversation?) in
+            if result.isSuccessful, let conversation = conversation {
+                conversation.addParticipant(byIdentity: identity,
+                                            attributes: nil) { (result: TCHResult) in
+                    if result.isSuccessful {
+                        self.debug("addParticipantByIdentity => onSuccess")
+                        completion(true, nil)
+                    } else {
+                        self.debug("addParticipantByIdentity => onError: \(String(describing: result.error))")
+                        completion(nil, FlutterError(code: "ERROR", message: "Error adding participant to conversation with sid '\(conversationSid)', Error: \(result.error.debugDescription)", details: nil))
+                    }
+                }
+            } else {
+                self.debug("addParticipantByIdentity => onError: \(String(describing: result.error))")
+                completion(nil, FlutterError(code: "ERROR", message: "Error retrieving conversation with sid '\(conversationSid)'", details: nil))
+            }
+        })
+    }
+    
+    func removeParticipant(byIdentityConversationSid conversationSid: String?, identity: String?, completion: @escaping (NSNumber?, FlutterError?) -> Void) {
+        debug("removeParticipantByIdentity => conversationSid: \(String(describing: conversationSid))")
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(nil, FlutterError(code: "ERROR", message: "Client has not been initialized.", details: nil))
+        }
+
+        guard let conversationSid = conversationSid else {
+            return completion(nil, FlutterError(code: "MISSING_PARAMS", message: "Missing 'conversationSid' parameter", details: nil))
+        }
+
+        guard let identity = identity else {
+            return completion(nil, FlutterError(code: "MISSING_PARAMS", message: "Missing 'identity' parameter", details: nil))
+        }
+
+
+        client.conversation(withSidOrUniqueName: conversationSid, completion: { (result: TCHResult, conversation: TCHConversation?) in
+            if result.isSuccessful, let conversation = conversation {
+                conversation.removeParticipant(byIdentity: identity) { (result: TCHResult) in
+                    if result.isSuccessful {
+                        self.debug("removeParticipantByIdentity => onSuccess")
+                        completion(true, nil)
+                    } else {
+                        self.debug("removeParticipantByIdentity => onError: \(String(describing: result.error))")
+                        completion(nil, FlutterError(code: "ERROR", message: "Error removing participant from conversation with sid '\(conversationSid)', Error: \(result.error.debugDescription)", details: nil))
+                    }
+                }
+            } else {
+                self.debug("removeParticipantByIdentity => onError: \(String(describing: result.error))")
+                completion(nil, FlutterError(code: "ERROR", message: "Error retrieving conversation with sid '\(conversationSid)'", details: nil))
+            }
+        })
+    }
+    
+    func getParticipantsListConversationSid(_ conversationSid: String?, completion: @escaping ([TWCONParticipantData]?, FlutterError?) -> Void) {
+        debug("getParticipantsList => conversationSid: \(String(describing: conversationSid))")
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(nil, FlutterError(code: "ERROR", message: "Client has not been initialized.", details: nil))
+        }
+
+        guard let conversationSid = conversationSid else {
+            return completion(nil, FlutterError(code: "MISSING_PARAMS", message: "Missing 'conversationSid' parameter", details: nil))
+        }
+
+        client.conversation(withSidOrUniqueName: conversationSid, completion: { (result: TCHResult, conversation: TCHConversation?) in
+            if result.isSuccessful, let conversation = conversation {
+                self.debug("getParticipantsList => onSuccess")
+                let participantsList = conversation.participants().compactMap { Mapper.participantToPigeon($0, conversationSid: conversationSid) }
+                completion(participantsList, nil)
+            } else {
+                self.debug("getParticipantsList => onError: \(String(describing: result.error))")
+                completion(nil, FlutterError(code: "ERROR", message: "Error retrieving conversation with sid '\(conversationSid)'", details: nil))
+            }
+        })
+    }
+    
+    func getMessagesCountConversationSid(_ conversationSid: String?, completion: @escaping (TWCONMessageCount?, FlutterError?) -> Void) {
+        debug("getMessagesCount => conversationSid: \(String(describing: conversationSid))")
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(nil, FlutterError(code: "ERROR", message: "Client has not been initialized.", details: nil))
+        }
+
+        guard let conversationSid = conversationSid else {
+            return completion(nil, FlutterError(code: "MISSING_PARAMS", message: "Missing 'conversationSid' parameter", details: nil))
+        }
+
+        client.conversation(withSidOrUniqueName: conversationSid, completion: { (result: TCHResult, conversation: TCHConversation?) in
+            if result.isSuccessful, let conversation = conversation {
+                conversation.getMessagesCount(completion: { (result: TCHResult, count: UInt) in
+                    if result.isSuccessful {
+                        self.debug("getMessagesCount => onSuccess")
+                        let result = TWCONMessageCount()
+                        result.count = NSNumber(value: count)
+                        completion(result, nil)
+                    } else {
+                        self.debug("getMessagesCount => onError: \(String(describing: result.error))")
+                        completion(nil, FlutterError(code: "ERROR", message: "ChannelMethods.getMessagesCount => Error retrieving message count for conversation \(conversationSid): \(String(describing: result.error))", details: nil))
+                    }
+                })
+            } else {
+                self.debug("getMessagesCount => onError: \(String(describing: result.error))")
+                completion(nil, FlutterError(code: "ERROR", message: "ChannelMethods.getMessagesCount => Error retrieving conversation with sid \(conversationSid): \(String(describing: result.error))", details: nil))
+            }
+        })
+    }
+    
+    func getUnreadMessagesCountConversationSid(_ conversationSid: String?, completion: @escaping (TWCONMessageCount?, FlutterError?) -> Void) {
+        debug("getUnreadMessagesCount => conversationSid: \(String(describing: conversationSid))")
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(nil, FlutterError(code: "ERROR", message: "Client has not been initialized.", details: nil))
+        }
+
+        guard let conversationSid = conversationSid else {
+            return completion(nil, FlutterError(code: "MISSING_PARAMS", message: "Missing 'conversationSid' parameter", details: nil))
+        }
+
+        client.conversation(withSidOrUniqueName: conversationSid, completion: { (result: TCHResult, conversation: TCHConversation?) in
             if result.isSuccessful, let conversation = conversation {
                 conversation.getUnreadMessagesCount() { (result: TCHResult , count: NSNumber?) in
                     if result.isSuccessful {
-                        SwiftTwilioConversationsPlugin.debug("\(call.method) => onSuccess")
-                        flutterResult(count)
+                        self.debug("getUnreadMessagesCount => onSuccess")
+                        let result = TWCONMessageCount()
+                        result.count = count
+                        completion(result, nil)
                     } else {
-                        flutterResult(FlutterError(code: "ERROR", message: "Error retrieving unread messages count for conversation with sid '\(conversationSid)', Error: \(result.error.debugDescription)", details: nil))
+                        self.debug("getUnreadMessagesCount => onError: \(String(describing: result.error))")
+                        completion(nil, FlutterError(code: "ERROR", message: "Error retrieving unread messages count for conversation with sid '\(conversationSid)', Error: \(result.error.debugDescription)", details: nil))
                     }
                 }
             } else {
-                flutterResult(FlutterError(code: "ERROR", message: "Error retrieving conversation with sid '\(conversationSid)'", details: nil))
+                self.debug("getUnreadMessagesCount => onError: \(String(describing: result.error))")
+                completion(nil, FlutterError(code: "ERROR", message: "Error retrieving conversation with sid '\(conversationSid)'", details: nil))
             }
         })
     }
-    
-    public static func join(_ call: FlutterMethodCall, _ flutterResult: @escaping FlutterResult) {
-        guard let arguments = call.arguments as? [String: Any?],
-              let conversationSid = arguments["conversationSid"] as? String else {
-            return flutterResult(FlutterError(code: "MISSING_PARAMS", message: "Missing parameters", details: nil))
+
+    func setLastReadMessageIndexConversationSid(_ conversationSid: String?, lastReadMessageIndex: NSNumber?, completion: @escaping (TWCONMessageIndex?, FlutterError?) -> Void) {
+        debug("setLastReadMessageIndex => conversationSid: \(String(describing: conversationSid))")
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(nil, FlutterError(code: "ERROR", message: "Client has not been initialized.", details: nil))
         }
-        
-        SwiftTwilioConversationsPlugin.instance?.client?.conversation(withSidOrUniqueName: conversationSid, completion: { (result: TCHResult, conversation: TCHConversation?) in
-            if result.isSuccessful, let conversation = conversation {
-                SwiftTwilioConversationsPlugin.debug("\(call.method) => onSuccess")
-                conversation.join { (result: TCHResult) in
-                    if result.isSuccessful {
-                        SwiftTwilioConversationsPlugin.debug("\(call.method) (conversation.join) => onSuccess")
-                        flutterResult(true)
-                    } else {
-                        SwiftTwilioConversationsPlugin.debug("\(call.method) (conversation.join) => onError: \(String(describing: result.error))")
-                        flutterResult(FlutterError(code: "ERROR", message: "Error joining conversation (conversation.join) with sid \(conversationSid): \(String(describing: result.error))", details: nil))
-                    }
-                }
-            } else {
-                SwiftTwilioConversationsPlugin.debug("\(call.method) => onError: \(String(describing: result.error))")
-                flutterResult(FlutterError(code: "ERROR", message: "Error joining conversation with sid \(conversationSid): \(String(describing: result.error))", details: nil))
-            }
-        })
-    }
-    
-    public static func leave(_ call: FlutterMethodCall, _ flutterResult: @escaping FlutterResult) {
-        guard let arguments = call.arguments as? [String: Any?],
-              let conversationSid = arguments["conversationSid"] as? String else {
-            return flutterResult(FlutterError(code: "MISSING_PARAMS", message: "Missing parameters", details: nil))
+
+        guard let conversationSid = conversationSid else {
+            return completion(nil, FlutterError(code: "MISSING_PARAMS", message: "Missing 'conversationSid' parameter", details: nil))
         }
-        
-        SwiftTwilioConversationsPlugin.instance?.client?.conversation(withSidOrUniqueName: conversationSid, completion: { (result: TCHResult, conversation: TCHConversation?) in
+
+        guard let lastReadMessageIndex = lastReadMessageIndex else {
+            return completion(nil, FlutterError(code: "MISSING_PARAMS", message: "Missing 'lastReadMessageIndex' parameter", details: nil))
+        }
+
+        client.conversation(withSidOrUniqueName: conversationSid, completion: { (result: TCHResult, conversation: TCHConversation?) in
             if result.isSuccessful,
                let conversation = conversation {
-                SwiftTwilioConversationsPlugin.debug("\(call.method) => onSuccess")
-                conversation.leave { (result: TCHResult) in
+                conversation.setLastReadMessageIndex(lastReadMessageIndex, completion: { (result: TCHResult, count: UInt) in
                     if result.isSuccessful {
-                        SwiftTwilioConversationsPlugin.debug("\(call.method) (conversation.leave) => onSuccess")
-                        flutterResult(true)
+                        self.debug("setLastReadMessageIndex => onSuccess")
+                        let result = TWCONMessageIndex()
+                        result.index = NSNumber(value: count)
+                        completion(result, nil)
                     } else {
-                        SwiftTwilioConversationsPlugin.debug("\(call.method) (conversation.leave) => onError: \(result.error.debugDescription)")
-                        flutterResult(FlutterError(code: "ERROR", message: "\(call.method) => Error leaving conversation (conversation.leave) with sid \(conversationSid): \(String(describing: result.error))", details: nil))
+                        self.debug("setLastReadMessageIndex => onError: \(result.error.debugDescription))")
+                        completion(nil, FlutterError(code: "ERROR", message: "Error setting last consumed message index (index: \(lastReadMessageIndex)) for conversation (sid: \(conversationSid))", details: nil))
                     }
-                }
+                })
             } else {
-                SwiftTwilioConversationsPlugin.debug("\(call.method) => onError: \(String(describing: result.error))")
-                flutterResult(FlutterError(code: "ERROR", message: "\(call.method) => Error leaving conversation with sid \(conversationSid): \(String(describing: result.error))", details: nil))
+                completion(nil, FlutterError(code: "ERROR", message: "Error retrieving conversation with sid '\(conversationSid)'", details: nil))
+            }
+        })
+
+    }
+    
+    func setAllMessagesReadConversationSid(_ conversationSid: String?, completion: @escaping (TWCONMessageIndex?, FlutterError?) -> Void) {
+        debug("setAllMessagesRead => conversationSid: \(String(describing: conversationSid))")
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(nil, FlutterError(code: "ERROR", message: "Client has not been initialized.", details: nil))
+        }
+
+        guard let conversationSid = conversationSid else {
+            return completion(nil, FlutterError(code: "MISSING_PARAMS", message: "Missing 'conversationSid' parameter", details: nil))
+        }
+
+        client.conversation(withSidOrUniqueName: conversationSid, completion: { (result: TCHResult, conversation: TCHConversation?) in
+            if result.isSuccessful,
+               let conversation = conversation {
+                conversation.setAllMessagesReadWithCompletion({ (result: TCHResult, count: UInt) in
+                    if result.isSuccessful {
+                        self.debug("setAllMessagesRead => onSuccess")
+                        let result = TWCONMessageIndex()
+                        result.index = NSNumber(value: count)
+                        completion(result, nil)
+                    } else {
+                        self.debug("setAllMessagesRead => onError: \(String(describing: result.error))")
+                        completion(nil, FlutterError(code: "ERROR", message: "Error setting all messages read for conversation (sid: \(conversationSid))", details: nil))
+                    }
+                })
+            } else {
+                completion(nil, FlutterError(code: "ERROR", message: "Error retrieving conversation with sid '\(conversationSid)'", details: nil))
             }
         })
     }
     
-    public static func setFriendlyName(_ call: FlutterMethodCall, _ flutterResult: @escaping FlutterResult) {
-        guard let arguments = call.arguments as? [String: Any?],
-              let conversationSid = arguments["conversationSid"] as? String,
-              let friendlyName = arguments["friendlyName"] as? String else {
-            return flutterResult(FlutterError(code: "MISSING_PARAMS", message: "Missing parameters", details: nil))
+    func getMessagesBeforeConversationSid(_ conversationSid: String?, index: NSNumber?, count: NSNumber?, completion: @escaping ([TWCONMessageData]?, FlutterError?) -> Void) {
+        debug("getMessagesBefore => conversationSid: \(String(describing: conversationSid))")
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(nil, FlutterError(code: "ERROR", message: "Client has not been initialized.", details: nil))
         }
-        SwiftTwilioConversationsPlugin.instance?.client?.conversation(withSidOrUniqueName: conversationSid, completion: { (result: TCHResult, conversation: TCHConversation?) in
+
+        guard let conversationSid = conversationSid else {
+            return completion(nil, FlutterError(code: "MISSING_PARAMS", message: "Missing 'conversationSid' parameter", details: nil))
+        }
+
+        guard let index = index else {
+            return completion(nil, FlutterError(code: "MISSING_PARAMS", message: "Missing 'index' parameter", details: nil))
+        }
+
+        guard let count = count else {
+            return completion(nil, FlutterError(code: "MISSING_PARAMS", message: "Missing 'count' parameter", details: nil))
+        }
+
+        client.conversation(withSidOrUniqueName: conversationSid, completion: { (result: TCHResult, conversation: TCHConversation?) in
             if result.isSuccessful, let conversation = conversation {
-                SwiftTwilioConversationsPlugin.debug("\(call.method) => onSuccess")
+                conversation.getMessagesBefore(index.uintValue, withCount: count.uintValue, completion: { (result: TCHResult, messages: [TCHMessage]?) in
+                    if result.isSuccessful, let messages = messages {
+                        self.debug("getMessagesBefore => onSuccess")
+                        let messagesMap = messages.map { message in
+                            Mapper.messageToPigeon(message, conversationSid: conversationSid)
+                        }
+                        completion(messagesMap, nil)
+                    } else {
+                        self.debug("getMessagesBefore => onError: \(String(describing: result.error))")
+                        completion(nil, FlutterError(code: "ERROR", message: "Error retrieving \(count) messages before message (index: \(index)) from conversation (sid: \(conversationSid))", details: nil))
+                    }
+                })
+            } else {
+                completion(nil, FlutterError(code: "ERROR", message: "Error retrieving conversation with sid '\(conversationSid)'", details: nil))
+            }
+        })
+    }
+    
+    func getLastMessagesConversationSid(_ conversationSid: String?, count: NSNumber?, completion: @escaping ([TWCONMessageData]?, FlutterError?) -> Void) {
+        debug("getLastMessages => conversationSid: \(String(describing: conversationSid))")
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(nil, FlutterError(code: "ERROR", message: "Client has not been initialized.", details: nil))
+        }
+
+        guard let conversationSid = conversationSid else {
+            return completion(nil, FlutterError(code: "MISSING_PARAMS", message: "Missing 'conversationSid' parameter", details: nil))
+        }
+
+        guard let count = count else {
+            return completion(nil, FlutterError(code: "MISSING_PARAMS", message: "Missing 'count' parameter", details: nil))
+        }
+
+        client.conversation(withSidOrUniqueName: conversationSid, completion: { (result: TCHResult, conversation: TCHConversation?) in
+            if result.isSuccessful, let conversation = conversation {
+                conversation.getLastMessages(withCount: count.uintValue, completion: { (result: TCHResult, messages: [TCHMessage]?) in
+                    if result.isSuccessful, let messages = messages {
+                        self.debug("getLastMessages => onSuccess")
+                        let messagesMap = messages.map { message in
+                            Mapper.messageToPigeon(message, conversationSid: conversationSid)
+                        }
+                        completion(messagesMap, nil)
+                    } else {
+                        self.debug("getLastMessages => onError: \(String(describing: result.error))")
+                        completion(nil, FlutterError(code: "ERROR", message: "Error retrieving last \(count) messages for conversation with sid '\(conversationSid)'", details: nil))
+                    }
+                })
+            } else {
+                completion(nil, FlutterError(code: "ERROR", message: "Error retrieving conversation with sid '\(conversationSid)'", details: nil))
+            }
+        })
+    }
+    
+    func setFriendlyNameConversationSid(_ conversationSid: String?, friendlyName: String?, completion: @escaping (String?, FlutterError?) -> Void) {
+        debug("setFriendlyName => conversationSid: \(String(describing: conversationSid))")
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(nil, FlutterError(code: "ERROR", message: "Client has not been initialized.", details: nil))
+        }
+
+        guard let conversationSid = conversationSid else {
+            return completion(nil, FlutterError(code: "MISSING_PARAMS", message: "Missing 'conversationSid' parameter", details: nil))
+        }
+
+        guard let friendlyName = friendlyName else {
+            return completion(nil, FlutterError(code: "MISSING_PARAMS", message: "Missing 'friendlyName' parameter", details: nil))
+        }
+
+        client.conversation(withSidOrUniqueName: conversationSid, completion: { (result: TCHResult, conversation: TCHConversation?) in
+            if result.isSuccessful, let conversation = conversation {
+                self.debug("setFriendlyName => onSuccess")
                 conversation.setFriendlyName(friendlyName) { (result: TCHResult) in
                     if result.isSuccessful {
-                        flutterResult(conversation.friendlyName)
+                        completion(conversation.friendlyName, nil)
                     } else {
-                        flutterResult(FlutterError(code: "ERROR", message: "\(call.method) => Error setting friendlyName for conversation with sid \(conversationSid): \(String(describing: result.error))", details: nil))
+                        completion(nil, FlutterError(code: "ERROR", message: "setFriendlyName => Error setting friendlyName for conversation with sid \(conversationSid): \(String(describing: result.error))", details: nil))
                     }
                 }
             } else {
-                SwiftTwilioConversationsPlugin.debug("\(call.method) => onError: \(String(describing: result.error))")
-                flutterResult(FlutterError(code: "ERROR", message: "\(call.method) => Error retrieving conversation with sid \(conversationSid): \(String(describing: result.error))", details: nil))
+                self.debug("setFriendlyName => onError: \(String(describing: result.error))")
+                completion(nil, FlutterError(code: "ERROR", message: "setFriendlyName => Error retrieving conversation with sid \(conversationSid): \(String(describing: result.error))", details: nil))
             }
         })
     }
     
-    public static func typing(_ call: FlutterMethodCall, _ flutterResult: @escaping FlutterResult) {
-        guard let arguments = call.arguments as? [String: Any?],
-              let conversationSid = arguments["conversationSid"] as? String else {
-            return flutterResult(FlutterError(code: "MISSING_PARAMS", message: "Missing conversationSid", details: nil))
-        }
-        
-        SwiftTwilioConversationsPlugin.instance?.client?.conversation(withSidOrUniqueName: conversationSid, completion: { (result: TCHResult, conversation: TCHConversation?) in
-            if result.isSuccessful, let conversation = conversation {
-                SwiftTwilioConversationsPlugin.debug("\(call.method) => onSuccess")
-                conversation.typing()
-                flutterResult(nil)
-            } else {
-                SwiftTwilioConversationsPlugin.debug("\(call.method) => onError: \(String(describing: result.error))")
-                flutterResult(FlutterError(code: "ERROR", message: "\(call.method) => Error retrieving conversation with sid \(conversationSid): \(result.error?.description ?? "")", details: nil))
-            }
-        })
+    private func debug(_ msg: String) {
+        SwiftTwilioConversationsPlugin.debug("\(TAG)::\(msg)")
     }
 }

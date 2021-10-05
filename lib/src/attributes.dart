@@ -23,9 +23,16 @@ class Attributes {
   /// Returns attributes type
   AttributesType get type => _type;
 
+  String? get data => _json;
+
+  // In the Android SDK, Twilio uses JSONObject.NULL as the data for NULL Attributes
+  // Which stringifies to "null"
+  // TODO: once fully converted to Pigeon, review whether we can resume expecting `_json` to be `null`
   Attributes(this._type, this._json)
-      : assert((_type == AttributesType.NULL && _json == null) ||
+      : assert((_type == AttributesType.NULL) ||
             (_type != AttributesType.NULL && _json != null));
+  // : assert((_type == AttributesType.NULL && _json == null) ||
+  //       (_type != AttributesType.NULL && _json != null));
 
   factory Attributes.fromMap(Map<String, dynamic> map) {
     final type = EnumToString.fromString(AttributesType.values, map['type']) ??

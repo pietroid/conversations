@@ -5,32 +5,42 @@ import com.twilio.conversations.Conversation
 import com.twilio.conversations.ErrorInfo
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import twilio.flutter.twilio_conversations.Api
 import twilio.flutter.twilio_conversations.Mapper
 import twilio.flutter.twilio_conversations.TwilioConversationsPlugin
 
-object ParticipantMethods {
-    fun getUser(call: MethodCall, result: MethodChannel.Result) {
-        val conversationSid = call.argument<String>("conversationSid")
-                ?: return result.error("ERROR", "Missing 'conversationSid'", null)
-        val participantSid = call.argument<String>("participantSid")
-                ?: return result.error("ERROR", "Missing 'participantSid'", null)
+class ParticipantMethods: Api.ParticipantApi {
+    private val TAG = "ParticipantMethods"
 
-        TwilioConversationsPlugin.client?.getConversation(conversationSid, object : CallbackListener<Conversation> {
+    override fun getUser(
+        conversationSid: String,
+        participantSid: String,
+        result: Api.Result<Api.UserData>
+    ) {
+        debug("getUser => conversationSid: $conversationSid")
+        val client = TwilioConversationsPlugin.client
+            ?: return result.error(RuntimeException("Client is not initialized"))
+
+        client.getConversation(conversationSid, object : CallbackListener<Conversation> {
             override fun onSuccess(conversation: Conversation) {
-                TwilioConversationsPlugin.debug("${call.method} => onSuccess")
                 val participant = conversation.participantsList.firstOrNull {
                     it.sid == participantSid
-                }
+                } ?: return result.error(RuntimeException("No participant found with SID: $participantSid"))
 
-                participant?.getAndSubscribeUser {
-                    result.success(Mapper.userToMap(it))
-                } ?: result.success(null)
+                participant.getAndSubscribeUser {
+                    debug("getUser => onSuccess")
+                    result.success(Mapper.userToPigeon(it))
+                }
             }
 
             override fun onError(errorInfo: ErrorInfo) {
-                TwilioConversationsPlugin.debug("${call.method} onError: $errorInfo")
-                result.error("${errorInfo.code}", errorInfo.message, errorInfo.status)
+                debug("getUser => onError: $errorInfo")
+                result.error(RuntimeException(errorInfo.message))
             }
         })
+    }
+
+    fun debug(message: String) {
+        TwilioConversationsPlugin.debug("$TAG::$message")
     }
 }

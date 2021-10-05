@@ -1,5 +1,7 @@
 package twilio.flutter.twilio_conversations
 
+import ConversationMethods
+import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -14,6 +16,10 @@ import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import twilio.flutter.twilio_conversations.listeners.ClientListener
+import twilio.flutter.twilio_conversations.methods.ConversationClientMethods
+import twilio.flutter.twilio_conversations.methods.MessageMethods
+import twilio.flutter.twilio_conversations.methods.ParticipantMethods
+import twilio.flutter.twilio_conversations.methods.PluginMethods
 
 /** TwilioConversationsPlugin */
 class TwilioConversationsPlugin : FlutterPlugin {
@@ -29,9 +35,26 @@ class TwilioConversationsPlugin : FlutterPlugin {
         lateinit var instance: TwilioConversationsPlugin
 
         @JvmStatic
+        val pluginApi: Api.PluginApi = PluginMethods()
+
+        @JvmStatic
+        val conversationClientApi: Api.ConversationClientApi = ConversationClientMethods()
+
+        @JvmStatic
+        val conversationApi: Api.ConversationApi = ConversationMethods()
+
+        @JvmStatic
+        val participantApi: Api.ParticipantApi = ParticipantMethods()
+
+        @JvmStatic
+        val messageApi: Api.MessageApi = MessageMethods()
+
+        @JvmStatic
         var client: ConversationsClient? = null
 
         lateinit var messenger: BinaryMessenger
+
+        lateinit var applicationContext: Context
 
         lateinit var clientListener: ClientListener
 
@@ -60,10 +83,15 @@ class TwilioConversationsPlugin : FlutterPlugin {
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         instance = this
         messenger = flutterPluginBinding.binaryMessenger
+        applicationContext = flutterPluginBinding.applicationContext
 
         methodChannel = MethodChannel(flutterPluginBinding.binaryMessenger, "twilio_conversations")
-        val methodCallHandler = PluginHandler(flutterPluginBinding.applicationContext)
-        methodChannel.setMethodCallHandler(methodCallHandler)
+
+        Api.PluginApi.setup(flutterPluginBinding.binaryMessenger, pluginApi)
+        Api.ConversationClientApi.setup(flutterPluginBinding.binaryMessenger, conversationClientApi)
+        Api.ConversationApi.setup(flutterPluginBinding.binaryMessenger, conversationApi)
+        Api.ParticipantApi.setup(flutterPluginBinding.binaryMessenger, participantApi)
+        Api.MessageApi.setup(flutterPluginBinding.binaryMessenger, messageApi)
 
         clientChannel = EventChannel(messenger, "twilio_conversations/client")
         clientChannel.setStreamHandler(object : EventChannel.StreamHandler {
@@ -128,43 +156,7 @@ class TwilioConversationsPlugin : FlutterPlugin {
         notificationChannel.setStreamHandler(null)
     }
 
-    fun registerForNotification(call: MethodCall, result: MethodChannel.Result) {
-        val token: String = call.argument("token")
-                ?: return result.error("MISSING_PARAMS", "The parameter 'token' was not provided", null)
-
-        client?.registerFCMToken(ConversationsClient.FCMToken(token), object : StatusListener {
-            override fun onSuccess() {
-                sendNotificationEvent("registered", mapOf("result" to true))
-                result.success(null)
-            }
-
-            override fun onError(errorInfo: ErrorInfo?) {
-                super.onError(errorInfo)
-                sendNotificationEvent("registered", mapOf("result" to false), errorInfo)
-                result.error("FAILED", "Failed to register for FCM notifications", errorInfo)
-            }
-        })
-    }
-
-    fun unregisterForNotification(call: MethodCall, result: MethodChannel.Result) {
-        val token: String = call.argument("token")
-                ?: return result.error("MISSING_PARAMS", "The parameter 'token' was not given", null)
-
-        client?.unregisterFCMToken(ConversationsClient.FCMToken(token), object : StatusListener {
-            override fun onSuccess() {
-                sendNotificationEvent("deregistered", mapOf("result" to true))
-                result.success(null)
-            }
-
-            override fun onError(errorInfo: ErrorInfo?) {
-                super.onError(errorInfo)
-                sendNotificationEvent("deregistered", mapOf("result" to false), errorInfo)
-                result.error("FAILED", "Failed to unregister for FCM notifications", errorInfo)
-            }
-        })
-    }
-
-    private fun sendNotificationEvent(name: String, data: Any?, e: ErrorInfo? = null) {
+    internal fun sendNotificationEvent(name: String, data: Any?, e: ErrorInfo? = null) {
         val eventData = mapOf("name" to name, "data" to data, "error" to Mapper.errorInfoToMap(e))
         notificationSink?.success(eventData)
     }
