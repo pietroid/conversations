@@ -585,6 +585,65 @@ public class Api {
     }
   }
 
+  /** Generated class from Pigeon that represents data sent in messages. */
+  public static class ConversationUpdatedData {
+    private ConversationData conversation;
+    public ConversationData getConversation() { return conversation; }
+    public void setConversation(ConversationData setterArg) { this.conversation = setterArg; }
+
+    private String reason;
+    public String getReason() { return reason; }
+    public void setReason(String setterArg) { this.reason = setterArg; }
+
+    Map<String, Object> toMap() {
+      Map<String, Object> toMapResult = new HashMap<>();
+      toMapResult.put("conversation", (conversation == null) ? null : conversation.toMap());
+      toMapResult.put("reason", reason);
+      return toMapResult;
+    }
+    static ConversationUpdatedData fromMap(Map<String, Object> map) {
+      ConversationUpdatedData fromMapResult = new ConversationUpdatedData();
+      Object conversation = map.get("conversation");
+      fromMapResult.conversation = ConversationData.fromMap((Map)conversation);
+      Object reason = map.get("reason");
+      fromMapResult.reason = (String)reason;
+      return fromMapResult;
+    }
+  }
+
+  /** Generated class from Pigeon that represents data sent in messages. */
+  public static class ErrorInfoData {
+    private Long code;
+    public Long getCode() { return code; }
+    public void setCode(Long setterArg) { this.code = setterArg; }
+
+    private String message;
+    public String getMessage() { return message; }
+    public void setMessage(String setterArg) { this.message = setterArg; }
+
+    private Long status;
+    public Long getStatus() { return status; }
+    public void setStatus(Long setterArg) { this.status = setterArg; }
+
+    Map<String, Object> toMap() {
+      Map<String, Object> toMapResult = new HashMap<>();
+      toMapResult.put("code", code);
+      toMapResult.put("message", message);
+      toMapResult.put("status", status);
+      return toMapResult;
+    }
+    static ErrorInfoData fromMap(Map<String, Object> map) {
+      ErrorInfoData fromMapResult = new ErrorInfoData();
+      Object code = map.get("code");
+      fromMapResult.code = (code == null) ? null : ((code instanceof Integer) ? (Integer)code : (Long)code);
+      Object message = map.get("message");
+      fromMapResult.message = (String)message;
+      Object status = map.get("status");
+      fromMapResult.status = (status == null) ? null : ((status instanceof Integer) ? (Integer)status : (Long)status);
+      return fromMapResult;
+    }
+  }
+
   public interface Result<T> {
     void success(T result);
     void error(Throwable error);
@@ -1715,6 +1774,317 @@ public class Api {
           channel.setMessageHandler(null);
         }
       }
+    }
+  }
+  private static class FlutterConversationClientApiCodec extends StandardMessageCodec {
+    public static final FlutterConversationClientApiCodec INSTANCE = new FlutterConversationClientApiCodec();
+    private FlutterConversationClientApiCodec() {}
+    @Override
+    protected Object readValueOfType(byte type, ByteBuffer buffer) {
+      switch (type) {
+        case (byte)128:         
+          return ConversationData.fromMap((Map<String, Object>) readValue(buffer));
+        
+        case (byte)129:         
+          return ConversationUpdatedData.fromMap((Map<String, Object>) readValue(buffer));
+        
+        case (byte)130:         
+          return ErrorInfoData.fromMap((Map<String, Object>) readValue(buffer));
+        
+        case (byte)131:         
+          return MessageData.fromMap((Map<String, Object>) readValue(buffer));
+        
+        case (byte)132:         
+          return ParticipantData.fromMap((Map<String, Object>) readValue(buffer));
+        
+        case (byte)133:         
+          return UserData.fromMap((Map<String, Object>) readValue(buffer));
+        
+        default:        
+          return super.readValueOfType(type, buffer);
+        
+      }
+    }
+    @Override
+    protected void writeValue(ByteArrayOutputStream stream, Object value)     {
+      if (value instanceof ConversationData) {
+        stream.write(128);
+        writeValue(stream, ((ConversationData) value).toMap());
+      } else 
+      if (value instanceof ConversationUpdatedData) {
+        stream.write(129);
+        writeValue(stream, ((ConversationUpdatedData) value).toMap());
+      } else 
+      if (value instanceof ErrorInfoData) {
+        stream.write(130);
+        writeValue(stream, ((ErrorInfoData) value).toMap());
+      } else 
+      if (value instanceof MessageData) {
+        stream.write(131);
+        writeValue(stream, ((MessageData) value).toMap());
+      } else 
+      if (value instanceof ParticipantData) {
+        stream.write(132);
+        writeValue(stream, ((ParticipantData) value).toMap());
+      } else 
+      if (value instanceof UserData) {
+        stream.write(133);
+        writeValue(stream, ((UserData) value).toMap());
+      } else 
+{
+        super.writeValue(stream, value);
+      }
+    }
+  }
+
+  /** Generated class from Pigeon that represents Flutter messages that can be called from Java.*/
+  public static class FlutterConversationClientApi {
+    private final BinaryMessenger binaryMessenger;
+    public FlutterConversationClientApi(BinaryMessenger argBinaryMessenger){
+      this.binaryMessenger = argBinaryMessenger;
+    }
+    public interface Reply<T> {
+      void reply(T reply);
+    }
+    static MessageCodec<Object> getCodec() {
+      return FlutterConversationClientApiCodec.INSTANCE;
+    }
+
+    public void error(ErrorInfoData errorInfoDataArg, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.error", getCodec());
+      channel.send(new ArrayList<Object>(Arrays.asList(errorInfoDataArg)), channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void conversationAdded(ConversationData conversationDataArg, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.conversationAdded", getCodec());
+      channel.send(new ArrayList<Object>(Arrays.asList(conversationDataArg)), channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void conversationUpdated(ConversationUpdatedData eventArg, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.conversationUpdated", getCodec());
+      channel.send(new ArrayList<Object>(Arrays.asList(eventArg)), channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void conversationDeleted(ConversationData conversationDataArg, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.conversationDeleted", getCodec());
+      channel.send(new ArrayList<Object>(Arrays.asList(conversationDataArg)), channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void clientSynchronization(String synchronizationStatusArg, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.clientSynchronization", getCodec());
+      channel.send(new ArrayList<Object>(Arrays.asList(synchronizationStatusArg)), channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void conversationSynchronizationChange(ConversationData conversationDataArg, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.conversationSynchronizationChange", getCodec());
+      channel.send(new ArrayList<Object>(Arrays.asList(conversationDataArg)), channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void connectionStateChange(String connectionStateArg, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.connectionStateChange", getCodec());
+      channel.send(new ArrayList<Object>(Arrays.asList(connectionStateArg)), channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void tokenAboutToExpire(Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.tokenAboutToExpire", getCodec());
+      channel.send(null, channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void tokenExpired(Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.tokenExpired", getCodec());
+      channel.send(null, channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void userSubscribed(UserData userDataArg, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.userSubscribed", getCodec());
+      channel.send(new ArrayList<Object>(Arrays.asList(userDataArg)), channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void userUnsubscribed(UserData userDataArg, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.userUnsubscribed", getCodec());
+      channel.send(new ArrayList<Object>(Arrays.asList(userDataArg)), channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void userUpdated(UserData userDataArg, String reasonArg, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.userUpdated", getCodec());
+      channel.send(new ArrayList<Object>(Arrays.asList(userDataArg, reasonArg)), channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void addedToConversationNotification(String conversationSidArg, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.addedToConversationNotification", getCodec());
+      channel.send(new ArrayList<Object>(Arrays.asList(conversationSidArg)), channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void newMessageNotification(String conversationSidArg, Long messageIndexArg, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.newMessageNotification", getCodec());
+      channel.send(new ArrayList<Object>(Arrays.asList(conversationSidArg, messageIndexArg)), channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void notificationSubscribed(Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.notificationSubscribed", getCodec());
+      channel.send(null, channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void notificationFailed(ErrorInfoData errorInfoDataArg, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.notificationFailed", getCodec());
+      channel.send(new ArrayList<Object>(Arrays.asList(errorInfoDataArg)), channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void removedFromConversationNotification(String conversationSidArg, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.removedFromConversationNotification", getCodec());
+      channel.send(new ArrayList<Object>(Arrays.asList(conversationSidArg)), channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void registered(Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.registered", getCodec());
+      channel.send(null, channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void registrationFailed(ErrorInfoData errorInfoDataArg, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.registrationFailed", getCodec());
+      channel.send(new ArrayList<Object>(Arrays.asList(errorInfoDataArg)), channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void deregistered(Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.deregistered", getCodec());
+      channel.send(null, channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void deregistrationFailed(ErrorInfoData errorInfoDataArg, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.deregistrationFailed", getCodec());
+      channel.send(new ArrayList<Object>(Arrays.asList(errorInfoDataArg)), channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void messageAdded(String conversationSidArg, MessageData messageDataArg, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.messageAdded", getCodec());
+      channel.send(new ArrayList<Object>(Arrays.asList(conversationSidArg, messageDataArg)), channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void messageUpdated(String conversationSidArg, MessageData messageDataArg, String reasonArg, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.messageUpdated", getCodec());
+      channel.send(new ArrayList<Object>(Arrays.asList(conversationSidArg, messageDataArg, reasonArg)), channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void messageDeleted(String conversationSidArg, MessageData messageDataArg, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.messageDeleted", getCodec());
+      channel.send(new ArrayList<Object>(Arrays.asList(conversationSidArg, messageDataArg)), channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void participantAdded(String conversationSidArg, ParticipantData participantDataArg, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.participantAdded", getCodec());
+      channel.send(new ArrayList<Object>(Arrays.asList(conversationSidArg, participantDataArg)), channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void participantUpdated(String conversationSidArg, ParticipantData participantDataArg, String reasonArg, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.participantUpdated", getCodec());
+      channel.send(new ArrayList<Object>(Arrays.asList(conversationSidArg, participantDataArg, reasonArg)), channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void participantDeleted(String conversationSidArg, ParticipantData participantDataArg, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.participantDeleted", getCodec());
+      channel.send(new ArrayList<Object>(Arrays.asList(conversationSidArg, participantDataArg)), channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void typingStarted(String conversationSidArg, ConversationData conversationDataArg, ParticipantData participantDataArg, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.typingStarted", getCodec());
+      channel.send(new ArrayList<Object>(Arrays.asList(conversationSidArg, conversationDataArg, participantDataArg)), channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void typingEnded(String conversationSidArg, ConversationData conversationDataArg, ParticipantData participantDataArg, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.typingEnded", getCodec());
+      channel.send(new ArrayList<Object>(Arrays.asList(conversationSidArg, conversationDataArg, participantDataArg)), channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void synchronizationChanged(String conversationSidArg, ConversationData conversationDataArg, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterConversationClientApi.synchronizationChanged", getCodec());
+      channel.send(new ArrayList<Object>(Arrays.asList(conversationSidArg, conversationDataArg)), channelReply -> {
+        callback.reply(null);
+      });
+    }
+  }
+  private static class FlutterLoggingApiCodec extends StandardMessageCodec {
+    public static final FlutterLoggingApiCodec INSTANCE = new FlutterLoggingApiCodec();
+    private FlutterLoggingApiCodec() {}
+  }
+
+  /** Generated class from Pigeon that represents Flutter messages that can be called from Java.*/
+  public static class FlutterLoggingApi {
+    private final BinaryMessenger binaryMessenger;
+    public FlutterLoggingApi(BinaryMessenger argBinaryMessenger){
+      this.binaryMessenger = argBinaryMessenger;
+    }
+    public interface Reply<T> {
+      void reply(T reply);
+    }
+    static MessageCodec<Object> getCodec() {
+      return FlutterLoggingApiCodec.INSTANCE;
+    }
+
+    public void logFromHost(String msgArg, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.FlutterLoggingApi.logFromHost", getCodec());
+      channel.send(new ArrayList<Object>(Arrays.asList(msgArg)), channelReply -> {
+        callback.reply(null);
+      });
     }
   }
   private static Map<String, Object> wrapError(Throwable exception) {

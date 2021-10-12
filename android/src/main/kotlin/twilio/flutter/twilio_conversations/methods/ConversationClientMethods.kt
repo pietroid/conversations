@@ -113,13 +113,13 @@ class ConversationClientMethods: Api.ConversationClientApi {
 
         TwilioConversationsPlugin.client?.registerFCMToken(ConversationsClient.FCMToken(token), object : StatusListener {
             override fun onSuccess() {
-                TwilioConversationsPlugin.instance.sendNotificationEvent("registered", mapOf("result" to true))
+                TwilioConversationsPlugin.flutterClientApi.registered {  }
                 result.success(null)
             }
 
             override fun onError(errorInfo: ErrorInfo) {
                 super.onError(errorInfo)
-                TwilioConversationsPlugin.instance.sendNotificationEvent("registered", mapOf("result" to false), errorInfo)
+                TwilioConversationsPlugin.flutterClientApi.registrationFailed(Mapper.errorInfoToPigeon(errorInfo)) { }
                 result.error(RuntimeException("Failed to register for FCM notifications: ${errorInfo.message}"))
             }
         })
@@ -131,13 +131,13 @@ class ConversationClientMethods: Api.ConversationClientApi {
 
         TwilioConversationsPlugin.client?.unregisterFCMToken(ConversationsClient.FCMToken(token), object : StatusListener {
             override fun onSuccess() {
-                TwilioConversationsPlugin.instance.sendNotificationEvent("deregistered", mapOf("result" to true))
+                TwilioConversationsPlugin.flutterClientApi.deregistered {  }
                 result.success(null)
             }
 
             override fun onError(errorInfo: ErrorInfo) {
                 super.onError(errorInfo)
-                TwilioConversationsPlugin.instance.sendNotificationEvent("deregistered", mapOf("result" to false), errorInfo)
+                TwilioConversationsPlugin.flutterClientApi.deregistrationFailed(Mapper.errorInfoToPigeon(errorInfo)) { }
                 result.error(RuntimeException("Failed to register for FCM notifications: ${errorInfo.message}"))
             }
         })

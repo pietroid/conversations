@@ -349,6 +349,49 @@ class MessageIndex {
   }
 }
 
+class ConversationUpdatedData {
+  ConversationData? conversation;
+  String? reason;
+
+  Object encode() {
+    final Map<Object?, Object?> pigeonMap = <Object?, Object?>{};
+    pigeonMap['conversation'] = conversation == null ? null : conversation!.encode();
+    pigeonMap['reason'] = reason;
+    return pigeonMap;
+  }
+
+  static ConversationUpdatedData decode(Object message) {
+    final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
+    return ConversationUpdatedData()
+      ..conversation = pigeonMap['conversation'] != null
+          ? ConversationData.decode(pigeonMap['conversation']!)
+          : null
+      ..reason = pigeonMap['reason'] as String?;
+  }
+}
+
+class ErrorInfoData {
+  int? code;
+  String? message;
+  int? status;
+
+  Object encode() {
+    final Map<Object?, Object?> pigeonMap = <Object?, Object?>{};
+    pigeonMap['code'] = code;
+    pigeonMap['message'] = message;
+    pigeonMap['status'] = status;
+    return pigeonMap;
+  }
+
+  static ErrorInfoData decode(Object message) {
+    final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
+    return ErrorInfoData()
+      ..code = pigeonMap['code'] as int?
+      ..message = pigeonMap['message'] as String?
+      ..status = pigeonMap['status'] as int?;
+  }
+}
+
 class _PluginApiCodec extends StandardMessageCodec {
   const _PluginApiCodec();
   @override
@@ -1137,6 +1180,624 @@ class MessageApi {
       );
     } else {
       return (replyMap['result'] as String?)!;
+    }
+  }
+}
+
+class _FlutterConversationClientApiCodec extends StandardMessageCodec {
+  const _FlutterConversationClientApiCodec();
+  @override
+  void writeValue(WriteBuffer buffer, Object? value) {
+    if (value is ConversationData) {
+      buffer.putUint8(128);
+      writeValue(buffer, value.encode());
+    } else 
+    if (value is ConversationUpdatedData) {
+      buffer.putUint8(129);
+      writeValue(buffer, value.encode());
+    } else 
+    if (value is ErrorInfoData) {
+      buffer.putUint8(130);
+      writeValue(buffer, value.encode());
+    } else 
+    if (value is MessageData) {
+      buffer.putUint8(131);
+      writeValue(buffer, value.encode());
+    } else 
+    if (value is ParticipantData) {
+      buffer.putUint8(132);
+      writeValue(buffer, value.encode());
+    } else 
+    if (value is UserData) {
+      buffer.putUint8(133);
+      writeValue(buffer, value.encode());
+    } else 
+{
+      super.writeValue(buffer, value);
+    }
+  }
+  @override
+  Object? readValueOfType(int type, ReadBuffer buffer) {
+    switch (type) {
+      case 128:       
+        return ConversationData.decode(readValue(buffer)!);
+      
+      case 129:       
+        return ConversationUpdatedData.decode(readValue(buffer)!);
+      
+      case 130:       
+        return ErrorInfoData.decode(readValue(buffer)!);
+      
+      case 131:       
+        return MessageData.decode(readValue(buffer)!);
+      
+      case 132:       
+        return ParticipantData.decode(readValue(buffer)!);
+      
+      case 133:       
+        return UserData.decode(readValue(buffer)!);
+      
+      default:      
+        return super.readValueOfType(type, buffer);
+      
+    }
+  }
+}
+abstract class FlutterConversationClientApi {
+  static const MessageCodec<Object?> codec = _FlutterConversationClientApiCodec();
+
+  void error(ErrorInfoData errorInfoData);
+  void conversationAdded(ConversationData conversationData);
+  void conversationUpdated(ConversationUpdatedData event);
+  void conversationDeleted(ConversationData conversationData);
+  void clientSynchronization(String synchronizationStatus);
+  void conversationSynchronizationChange(ConversationData conversationData);
+  void connectionStateChange(String connectionState);
+  void tokenAboutToExpire();
+  void tokenExpired();
+  void userSubscribed(UserData userData);
+  void userUnsubscribed(UserData userData);
+  void userUpdated(UserData userData, String reason);
+  void addedToConversationNotification(String conversationSid);
+  void newMessageNotification(String conversationSid, int messageIndex);
+  void notificationSubscribed();
+  void notificationFailed(ErrorInfoData errorInfoData);
+  void removedFromConversationNotification(String conversationSid);
+  void registered();
+  void registrationFailed(ErrorInfoData errorInfoData);
+  void deregistered();
+  void deregistrationFailed(ErrorInfoData errorInfoData);
+  void messageAdded(String conversationSid, MessageData messageData);
+  void messageUpdated(String conversationSid, MessageData messageData, String reason);
+  void messageDeleted(String conversationSid, MessageData messageData);
+  void participantAdded(String conversationSid, ParticipantData participantData);
+  void participantUpdated(String conversationSid, ParticipantData participantData, String reason);
+  void participantDeleted(String conversationSid, ParticipantData participantData);
+  void typingStarted(String conversationSid, ConversationData conversationData, ParticipantData participantData);
+  void typingEnded(String conversationSid, ConversationData conversationData, ParticipantData participantData);
+  void synchronizationChanged(String conversationSid, ConversationData conversationData);
+  static void setup(FlutterConversationClientApi? api) {
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.error', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.error was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final ErrorInfoData? arg_errorInfoData = args[0] as ErrorInfoData?;
+          assert(arg_errorInfoData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.error was null, expected non-null ErrorInfoData.');
+          api.error(arg_errorInfoData!);
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.conversationAdded', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.conversationAdded was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final ConversationData? arg_conversationData = args[0] as ConversationData?;
+          assert(arg_conversationData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.conversationAdded was null, expected non-null ConversationData.');
+          api.conversationAdded(arg_conversationData!);
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.conversationUpdated', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.conversationUpdated was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final ConversationUpdatedData? arg_event = args[0] as ConversationUpdatedData?;
+          assert(arg_event != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.conversationUpdated was null, expected non-null ConversationUpdatedData.');
+          api.conversationUpdated(arg_event!);
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.conversationDeleted', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.conversationDeleted was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final ConversationData? arg_conversationData = args[0] as ConversationData?;
+          assert(arg_conversationData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.conversationDeleted was null, expected non-null ConversationData.');
+          api.conversationDeleted(arg_conversationData!);
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.clientSynchronization', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.clientSynchronization was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final String? arg_synchronizationStatus = args[0] as String?;
+          assert(arg_synchronizationStatus != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.clientSynchronization was null, expected non-null String.');
+          api.clientSynchronization(arg_synchronizationStatus!);
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.conversationSynchronizationChange', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.conversationSynchronizationChange was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final ConversationData? arg_conversationData = args[0] as ConversationData?;
+          assert(arg_conversationData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.conversationSynchronizationChange was null, expected non-null ConversationData.');
+          api.conversationSynchronizationChange(arg_conversationData!);
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.connectionStateChange', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.connectionStateChange was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final String? arg_connectionState = args[0] as String?;
+          assert(arg_connectionState != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.connectionStateChange was null, expected non-null String.');
+          api.connectionStateChange(arg_connectionState!);
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.tokenAboutToExpire', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          // ignore message
+          api.tokenAboutToExpire();
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.tokenExpired', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          // ignore message
+          api.tokenExpired();
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.userSubscribed', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.userSubscribed was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final UserData? arg_userData = args[0] as UserData?;
+          assert(arg_userData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.userSubscribed was null, expected non-null UserData.');
+          api.userSubscribed(arg_userData!);
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.userUnsubscribed', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.userUnsubscribed was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final UserData? arg_userData = args[0] as UserData?;
+          assert(arg_userData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.userUnsubscribed was null, expected non-null UserData.');
+          api.userUnsubscribed(arg_userData!);
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.userUpdated', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.userUpdated was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final UserData? arg_userData = args[0] as UserData?;
+          assert(arg_userData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.userUpdated was null, expected non-null UserData.');
+          final String? arg_reason = args[1] as String?;
+          assert(arg_reason != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.userUpdated was null, expected non-null String.');
+          api.userUpdated(arg_userData!, arg_reason!);
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.addedToConversationNotification', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.addedToConversationNotification was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final String? arg_conversationSid = args[0] as String?;
+          assert(arg_conversationSid != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.addedToConversationNotification was null, expected non-null String.');
+          api.addedToConversationNotification(arg_conversationSid!);
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.newMessageNotification', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.newMessageNotification was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final String? arg_conversationSid = args[0] as String?;
+          assert(arg_conversationSid != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.newMessageNotification was null, expected non-null String.');
+          final int? arg_messageIndex = args[1] as int?;
+          assert(arg_messageIndex != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.newMessageNotification was null, expected non-null int.');
+          api.newMessageNotification(arg_conversationSid!, arg_messageIndex!);
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.notificationSubscribed', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          // ignore message
+          api.notificationSubscribed();
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.notificationFailed', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.notificationFailed was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final ErrorInfoData? arg_errorInfoData = args[0] as ErrorInfoData?;
+          assert(arg_errorInfoData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.notificationFailed was null, expected non-null ErrorInfoData.');
+          api.notificationFailed(arg_errorInfoData!);
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.removedFromConversationNotification', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.removedFromConversationNotification was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final String? arg_conversationSid = args[0] as String?;
+          assert(arg_conversationSid != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.removedFromConversationNotification was null, expected non-null String.');
+          api.removedFromConversationNotification(arg_conversationSid!);
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.registered', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          // ignore message
+          api.registered();
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.registrationFailed', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.registrationFailed was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final ErrorInfoData? arg_errorInfoData = args[0] as ErrorInfoData?;
+          assert(arg_errorInfoData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.registrationFailed was null, expected non-null ErrorInfoData.');
+          api.registrationFailed(arg_errorInfoData!);
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.deregistered', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          // ignore message
+          api.deregistered();
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.deregistrationFailed', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.deregistrationFailed was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final ErrorInfoData? arg_errorInfoData = args[0] as ErrorInfoData?;
+          assert(arg_errorInfoData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.deregistrationFailed was null, expected non-null ErrorInfoData.');
+          api.deregistrationFailed(arg_errorInfoData!);
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.messageAdded', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageAdded was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final String? arg_conversationSid = args[0] as String?;
+          assert(arg_conversationSid != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageAdded was null, expected non-null String.');
+          final MessageData? arg_messageData = args[1] as MessageData?;
+          assert(arg_messageData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageAdded was null, expected non-null MessageData.');
+          api.messageAdded(arg_conversationSid!, arg_messageData!);
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.messageUpdated', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageUpdated was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final String? arg_conversationSid = args[0] as String?;
+          assert(arg_conversationSid != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageUpdated was null, expected non-null String.');
+          final MessageData? arg_messageData = args[1] as MessageData?;
+          assert(arg_messageData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageUpdated was null, expected non-null MessageData.');
+          final String? arg_reason = args[2] as String?;
+          assert(arg_reason != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageUpdated was null, expected non-null String.');
+          api.messageUpdated(arg_conversationSid!, arg_messageData!, arg_reason!);
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.messageDeleted', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageDeleted was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final String? arg_conversationSid = args[0] as String?;
+          assert(arg_conversationSid != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageDeleted was null, expected non-null String.');
+          final MessageData? arg_messageData = args[1] as MessageData?;
+          assert(arg_messageData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageDeleted was null, expected non-null MessageData.');
+          api.messageDeleted(arg_conversationSid!, arg_messageData!);
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.participantAdded', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantAdded was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final String? arg_conversationSid = args[0] as String?;
+          assert(arg_conversationSid != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantAdded was null, expected non-null String.');
+          final ParticipantData? arg_participantData = args[1] as ParticipantData?;
+          assert(arg_participantData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantAdded was null, expected non-null ParticipantData.');
+          api.participantAdded(arg_conversationSid!, arg_participantData!);
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.participantUpdated', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantUpdated was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final String? arg_conversationSid = args[0] as String?;
+          assert(arg_conversationSid != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantUpdated was null, expected non-null String.');
+          final ParticipantData? arg_participantData = args[1] as ParticipantData?;
+          assert(arg_participantData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantUpdated was null, expected non-null ParticipantData.');
+          final String? arg_reason = args[2] as String?;
+          assert(arg_reason != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantUpdated was null, expected non-null String.');
+          api.participantUpdated(arg_conversationSid!, arg_participantData!, arg_reason!);
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.participantDeleted', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantDeleted was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final String? arg_conversationSid = args[0] as String?;
+          assert(arg_conversationSid != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantDeleted was null, expected non-null String.');
+          final ParticipantData? arg_participantData = args[1] as ParticipantData?;
+          assert(arg_participantData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantDeleted was null, expected non-null ParticipantData.');
+          api.participantDeleted(arg_conversationSid!, arg_participantData!);
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.typingStarted', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.typingStarted was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final String? arg_conversationSid = args[0] as String?;
+          assert(arg_conversationSid != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.typingStarted was null, expected non-null String.');
+          final ConversationData? arg_conversationData = args[1] as ConversationData?;
+          assert(arg_conversationData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.typingStarted was null, expected non-null ConversationData.');
+          final ParticipantData? arg_participantData = args[2] as ParticipantData?;
+          assert(arg_participantData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.typingStarted was null, expected non-null ParticipantData.');
+          api.typingStarted(arg_conversationSid!, arg_conversationData!, arg_participantData!);
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.typingEnded', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.typingEnded was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final String? arg_conversationSid = args[0] as String?;
+          assert(arg_conversationSid != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.typingEnded was null, expected non-null String.');
+          final ConversationData? arg_conversationData = args[1] as ConversationData?;
+          assert(arg_conversationData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.typingEnded was null, expected non-null ConversationData.');
+          final ParticipantData? arg_participantData = args[2] as ParticipantData?;
+          assert(arg_participantData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.typingEnded was null, expected non-null ParticipantData.');
+          api.typingEnded(arg_conversationSid!, arg_conversationData!, arg_participantData!);
+          return;
+        });
+      }
+    }
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterConversationClientApi.synchronizationChanged', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.synchronizationChanged was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final String? arg_conversationSid = args[0] as String?;
+          assert(arg_conversationSid != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.synchronizationChanged was null, expected non-null String.');
+          final ConversationData? arg_conversationData = args[1] as ConversationData?;
+          assert(arg_conversationData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.synchronizationChanged was null, expected non-null ConversationData.');
+          api.synchronizationChanged(arg_conversationSid!, arg_conversationData!);
+          return;
+        });
+      }
+    }
+  }
+}
+
+class _FlutterLoggingApiCodec extends StandardMessageCodec {
+  const _FlutterLoggingApiCodec();
+}
+abstract class FlutterLoggingApi {
+  static const MessageCodec<Object?> codec = _FlutterLoggingApiCodec();
+
+  void logFromHost(String msg);
+  static void setup(FlutterLoggingApi? api) {
+    {
+      const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.FlutterLoggingApi.logFromHost', codec);
+      if (api == null) {
+        channel.setMessageHandler(null);
+      } else {
+        channel.setMessageHandler((Object? message) async {
+          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterLoggingApi.logFromHost was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final String? arg_msg = args[0] as String?;
+          assert(arg_msg != null, 'Argument for dev.flutter.pigeon.FlutterLoggingApi.logFromHost was null, expected non-null String.');
+          api.logFromHost(arg_msg!);
+          return;
+        });
+      }
     }
   }
 }

@@ -12,7 +12,8 @@ class PluginMethods: NSObject, TWCONPluginApi {
             TwilioConversationsClient.setLogLevel(TCHLogLevel.warning)
         }
     }
-    
+
+    // Naming a by product of pigeon generation. This creates a conversations client, not a JWT token.
     func createJwtToken(_ jwtToken: String?, completion: @escaping (TWCONConversationClientData?, FlutterError?) -> Void) {
         guard let jwtToken = jwtToken else {
             return completion(nil, FlutterError(code: "MISSING_PARAMS", message: "Missing 'token' parameter", details: nil))
@@ -20,6 +21,7 @@ class PluginMethods: NSObject, TWCONPluginApi {
         debug("create => jwtToken: \(jwtToken)")
         
         let properties = TwilioConversationsClientProperties()
+        SwiftTwilioConversationsPlugin.clientListener = ClientListener()
         //TODO add region to properties
                 
         TwilioConversationsClient.conversationsClient(

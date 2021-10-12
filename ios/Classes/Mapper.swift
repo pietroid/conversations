@@ -298,7 +298,14 @@ public class Mapper {
         
         return nil
     }
-    
+
+    public static func errorToPigeon(_ error: TCHError) -> TWCONErrorInfoData {
+        let errorInfoData = TWCONErrorInfoData()
+        errorInfoData.code = NSNumber(value: error.code)
+        errorInfoData.message = error.description
+        return errorInfoData
+    }
+
     public static func conversationStatusToString(_ conversationStatus: TCHConversationStatus) -> String {
         let conversationStatusString: String
         

@@ -1,13 +1,10 @@
 package twilio.flutter.twilio_conversations.methods
 
 import com.twilio.conversations.*
-import io.flutter.embedding.engine.plugins.FlutterPlugin
-import io.flutter.plugin.common.MethodCall
-import io.flutter.plugin.common.MethodChannel
 import twilio.flutter.twilio_conversations.Api
 import twilio.flutter.twilio_conversations.Mapper
 import twilio.flutter.twilio_conversations.TwilioConversationsPlugin
-import java.io.File
+import twilio.flutter.twilio_conversations.listeners.ClientListener
 
 class PluginMethods: Api.PluginApi {
     private val TAG = "PluginMethods"
@@ -20,7 +17,7 @@ class PluginMethods: Api.PluginApi {
         }
 
         TwilioConversationsPlugin.nativeDebug = enableNative
-        return Unit
+        return
     }
 
     override fun create(jwtToken: String, result: Api.Result<Api.ConversationClientData>) {
@@ -30,7 +27,8 @@ class PluginMethods: Api.PluginApi {
         ConversationsClient.create(TwilioConversationsPlugin.applicationContext, jwtToken, props, object : CallbackListener<ConversationsClient> {
             override fun onSuccess(conversationsClient: ConversationsClient) {
                 TwilioConversationsPlugin.client = conversationsClient
-                conversationsClient.addListener(TwilioConversationsPlugin.clientListener)
+                TwilioConversationsPlugin.clientListener = ClientListener()
+                conversationsClient.addListener(TwilioConversationsPlugin.clientListener!!)
                 val clientMap = Mapper.conversationsClientToPigeon(conversationsClient)
                 result.success(clientMap)
             }

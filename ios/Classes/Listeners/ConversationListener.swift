@@ -12,10 +12,12 @@ public class ConversationListener: NSObject, TCHConversationDelegate {
     public func conversationsClient(_ client: TwilioConversationsClient, conversation: TCHConversation, messageAdded message: TCHMessage) {
         SwiftTwilioConversationsPlugin.debug(
             "ConversationListener.onMessageAdded => messageSid = \(String(describing: message.sid))")
-        sendEvent("messageAdded", data: [
-            "conversationSid": conversationSid,
-            "message": Mapper.messageToDict(message, conversationSid: conversation.sid)
-        ])
+        SwiftTwilioConversationsPlugin.flutterClientApi?.messageAddedConversationSid(
+            conversationSid,
+            messageData: Mapper.messageToPigeon(message, conversationSid: conversationSid),
+            completion: { (_: Error?) in
+                //TODO: consider logging an error
+            })
     }
 
     // onMessageUpdated
@@ -23,34 +25,37 @@ public class ConversationListener: NSObject, TCHConversationDelegate {
         SwiftTwilioConversationsPlugin.debug(
             "ConversationListener.onMessageUpdated => messageSid = \(String(describing: message.sid)), " +
                 "updated = \(String(describing: updated))")
-        sendEvent("messageUpdated", data: [
-            "conversationSid": conversationSid,
-            "message": Mapper.messageToDict(message, conversationSid: conversation.sid),
-            "reason": [
-                "type": "message",
-                "value": Mapper.messageUpdateToString(updated)
-            ]
-        ])
+        SwiftTwilioConversationsPlugin.flutterClientApi?.messageUpdatedConversationSid(
+            conversationSid,
+            messageData: Mapper.messageToPigeon(message, conversationSid: conversationSid),
+            reason: Mapper.messageUpdateToString(updated),
+            completion: { (_: Error?) in
+                //TODO: consider logging an error
+            })
     }
 
     // onMessageDeleted
     public func conversationsClient(_ client: TwilioConversationsClient, conversation: TCHConversation, messageDeleted message: TCHMessage) {
         SwiftTwilioConversationsPlugin.debug(
             "ConversationListener.onMessageDeleted => messageSid = \(String(describing: message.sid))")
-        sendEvent("messageDeleted", data: [
-            "conversationSid": conversationSid,
-            "message": Mapper.messageToDict(message, conversationSid: conversation.sid)
-        ])
+        SwiftTwilioConversationsPlugin.flutterClientApi?.messageDeletedConversationSid(
+            conversationSid,
+            messageData: Mapper.messageToPigeon(message, conversationSid: conversationSid),
+            completion: { (_: Error?) in
+                //TODO: consider logging an error
+            })
     }
 
     // onParticipantAdded
     public func conversationsClient(_ client: TwilioConversationsClient, conversation: TCHConversation, participantJoined participant: TCHParticipant) {
         SwiftTwilioConversationsPlugin.debug(
             "ConversationListener.onParticipantAdded => participantSid = \(String(describing: participant.sid))")
-        sendEvent("participantAdded", data: [
-            "conversationSid": conversationSid,
-            "participant": Mapper.participantToDict(participant, conversationSid: conversation.sid) as Any
-        ])
+        SwiftTwilioConversationsPlugin.flutterClientApi?.participantAddedConversationSid(
+            conversationSid,
+            participantData: Mapper.participantToPigeon(participant, conversationSid: conversationSid)!,
+            completion: { (_: Error?) in
+                //TODO: consider logging an error
+            })
     }
 
     // onParticipantUpdated
@@ -58,24 +63,25 @@ public class ConversationListener: NSObject, TCHConversationDelegate {
         SwiftTwilioConversationsPlugin.debug(
             "ConversationListener.onParticipantUpdated => participantSid = \(String(describing: participant.sid)), " +
                 "updated = \(String(describing: updated))")
-        sendEvent("participantUpdated", data: [
-            "conversationSid": conversationSid,
-            "participant": Mapper.participantToDict(participant, conversationSid: conversation.sid) as Any,
-            "reason": [
-                "type": "participant",
-                "value": Mapper.participantUpdateToString(updated)
-            ]
-        ])
+        SwiftTwilioConversationsPlugin.flutterClientApi?.participantUpdatedConversationSid(
+            conversationSid,
+            participantData: Mapper.participantToPigeon(participant, conversationSid: conversationSid)!,
+            reason: Mapper.participantUpdateToString(updated),
+            completion: { (_: Error?) in
+                //TODO: consider logging an error
+            })
     }
 
     // onParticipantDeleted
     public func conversationsClient(_ client: TwilioConversationsClient, conversation: TCHConversation, participantLeft participant: TCHParticipant) {
         SwiftTwilioConversationsPlugin.debug(
             "ConversationListener.onParticipantDeleted => participantSid = \(String(describing: participant.sid))")
-        sendEvent("participantDeleted", data: [
-            "conversationSid": conversationSid,
-            "participant": Mapper.participantToDict(participant, conversationSid: conversation.sid) as Any
-        ])
+        SwiftTwilioConversationsPlugin.flutterClientApi?.participantDeletedConversationSid(
+            conversationSid,
+            participantData: Mapper.participantToPigeon(participant, conversationSid: conversationSid)!,
+            completion: { (_: Error?) in
+                //TODO: consider logging an error
+            })
     }
 
     // onTypingStarted
@@ -83,11 +89,13 @@ public class ConversationListener: NSObject, TCHConversationDelegate {
         SwiftTwilioConversationsPlugin.debug(
             "ConversationListener.onTypingStarted => conversationSid = \(String(describing: conversation.sid)), " +
                 "participantSid = \(String(describing: participant.sid))")
-        sendEvent("typingStarted", data: [
-            "conversationSid": conversationSid,
-            "conversation": Mapper.conversationToDict(conversation) as Any,
-            "participant": Mapper.participantToDict(participant, conversationSid: conversation.sid) as Any
-        ])
+        SwiftTwilioConversationsPlugin.flutterClientApi?.typingStartedConversationSid(
+            conversationSid,
+            conversationData: Mapper.conversationToPigeon(conversation)!,
+            participantData: Mapper.participantToPigeon(participant, conversationSid: conversationSid)!,
+            completion: { (_: Error?) in
+                //TODO: consider logging an error
+            })
     }
 
     // onTypingEnded
@@ -95,34 +103,26 @@ public class ConversationListener: NSObject, TCHConversationDelegate {
         SwiftTwilioConversationsPlugin.debug(
             "ConversationListener.onTypingEnded => conversationSid = \(String(describing: conversation.sid)), " +
                 "participantSid = \(String(describing: participant.sid))")
-        sendEvent("typingEnded", data: [
-            "conversationSid": conversationSid,
-            "conversation": Mapper.conversationToDict(conversation) as Any,
-            "participant": Mapper.participantToDict(participant, conversationSid: conversation.sid) as Any
-        ])
+        SwiftTwilioConversationsPlugin.flutterClientApi?.typingEndedConversationSid(
+            conversationSid,
+            conversationData: Mapper.conversationToPigeon(conversation)!,
+            participantData: Mapper.participantToPigeon(participant, conversationSid: conversationSid)!,
+            completion: { (_: Error?) in
+                //TODO: consider logging an error
+            })
+
     }
 
     // onSynchronizationChanged
     public func conversationsClient(_ client: TwilioConversationsClient, conversation: TCHConversation, synchronizationStatusUpdated status: TCHConversationSynchronizationStatus) {
         SwiftTwilioConversationsPlugin.debug(
             "ConversationListener.onSynchronizationChanged => sid: \(String(describing: conversation.sid)), status: \(Mapper.conversationSynchronizationStatusToString(conversation.synchronizationStatus))")
-        sendEvent("synchronizationChanged", data: [
-            "conversationSid": conversationSid,
-            "conversation": Mapper.conversationToDict(conversation) as Any
-        ])
-    }
-
-    private func sendEvent(_ name: String, data: [String: Any]? = nil, error: Error? = nil) {
-        let eventData =
-            [
-                "name": name,
-                "data": data,
-                "error": Mapper.errorToDict(error)
-            ] as [String: Any?]
-        
-        if let events = SwiftTwilioConversationsPlugin.conversationSink {
-            events(eventData)
-        }
+        SwiftTwilioConversationsPlugin.flutterClientApi?.synchronizationChangedConversationSid(
+            conversationSid,
+            conversationData: Mapper.conversationToPigeon(conversation)!,
+            completion: { (_: Error?) in
+                //TODO: consider logging an error
+            })
     }
 
     // The ConversationListener Protocol for iOS duplicates some of the events

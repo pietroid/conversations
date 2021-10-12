@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:twilio_conversations/api.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
 
-class ConversationClient {
+class ConversationClient extends FlutterConversationClientApi {
   Map<String, Conversation> conversations = <String, Conversation>{};
 
   String? myIdentity;
@@ -13,21 +13,6 @@ class ConversationClient {
 
   bool _isReachabilityEnabled = false;
   bool get isReachabilityEnabled => _isReachabilityEnabled;
-
-  /// Stream for the native client events.
-  late StreamSubscription<dynamic> _clientStream;
-
-  /// Stream for the native conversation events.
-  late StreamSubscription<dynamic> _conversationStream;
-
-  /// Stream for the notification events.
-  late StreamSubscription<dynamic> _notificationStream;
-
-  final StreamController<bool> _onClientListenerAttachedCtrl =
-      StreamController<bool>.broadcast();
-
-  /// Called when client listener is listening and ready for client creation.
-  late Stream<bool> onClientListenerAttached;
 
   final StreamController<String> _onAddedToConversationNotificationCtrl =
       StreamController<String>.broadcast();
@@ -152,9 +137,6 @@ class ConversationClient {
   late Stream<UserUpdatedEvent> onUserUpdated;
 
   ConversationClient() {
-    // TODO: Only used to ensure initialization completion, should not be exposed publicly
-    onClientListenerAttached = _onClientListenerAttachedCtrl.stream;
-
     // Conversation events
     onConversationAdded = _onConversationAddedCtrl.stream;
     onConversationDeleted = _onConversationDeletedCtrl.stream;
@@ -184,15 +166,7 @@ class ConversationClient {
     onNotificationFailed = _onNotificationFailedCtrl.stream;
     onNotificationRegistered = _onNotificationRegisteredCtrl.stream;
 
-    _clientStream = TwilioConversations.clientChannel
-        .receiveBroadcastStream(0)
-        .listen(_parseEvents);
-    _conversationStream = TwilioConversations.conversationChannel
-        .receiveBroadcastStream(0)
-        .listen(_parseConversationEvents);
-    _notificationStream = TwilioConversations.notificationChannel
-        .receiveBroadcastStream(0)
-        .listen(_parseNotificationEvents);
+    FlutterConversationClientApi.setup(this);
   }
 
   void updateFromMap(Map<String, dynamic> json) {
@@ -217,10 +191,8 @@ class ConversationClient {
   /// This will dispose() the client after shutdown, so the client cannot be used after this call.
   Future<void> shutdown() async {
     try {
-      await _clientStream.cancel();
-      await _conversationStream.cancel();
-      await _notificationStream.cancel();
       TwilioConversations.conversationClient = null;
+      FlutterConversationClientApi.setup(null);
       await TwilioConversations.conversationsClientApi.shutdown();
     } on PlatformException catch (err) {
       throw TwilioConversations.convertException(err);
@@ -305,229 +277,294 @@ class ConversationClient {
   }
   //#endregion
 
-  /// Parse native conversation client events to the right event streams.
-  void _parseEvents(dynamic event) {
-    TwilioConversations.log(
-        'ConversationClient::parseEvents => received event: $event');
-    final eventName = event['name'] as String;
-
-    if (event['data'] == null) {
+  @override
+  void conversationAdded(ConversationData conversationData) {
+    TwilioConversations.log('conversationAdded => $conversationData');
+    final conversationSid = conversationData.sid;
+    if (conversationSid == null) {
       return;
     }
-    final data = Map<String, dynamic>.from(event['data']);
-
-    if (data['conversationClient'] != null) {
-      final conversationClientMap =
-          data['conversationClient'] as Map<String, dynamic>;
-      updateFromMap(conversationClientMap);
-    }
-
-    ErrorInfo? exception;
-    if (event['error'] != null) {
-      final errorMap =
-          Map<String, dynamic>.from(event['error'] as Map<dynamic, dynamic>);
-      exception = ErrorInfo(errorMap['code'] as int,
-          errorMap['message'] as String, errorMap['status'] as int);
-    }
-
-    var conversationSid = data['conversationSid'] as String?;
-
-    Map<String, dynamic>? conversationMap;
-    if (data['conversation'] != null) {
-      conversationMap = Map<String, dynamic>.from(
-          data['conversation'] as Map<dynamic, dynamic>);
-      conversationSid = conversationMap['sid'] as String;
-    }
-
-    Map<String, dynamic>? userMap;
-    if (data['user'] != null) {
-      userMap =
-          Map<String, dynamic>.from(data['user'] as Map<dynamic, dynamic>);
-    }
-    dynamic reason;
-    if (data['reason'] != null) {
-      final reasonMap =
-          Map<String, dynamic>.from(data['reason'] as Map<dynamic, dynamic>);
-      if (reasonMap['type'] == 'conversation') {
-        reason = EnumToString.fromString(
-            ConversationUpdateReason.values, reasonMap['value'] as String);
-      } else if (reasonMap['type'] == 'user') {
-        reason = EnumToString.fromString(
-            UserUpdateReason.values, reasonMap['value'] as String);
-      }
-    }
-
-    switch (eventName) {
-      case 'clientListenerAttached':
-        _onClientListenerAttachedCtrl.add(true);
-        break;
-      case 'addedToConversationNotification':
-        if (conversationSid != null) {
-          _onAddedToConversationNotificationCtrl.add(conversationSid);
-        }
-        break;
-      case 'conversationAdded':
-        if (conversationMap != null && conversationSid != null) {
-          updateConversationFromMap(conversationMap);
-          final conversation = conversations[conversationSid];
-          if (conversation != null) {
-            _onConversationAddedCtrl.add(conversation);
-          }
-        }
-        break;
-      case 'conversationDeleted':
-        if (conversationMap != null && conversationSid != null) {
-          final conversation = conversations[conversationSid];
-          conversations.remove(conversationSid);
-          if (conversation != null) {
-            _onConversationDeletedCtrl.add(conversation);
-          }
-        }
-        break;
-      case 'conversationSynchronizationChange':
-        if (conversationMap != null && conversationSid != null) {
-          updateConversationFromMap(conversationMap);
-          final conversation = conversations[conversationSid];
-          if (conversation != null) {
-            _onConversationSynchronizationChangeCtrl.add(conversation);
-          }
-        }
-        break;
-      case 'conversationUpdated':
-        if (conversationMap != null &&
-            reason != null &&
-            conversationSid != null) {
-          final conversation = conversations[conversationSid];
-          if (conversation != null) {
-            updateConversationFromMap(conversationMap);
-            _onConversationUpdatedCtrl.add(ConversationUpdatedEvent(
-              conversation,
-              reason as ConversationUpdateReason,
-            ));
-          }
-        }
-        break;
-      case 'clientSynchronization':
-        var synchronizationStatus = EnumToString.fromString(
-                ClientSynchronizationStatus.values,
-                data['synchronizationStatus'] as String) ??
-            ClientSynchronizationStatus.UNKNOWN;
-        _onClientSynchronizationCtrl.add(synchronizationStatus);
-        break;
-      case 'connectionStateChange':
-        var newConnectionState = EnumToString.fromString(
-            ConnectionState.values, data['connectionState'] as String);
-        if (newConnectionState != null) {
-          connectionState = newConnectionState;
-          _onConnectionStateCtrl.add(newConnectionState);
-        } else {
-          TwilioConversations.log(
-              "ConversationClient => case 'connectionStateChange' => Attempting to operate on NULL.");
-        }
-        break;
-      case 'error':
-        if (exception != null) {
-          _onErrorCtrl.add(exception);
-        }
-        break;
-      case 'newMessageNotification':
-        var messageSid = data['messageSid'] as String?;
-        var messageIndex = data['messageIndex'] as int?;
-        if (conversationSid != null &&
-            messageSid != null &&
-            messageIndex != null) {
-          _onNewMessageNotificationCtrl.add(NewMessageNotificationEvent(
-              conversationSid, messageSid, messageIndex));
-        }
-        break;
-      case 'notificationFailed':
-        if (exception != null) {
-          _onNotificationFailedCtrl.add(exception);
-        }
-        break;
-      case 'removedFromConversationNotification':
-        if (conversationSid != null) {
-          _onRemovedFromConversationNotificationCtrl.add(conversationSid);
-        }
-        break;
-      case 'tokenAboutToExpire':
-        _onTokenAboutToExpireCtrl.add(null);
-        break;
-      case 'tokenExpired':
-        _onTokenExpiredCtrl.add(null);
-        break;
-      case 'userSubscribed':
-        //TODO: handle userSubscribed event
-        //assert(userMap != null);
-        // users._updateFromMap({
-        //   'subscribedUsers': [userMap]
-        // });
-        //_onUserSubscribedCtrl.add(User.fromJson(userMap));
-        break;
-      case 'userUnsubscribed':
-        //TODO: review handling of userUnsubscribed event
-        if (userMap == null) {
-          TwilioConversations.log(
-              'ConversationClient => case \'userUnsubscribed\' => userMap is NULL.');
-          return;
-        }
-        // var user = users.getUserById(userMap['identity']);
-        // user._updateFromMap(userMap);
-        // users.subscribedUsers.removeWhere((u) => u.identity == userMap['identity']);
-        _onUserUnsubscribedCtrl.add(User.fromMap(userMap));
-        break;
-      case 'userUpdated':
-        if (userMap != null && reason != null) {
-          // users._updateFromMap({
-          //   'subscribedUsers': [userMap]
-          // });
-          _onUserUpdatedCtrl.add(UserUpdatedEvent(
-              User.fromMap(userMap), reason as UserUpdateReason));
-        }
-        break;
-      default:
-        TwilioConversations.log('Event \'$eventName\' not yet implemented');
-        break;
+    updateConversationFromMap(
+        Map<String, dynamic>.from(conversationData.encode() as Map));
+    final conversation = conversations[conversationSid];
+    if (conversation != null) {
+      _onConversationAddedCtrl.add(conversation);
     }
   }
 
-  void _parseConversationEvents(dynamic event) {
-    final data = Map<String, dynamic>.from(event['data']);
-    final String? conversationSid = data['conversationSid'];
-    if (conversationSid != null) {
-      conversations[conversationSid]?.parseEvents(event);
+  @override
+  void conversationUpdated(ConversationUpdatedData event) {
+    TwilioConversations.log('conversationUpdated => $event');
+    final conversationData = event.conversation;
+    final reasonString = event.reason;
+    final reason = reasonString != null
+        ? EnumToString.fromString(ConversationUpdateReason.values, reasonString)
+        : null;
+    final conversationSid = conversationData?.sid;
+
+    if (conversationData == null || reason == null || conversationSid == null) {
+      return;
+    }
+
+    final conversation = conversations[conversationSid];
+    if (conversation != null) {
+      updateConversationFromMap(
+          Map<String, dynamic>.from(conversationData.encode() as Map));
+      _onConversationUpdatedCtrl
+          .add(ConversationUpdatedEvent(conversation, reason));
     }
   }
 
-  /// Parse notification events to the right event streams.
-  void _parseNotificationEvents(dynamic event) {
-    final eventMap = Map<String, dynamic>.from(event);
-    final eventName = eventMap['name'] as String;
-    TwilioConversations.log(
-        'ConversationClient => Event \'$eventName\' => ${eventMap['data']}, error: ${eventMap['error']}');
+  @override
+  void clientSynchronization(String synchronizationStatus) {
+    final synchronizationStatusEnum = EnumToString.fromString(
+            ClientSynchronizationStatus.values, synchronizationStatus) ??
+        ClientSynchronizationStatus.UNKNOWN;
+    _onClientSynchronizationCtrl.add(synchronizationStatusEnum);
+  }
 
-    final data = Map<String, dynamic>.from(eventMap['data']);
+  @override
+  void conversationDeleted(ConversationData conversationData) {
+    final conversationSid = conversationData.sid;
+    if (conversationSid == null) {
+      return;
+    }
+    final conversation = conversations[conversationSid];
+    conversations.remove(conversationSid);
+    if (conversation != null) {
+      _onConversationDeletedCtrl.add(conversation);
+    }
+  }
 
-    ErrorInfo? exception;
-    if (eventMap['error'] != null) {
-      final errorMap = Map<String, dynamic>.from(eventMap['error']);
-      exception = ErrorInfo(errorMap['code'] as int,
-          errorMap['message'] as String, errorMap['status'] as int);
+  @override
+  void conversationSynchronizationChange(ConversationData conversationData) {
+    final conversationSid = conversationData.sid;
+    if (conversationSid == null) {
+      return;
+    }
+    updateConversationFromMap(
+        Map<String, dynamic>.from(conversationData.encode() as Map));
+    final conversation = conversations[conversationSid];
+    if (conversation != null) {
+      _onConversationSynchronizationChangeCtrl.add(conversation);
+    }
+  }
+
+  @override
+  void connectionStateChange(String connectionState) {
+    var newConnectionState =
+        EnumToString.fromString(ConnectionState.values, connectionState);
+
+    if (newConnectionState == null) {
+      TwilioConversations.log(
+          'ConversationClient::connectionStateChange => failed to parse connectionState: $connectionState');
+      return;
     }
 
-    switch (eventName) {
-      case 'registered':
-        _onNotificationRegisteredCtrl.add(
-            NotificationRegistrationEvent(data['result'] as bool, exception));
-        break;
-      case 'deregistered':
-        _onNotificationDeregisteredCtrl.add(
-            NotificationRegistrationEvent(data['result'] as bool, exception));
-        break;
-      default:
-        TwilioConversations.log(
-            'Notification event \'$eventName\' not yet implemented');
-        break;
+    this.connectionState = newConnectionState;
+    _onConnectionStateCtrl.add(this.connectionState);
+  }
+
+  @override
+  void addedToConversationNotification(String conversationSid) {
+    _onAddedToConversationNotificationCtrl.add(conversationSid);
+  }
+
+  @override
+  void error(ErrorInfoData errorInfoData) {
+    final code = errorInfoData.code;
+    final status = errorInfoData.status;
+
+    if (code == null) {
+      //TODO: review required fields
+      return;
+    }
+    final exception = ErrorInfo(code, errorInfoData.message, status);
+
+    _onErrorCtrl.add(exception);
+  }
+
+  @override
+  void newMessageNotification(String conversationSid, int messageIndex) {
+    _onNewMessageNotificationCtrl
+        .add(NewMessageNotificationEvent(conversationSid, messageIndex));
+  }
+
+  @override
+  void notificationFailed(ErrorInfoData errorInfoData) {
+    final code = errorInfoData.code;
+    final status = errorInfoData.status;
+
+    if (code == null) {
+      //TODO: review required fields
+      return;
+    }
+    final exception = ErrorInfo(code, errorInfoData.message, status);
+    _onNotificationFailedCtrl.add(exception);
+  }
+
+  @override
+  void removedFromConversationNotification(String conversationSid) {
+    _onRemovedFromConversationNotificationCtrl.add(conversationSid);
+  }
+
+  @override
+  void deregistered() {
+    _onNotificationDeregisteredCtrl.add(
+        NotificationRegistrationEvent(true, null));
+  }
+
+  @override
+  void deregistrationFailed(ErrorInfoData errorInfoData) {
+    final exception = ErrorInfo(errorInfoData.code ?? 0,
+        errorInfoData.message, errorInfoData.status);
+
+    _onNotificationDeregisteredCtrl.add(
+        NotificationRegistrationEvent(false, exception));
+  }
+
+  @override
+  void registered() {
+    _onNotificationRegisteredCtrl.add(
+        NotificationRegistrationEvent(true, null));
+  }
+
+  @override
+  void registrationFailed(ErrorInfoData errorInfoData) {
+    final exception = ErrorInfo(errorInfoData.code ?? 0,
+        errorInfoData.message, errorInfoData.status);
+
+    _onNotificationRegisteredCtrl.add(
+        NotificationRegistrationEvent(false, exception));
+  }
+
+  @override
+  void tokenAboutToExpire() {
+    _onTokenAboutToExpireCtrl.add(null);
+  }
+
+  @override
+  void tokenExpired() {
+    _onTokenExpiredCtrl.add(null);
+  }
+
+  @override
+  void notificationSubscribed() {
+    // TODO: implement notificationSubscribed
+  }
+
+  @override
+  void userSubscribed(UserData userData) {
+    // TODO: implement userSubscribed
+    //assert(userMap != null);
+    // users._updateFromMap({
+    //   'subscribedUsers': [userMap]
+    // });
+    //_onUserSubscribedCtrl.add(User.fromJson(userMap));
+  }
+
+  @override
+  void userUnsubscribed(UserData userData) {
+    // TODO: implement userUnsubscribed
+    // if (userMap == null) {
+    //   TwilioConversations.log(
+    //       'ConversationClient => case \'userUnsubscribed\' => userMap is NULL.');
+    //   return;
+    // }
+    // var user = users.getUserById(userMap['identity']);
+    // user._updateFromMap(userMap);
+    // users.subscribedUsers.removeWhere((u) => u.identity == userMap['identity']);
+    // _onUserUnsubscribedCtrl.add(User.fromMap(userMap));
+  }
+
+  @override
+  void userUpdated(UserData userData, String reason) {
+    // TODO: implement userUpdated
+    // if (userMap != null && reason != null) {
+    //   // users._updateFromMap({
+    //   //   'subscribedUsers': [userMap]
+    //   // });
+    //   _onUserUpdatedCtrl.add(UserUpdatedEvent(
+    //       User.fromMap(userMap), reason as UserUpdateReason));
+    // }
+  }
+
+  @override
+  void messageAdded(String conversationSid, MessageData messageData) {
+    final conversation = conversations[conversationSid];
+    if (conversation != null) {
+      conversation.messageAdded(messageData);
+    }
+  }
+
+  @override
+  void messageDeleted(String conversationSid, MessageData messageData) {
+    final conversation = conversations[conversationSid];
+    if (conversation != null) {
+      conversation.messageDeleted(messageData);
+    }
+  }
+
+  @override
+  void messageUpdated(
+      String conversationSid, MessageData messageData, String reason) {
+    final conversation = conversations[conversationSid];
+    if (conversation != null) {
+      conversation.messageUpdated(messageData, reason);
+    }
+  }
+
+  @override
+  void participantAdded(
+      String conversationSid, ParticipantData participantData) {
+    final conversation = conversations[conversationSid];
+    if (conversation != null) {
+      conversation.participantAdded(participantData);
+    }
+  }
+
+  @override
+  void participantDeleted(
+      String conversationSid, ParticipantData participantData) {
+    final conversation = conversations[conversationSid];
+    if (conversation != null) {
+      conversation.participantDeleted(participantData);
+    }
+  }
+
+  @override
+  void participantUpdated(
+      String conversationSid, ParticipantData participantData, String reason) {
+    final conversation = conversations[conversationSid];
+    if (conversation != null) {
+      conversation.participantDeleted(participantData);
+    }
+  }
+
+  @override
+  void synchronizationChanged(
+      String conversationSid, ConversationData conversationData) {
+    final conversation = conversations[conversationSid];
+    if (conversation != null) {
+      conversation.synchronizationChanged(conversationData);
+    }
+  }
+
+  @override
+  void typingEnded(String conversationSid, ConversationData conversationData,
+      ParticipantData participantData) {
+    final conversation = conversations[conversationSid];
+    if (conversation != null) {
+      conversation.typingEnded(conversationData, participantData);
+    }
+  }
+
+  @override
+  void typingStarted(String conversationSid, ConversationData conversationData,
+      ParticipantData participantData) {
+    final conversation = conversations[conversationSid];
+    if (conversation != null) {
+      conversation.typingStarted(conversationData, participantData);
     }
   }
 }

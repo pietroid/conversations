@@ -26,7 +26,8 @@ class ErrorInfo implements Exception {
   /// Get error category as a classifier.
   ///
   /// Local client errors get status 0, network related errors have their HTTP error code as a status.
-  final int status;
+  /// Status not included on iOS.
+  final int? status;
 
   ErrorInfo(this.code, this.message, this.status);
 

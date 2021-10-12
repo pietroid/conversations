@@ -95,6 +95,17 @@ class MessageIndex {
   int? index;
 }
 
+class ConversationUpdatedData {
+  ConversationData? conversation;
+  String? reason;
+}
+
+class ErrorInfoData {
+  int? code;
+  String? message;
+  int? status;
+}
+
 @HostApi()
 abstract class PluginApi {
   void debug(bool enableNative, bool enableSdk);
@@ -186,4 +197,81 @@ abstract class ParticipantApi {
 abstract class MessageApi {
   @async
   String getMediaContentTemporaryUrl(String conversationSid, int messageIndex);
+}
+
+@FlutterApi()
+abstract class FlutterConversationClientApi {
+  void error(ErrorInfoData errorInfoData);
+
+  void conversationAdded(ConversationData conversationData);
+
+  void conversationUpdated(ConversationUpdatedData event);
+
+  void conversationDeleted(ConversationData conversationData);
+
+  void clientSynchronization(String synchronizationStatus);
+
+  void conversationSynchronizationChange(ConversationData conversationData);
+
+  void connectionStateChange(String connectionState);
+
+  void tokenAboutToExpire();
+
+  void tokenExpired();
+
+  void userSubscribed(UserData userData);
+
+  void userUnsubscribed(UserData userData);
+
+  void userUpdated(UserData userData, String reason);
+
+  // Notification Events
+  void addedToConversationNotification(String conversationSid);
+
+  void newMessageNotification(String conversationSid, int messageIndex);
+
+  void notificationSubscribed();
+
+  void notificationFailed(ErrorInfoData errorInfoData);
+
+  void removedFromConversationNotification(String conversationSid);
+
+  void registered();
+
+  void registrationFailed(ErrorInfoData errorInfoData);
+
+  void deregistered();
+
+  void deregistrationFailed(ErrorInfoData errorInfoData);
+
+  // Conversation Api
+  void messageAdded(String conversationSid, MessageData messageData);
+
+  void messageUpdated(
+      String conversationSid, MessageData messageData, String reason);
+
+  void messageDeleted(String conversationSid, MessageData messageData);
+
+  void participantAdded(
+      String conversationSid, ParticipantData participantData);
+
+  void participantUpdated(
+      String conversationSid, ParticipantData participantData, String reason);
+
+  void participantDeleted(
+      String conversationSid, ParticipantData participantData);
+
+  void typingStarted(String conversationSid, ConversationData conversationData,
+      ParticipantData participantData);
+
+  void typingEnded(String conversationSid, ConversationData conversationData,
+      ParticipantData participantData);
+
+  void synchronizationChanged(
+      String conversationSid, ConversationData conversationData);
+}
+
+@FlutterApi()
+abstract class FlutterLoggingApi {
+  void logFromHost(String msg);
 }

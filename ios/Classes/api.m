@@ -66,6 +66,14 @@ static NSDictionary<NSString *, id> *wrapResult(id result, FlutterError *error) 
 + (TWCONMessageIndex *)fromMap:(NSDictionary *)dict;
 - (NSDictionary *)toMap;
 @end
+@interface TWCONConversationUpdatedData ()
++ (TWCONConversationUpdatedData *)fromMap:(NSDictionary *)dict;
+- (NSDictionary *)toMap;
+@end
+@interface TWCONErrorInfoData ()
++ (TWCONErrorInfoData *)fromMap:(NSDictionary *)dict;
+- (NSDictionary *)toMap;
+@end
 
 @implementation TWCONConversationClientData
 + (TWCONConversationClientData *)fromMap:(NSDictionary *)dict {
@@ -422,6 +430,46 @@ static NSDictionary<NSString *, id> *wrapResult(id result, FlutterError *error) 
 }
 - (NSDictionary *)toMap {
   return [NSDictionary dictionaryWithObjectsAndKeys:(self.index ? self.index : [NSNull null]), @"index", nil];
+}
+@end
+
+@implementation TWCONConversationUpdatedData
++ (TWCONConversationUpdatedData *)fromMap:(NSDictionary *)dict {
+  TWCONConversationUpdatedData *result = [[TWCONConversationUpdatedData alloc] init];
+  result.conversation = [TWCONConversationData fromMap:dict[@"conversation"]];
+  if ((NSNull *)result.conversation == [NSNull null]) {
+    result.conversation = nil;
+  }
+  result.reason = dict[@"reason"];
+  if ((NSNull *)result.reason == [NSNull null]) {
+    result.reason = nil;
+  }
+  return result;
+}
+- (NSDictionary *)toMap {
+  return [NSDictionary dictionaryWithObjectsAndKeys:(self.conversation ? [self.conversation toMap] : [NSNull null]), @"conversation", (self.reason ? self.reason : [NSNull null]), @"reason", nil];
+}
+@end
+
+@implementation TWCONErrorInfoData
++ (TWCONErrorInfoData *)fromMap:(NSDictionary *)dict {
+  TWCONErrorInfoData *result = [[TWCONErrorInfoData alloc] init];
+  result.code = dict[@"code"];
+  if ((NSNull *)result.code == [NSNull null]) {
+    result.code = nil;
+  }
+  result.message = dict[@"message"];
+  if ((NSNull *)result.message == [NSNull null]) {
+    result.message = nil;
+  }
+  result.status = dict[@"status"];
+  if ((NSNull *)result.status == [NSNull null]) {
+    result.status = nil;
+  }
+  return result;
+}
+- (NSDictionary *)toMap {
+  return [NSDictionary dictionaryWithObjectsAndKeys:(self.code ? self.code : [NSNull null]), @"code", (self.message ? self.message : [NSNull null]), @"message", (self.status ? self.status : [NSNull null]), @"status", nil];
 }
 @end
 
@@ -1241,3 +1289,461 @@ void TWCONMessageApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<T
     }
   }
 }
+@interface TWCONFlutterConversationClientApiCodecReader : FlutterStandardReader
+@end
+@implementation TWCONFlutterConversationClientApiCodecReader
+- (nullable id)readValueOfType:(UInt8)type 
+{
+  switch (type) {
+    case 128:     
+      return [TWCONConversationData fromMap:[self readValue]];
+    
+    case 129:     
+      return [TWCONConversationUpdatedData fromMap:[self readValue]];
+    
+    case 130:     
+      return [TWCONErrorInfoData fromMap:[self readValue]];
+    
+    case 131:     
+      return [TWCONMessageData fromMap:[self readValue]];
+    
+    case 132:     
+      return [TWCONParticipantData fromMap:[self readValue]];
+    
+    case 133:     
+      return [TWCONUserData fromMap:[self readValue]];
+    
+    default:    
+      return [super readValueOfType:type];
+    
+  }
+}
+@end
+
+@interface TWCONFlutterConversationClientApiCodecWriter : FlutterStandardWriter
+@end
+@implementation TWCONFlutterConversationClientApiCodecWriter
+- (void)writeValue:(id)value 
+{
+  if ([value isKindOfClass:[TWCONConversationData class]]) {
+    [self writeByte:128];
+    [self writeValue:[value toMap]];
+  } else 
+  if ([value isKindOfClass:[TWCONConversationUpdatedData class]]) {
+    [self writeByte:129];
+    [self writeValue:[value toMap]];
+  } else 
+  if ([value isKindOfClass:[TWCONErrorInfoData class]]) {
+    [self writeByte:130];
+    [self writeValue:[value toMap]];
+  } else 
+  if ([value isKindOfClass:[TWCONMessageData class]]) {
+    [self writeByte:131];
+    [self writeValue:[value toMap]];
+  } else 
+  if ([value isKindOfClass:[TWCONParticipantData class]]) {
+    [self writeByte:132];
+    [self writeValue:[value toMap]];
+  } else 
+  if ([value isKindOfClass:[TWCONUserData class]]) {
+    [self writeByte:133];
+    [self writeValue:[value toMap]];
+  } else 
+{
+    [super writeValue:value];
+  }
+}
+@end
+
+@interface TWCONFlutterConversationClientApiCodecReaderWriter : FlutterStandardReaderWriter
+@end
+@implementation TWCONFlutterConversationClientApiCodecReaderWriter
+- (FlutterStandardWriter *)writerWithData:(NSMutableData *)data {
+  return [[TWCONFlutterConversationClientApiCodecWriter alloc] initWithData:data];
+}
+- (FlutterStandardReader *)readerWithData:(NSData *)data {
+  return [[TWCONFlutterConversationClientApiCodecReader alloc] initWithData:data];
+}
+@end
+
+NSObject<FlutterMessageCodec> *TWCONFlutterConversationClientApiGetCodec() {
+  static dispatch_once_t s_pred = 0;
+  static FlutterStandardMessageCodec *s_sharedObject = nil;
+  dispatch_once(&s_pred, ^{
+    TWCONFlutterConversationClientApiCodecReaderWriter *readerWriter = [[TWCONFlutterConversationClientApiCodecReaderWriter alloc] init];
+    s_sharedObject = [FlutterStandardMessageCodec codecWithReaderWriter:readerWriter];
+  });
+  return s_sharedObject;
+}
+
+
+@interface TWCONFlutterConversationClientApi ()
+@property (nonatomic, strong) NSObject<FlutterBinaryMessenger> *binaryMessenger;
+@end
+
+@implementation TWCONFlutterConversationClientApi
+- (instancetype)initWithBinaryMessenger:(NSObject<FlutterBinaryMessenger> *)binaryMessenger {
+  self = [super init];
+  if (self) {
+    _binaryMessenger = binaryMessenger;
+  }
+  return self;
+}
+
+- (void)errorErrorInfoData:(TWCONErrorInfoData *)arg_errorInfoData completion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.error"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:@[arg_errorInfoData] reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)conversationAddedConversationData:(TWCONConversationData *)arg_conversationData completion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.conversationAdded"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:@[arg_conversationData] reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)conversationUpdatedEvent:(TWCONConversationUpdatedData *)arg_event completion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.conversationUpdated"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:@[arg_event] reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)conversationDeletedConversationData:(TWCONConversationData *)arg_conversationData completion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.conversationDeleted"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:@[arg_conversationData] reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)clientSynchronizationSynchronizationStatus:(NSString *)arg_synchronizationStatus completion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.clientSynchronization"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:@[arg_synchronizationStatus] reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)conversationSynchronizationChangeConversationData:(TWCONConversationData *)arg_conversationData completion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.conversationSynchronizationChange"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:@[arg_conversationData] reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)connectionStateChangeConnectionState:(NSString *)arg_connectionState completion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.connectionStateChange"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:@[arg_connectionState] reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)tokenAboutToExpireWithCompletion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.tokenAboutToExpire"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:nil reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)tokenExpiredWithCompletion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.tokenExpired"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:nil reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)userSubscribedUserData:(TWCONUserData *)arg_userData completion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.userSubscribed"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:@[arg_userData] reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)userUnsubscribedUserData:(TWCONUserData *)arg_userData completion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.userUnsubscribed"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:@[arg_userData] reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)userUpdatedUserData:(TWCONUserData *)arg_userData reason:(NSString *)arg_reason completion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.userUpdated"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:@[arg_userData, arg_reason] reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)addedToConversationNotificationConversationSid:(NSString *)arg_conversationSid completion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.addedToConversationNotification"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:@[arg_conversationSid] reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)newMessageNotificationConversationSid:(NSString *)arg_conversationSid messageIndex:(NSNumber *)arg_messageIndex completion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.newMessageNotification"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:@[arg_conversationSid, arg_messageIndex] reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)notificationSubscribedWithCompletion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.notificationSubscribed"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:nil reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)notificationFailedErrorInfoData:(TWCONErrorInfoData *)arg_errorInfoData completion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.notificationFailed"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:@[arg_errorInfoData] reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)removedFromConversationNotificationConversationSid:(NSString *)arg_conversationSid completion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.removedFromConversationNotification"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:@[arg_conversationSid] reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)registeredWithCompletion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.registered"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:nil reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)registrationFailedErrorInfoData:(TWCONErrorInfoData *)arg_errorInfoData completion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.registrationFailed"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:@[arg_errorInfoData] reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)deregisteredWithCompletion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.deregistered"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:nil reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)deregistrationFailedErrorInfoData:(TWCONErrorInfoData *)arg_errorInfoData completion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.deregistrationFailed"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:@[arg_errorInfoData] reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)messageAddedConversationSid:(NSString *)arg_conversationSid messageData:(TWCONMessageData *)arg_messageData completion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.messageAdded"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:@[arg_conversationSid, arg_messageData] reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)messageUpdatedConversationSid:(NSString *)arg_conversationSid messageData:(TWCONMessageData *)arg_messageData reason:(NSString *)arg_reason completion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.messageUpdated"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:@[arg_conversationSid, arg_messageData, arg_reason] reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)messageDeletedConversationSid:(NSString *)arg_conversationSid messageData:(TWCONMessageData *)arg_messageData completion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.messageDeleted"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:@[arg_conversationSid, arg_messageData] reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)participantAddedConversationSid:(NSString *)arg_conversationSid participantData:(TWCONParticipantData *)arg_participantData completion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.participantAdded"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:@[arg_conversationSid, arg_participantData] reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)participantUpdatedConversationSid:(NSString *)arg_conversationSid participantData:(TWCONParticipantData *)arg_participantData reason:(NSString *)arg_reason completion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.participantUpdated"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:@[arg_conversationSid, arg_participantData, arg_reason] reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)participantDeletedConversationSid:(NSString *)arg_conversationSid participantData:(TWCONParticipantData *)arg_participantData completion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.participantDeleted"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:@[arg_conversationSid, arg_participantData] reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)typingStartedConversationSid:(NSString *)arg_conversationSid conversationData:(TWCONConversationData *)arg_conversationData participantData:(TWCONParticipantData *)arg_participantData completion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.typingStarted"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:@[arg_conversationSid, arg_conversationData, arg_participantData] reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)typingEndedConversationSid:(NSString *)arg_conversationSid conversationData:(TWCONConversationData *)arg_conversationData participantData:(TWCONParticipantData *)arg_participantData completion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.typingEnded"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:@[arg_conversationSid, arg_conversationData, arg_participantData] reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)synchronizationChangedConversationSid:(NSString *)arg_conversationSid conversationData:(TWCONConversationData *)arg_conversationData completion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterConversationClientApi.synchronizationChanged"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterConversationClientApiGetCodec()];
+  [channel sendMessage:@[arg_conversationSid, arg_conversationData] reply:^(id reply) {
+    completion(nil);
+  }];
+}
+@end
+@interface TWCONFlutterLoggingApiCodecReader : FlutterStandardReader
+@end
+@implementation TWCONFlutterLoggingApiCodecReader
+@end
+
+@interface TWCONFlutterLoggingApiCodecWriter : FlutterStandardWriter
+@end
+@implementation TWCONFlutterLoggingApiCodecWriter
+@end
+
+@interface TWCONFlutterLoggingApiCodecReaderWriter : FlutterStandardReaderWriter
+@end
+@implementation TWCONFlutterLoggingApiCodecReaderWriter
+- (FlutterStandardWriter *)writerWithData:(NSMutableData *)data {
+  return [[TWCONFlutterLoggingApiCodecWriter alloc] initWithData:data];
+}
+- (FlutterStandardReader *)readerWithData:(NSData *)data {
+  return [[TWCONFlutterLoggingApiCodecReader alloc] initWithData:data];
+}
+@end
+
+NSObject<FlutterMessageCodec> *TWCONFlutterLoggingApiGetCodec() {
+  static dispatch_once_t s_pred = 0;
+  static FlutterStandardMessageCodec *s_sharedObject = nil;
+  dispatch_once(&s_pred, ^{
+    TWCONFlutterLoggingApiCodecReaderWriter *readerWriter = [[TWCONFlutterLoggingApiCodecReaderWriter alloc] init];
+    s_sharedObject = [FlutterStandardMessageCodec codecWithReaderWriter:readerWriter];
+  });
+  return s_sharedObject;
+}
+
+
+@interface TWCONFlutterLoggingApi ()
+@property (nonatomic, strong) NSObject<FlutterBinaryMessenger> *binaryMessenger;
+@end
+
+@implementation TWCONFlutterLoggingApi
+- (instancetype)initWithBinaryMessenger:(NSObject<FlutterBinaryMessenger> *)binaryMessenger {
+  self = [super init];
+  if (self) {
+    _binaryMessenger = binaryMessenger;
+  }
+  return self;
+}
+
+- (void)logFromHostMsg:(NSString *)arg_msg completion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.FlutterLoggingApi.logFromHost"
+      binaryMessenger:self.binaryMessenger
+      codec:TWCONFlutterLoggingApiGetCodec()];
+  [channel sendMessage:@[arg_msg] reply:^(id reply) {
+    completion(nil);
+  }];
+}
+@end

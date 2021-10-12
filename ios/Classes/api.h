@@ -19,6 +19,8 @@ NS_ASSUME_NONNULL_BEGIN
 @class TWCONUserData;
 @class TWCONMessageCount;
 @class TWCONMessageIndex;
+@class TWCONConversationUpdatedData;
+@class TWCONErrorInfoData;
 
 @interface TWCONConversationClientData : NSObject
 @property(nonatomic, copy, nullable) NSString * myIdentity;
@@ -115,6 +117,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong, nullable) NSNumber * index;
 @end
 
+@interface TWCONConversationUpdatedData : NSObject
+@property(nonatomic, strong, nullable) TWCONConversationData * conversation;
+@property(nonatomic, copy, nullable) NSString * reason;
+@end
+
+@interface TWCONErrorInfoData : NSObject
+@property(nonatomic, strong, nullable) NSNumber * code;
+@property(nonatomic, copy, nullable) NSString * message;
+@property(nonatomic, strong, nullable) NSNumber * status;
+@end
+
 /// The codec used by TWCONPluginApi.
 NSObject<FlutterMessageCodec> *TWCONPluginApiGetCodec(void);
 
@@ -181,4 +194,47 @@ NSObject<FlutterMessageCodec> *TWCONMessageApiGetCodec(void);
 
 extern void TWCONMessageApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<TWCONMessageApi> *_Nullable api);
 
+/// The codec used by TWCONFlutterConversationClientApi.
+NSObject<FlutterMessageCodec> *TWCONFlutterConversationClientApiGetCodec(void);
+
+@interface TWCONFlutterConversationClientApi : NSObject
+- (instancetype)initWithBinaryMessenger:(id<FlutterBinaryMessenger>)binaryMessenger;
+- (void)errorErrorInfoData:(TWCONErrorInfoData *)errorInfoData completion:(void(^)(NSError *_Nullable))completion;
+- (void)conversationAddedConversationData:(TWCONConversationData *)conversationData completion:(void(^)(NSError *_Nullable))completion;
+- (void)conversationUpdatedEvent:(TWCONConversationUpdatedData *)event completion:(void(^)(NSError *_Nullable))completion;
+- (void)conversationDeletedConversationData:(TWCONConversationData *)conversationData completion:(void(^)(NSError *_Nullable))completion;
+- (void)clientSynchronizationSynchronizationStatus:(NSString *)synchronizationStatus completion:(void(^)(NSError *_Nullable))completion;
+- (void)conversationSynchronizationChangeConversationData:(TWCONConversationData *)conversationData completion:(void(^)(NSError *_Nullable))completion;
+- (void)connectionStateChangeConnectionState:(NSString *)connectionState completion:(void(^)(NSError *_Nullable))completion;
+- (void)tokenAboutToExpireWithCompletion:(void(^)(NSError *_Nullable))completion;
+- (void)tokenExpiredWithCompletion:(void(^)(NSError *_Nullable))completion;
+- (void)userSubscribedUserData:(TWCONUserData *)userData completion:(void(^)(NSError *_Nullable))completion;
+- (void)userUnsubscribedUserData:(TWCONUserData *)userData completion:(void(^)(NSError *_Nullable))completion;
+- (void)userUpdatedUserData:(TWCONUserData *)userData reason:(NSString *)reason completion:(void(^)(NSError *_Nullable))completion;
+- (void)addedToConversationNotificationConversationSid:(NSString *)conversationSid completion:(void(^)(NSError *_Nullable))completion;
+- (void)newMessageNotificationConversationSid:(NSString *)conversationSid messageIndex:(NSNumber *)messageIndex completion:(void(^)(NSError *_Nullable))completion;
+- (void)notificationSubscribedWithCompletion:(void(^)(NSError *_Nullable))completion;
+- (void)notificationFailedErrorInfoData:(TWCONErrorInfoData *)errorInfoData completion:(void(^)(NSError *_Nullable))completion;
+- (void)removedFromConversationNotificationConversationSid:(NSString *)conversationSid completion:(void(^)(NSError *_Nullable))completion;
+- (void)registeredWithCompletion:(void(^)(NSError *_Nullable))completion;
+- (void)registrationFailedErrorInfoData:(TWCONErrorInfoData *)errorInfoData completion:(void(^)(NSError *_Nullable))completion;
+- (void)deregisteredWithCompletion:(void(^)(NSError *_Nullable))completion;
+- (void)deregistrationFailedErrorInfoData:(TWCONErrorInfoData *)errorInfoData completion:(void(^)(NSError *_Nullable))completion;
+- (void)messageAddedConversationSid:(NSString *)conversationSid messageData:(TWCONMessageData *)messageData completion:(void(^)(NSError *_Nullable))completion;
+- (void)messageUpdatedConversationSid:(NSString *)conversationSid messageData:(TWCONMessageData *)messageData reason:(NSString *)reason completion:(void(^)(NSError *_Nullable))completion;
+- (void)messageDeletedConversationSid:(NSString *)conversationSid messageData:(TWCONMessageData *)messageData completion:(void(^)(NSError *_Nullable))completion;
+- (void)participantAddedConversationSid:(NSString *)conversationSid participantData:(TWCONParticipantData *)participantData completion:(void(^)(NSError *_Nullable))completion;
+- (void)participantUpdatedConversationSid:(NSString *)conversationSid participantData:(TWCONParticipantData *)participantData reason:(NSString *)reason completion:(void(^)(NSError *_Nullable))completion;
+- (void)participantDeletedConversationSid:(NSString *)conversationSid participantData:(TWCONParticipantData *)participantData completion:(void(^)(NSError *_Nullable))completion;
+- (void)typingStartedConversationSid:(NSString *)conversationSid conversationData:(TWCONConversationData *)conversationData participantData:(TWCONParticipantData *)participantData completion:(void(^)(NSError *_Nullable))completion;
+- (void)typingEndedConversationSid:(NSString *)conversationSid conversationData:(TWCONConversationData *)conversationData participantData:(TWCONParticipantData *)participantData completion:(void(^)(NSError *_Nullable))completion;
+- (void)synchronizationChangedConversationSid:(NSString *)conversationSid conversationData:(TWCONConversationData *)conversationData completion:(void(^)(NSError *_Nullable))completion;
+@end
+/// The codec used by TWCONFlutterLoggingApi.
+NSObject<FlutterMessageCodec> *TWCONFlutterLoggingApiGetCodec(void);
+
+@interface TWCONFlutterLoggingApi : NSObject
+- (instancetype)initWithBinaryMessenger:(id<FlutterBinaryMessenger>)binaryMessenger;
+- (void)logFromHostMsg:(NSString *)msg completion:(void(^)(NSError *_Nullable))completion;
+@end
 NS_ASSUME_NONNULL_END

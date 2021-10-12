@@ -1,4 +1,5 @@
 import 'package:enum_to_string/enum_to_string.dart';
+import 'package:twilio_conversations/api.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
 
 class Message {
@@ -62,6 +63,11 @@ class Message {
     );
 
     return message;
+  }
+
+  factory Message.fromPigeon(MessageData messageData) {
+    return Message.fromMap(
+        Map<String, dynamic>.from(messageData.encode() as Map));
   }
 
   Future<Conversation?> getConversation() async {

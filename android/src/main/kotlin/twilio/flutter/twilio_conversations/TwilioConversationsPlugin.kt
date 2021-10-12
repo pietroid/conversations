@@ -23,17 +23,12 @@ import twilio.flutter.twilio_conversations.methods.PluginMethods
 
 /** TwilioConversationsPlugin */
 class TwilioConversationsPlugin : FlutterPlugin {
-    private lateinit var methodChannel: MethodChannel
-    private lateinit var clientChannel: EventChannel
-    private lateinit var conversationChannel: EventChannel
-    private lateinit var loggingChannel: EventChannel
-    private lateinit var notificationChannel: EventChannel
-
     companion object {
         @Suppress("unused")
         @JvmStatic
         lateinit var instance: TwilioConversationsPlugin
 
+        // Flutter > Host APIs
         @JvmStatic
         val pluginApi: Api.PluginApi = PluginMethods()
 
@@ -49,6 +44,13 @@ class TwilioConversationsPlugin : FlutterPlugin {
         @JvmStatic
         val messageApi: Api.MessageApi = MessageMethods()
 
+        // Host > Flutter APIs
+        @JvmStatic
+        lateinit var flutterClientApi: Api.FlutterConversationClientApi
+
+        @JvmStatic
+        lateinit var flutterLoggingApi: Api.FlutterLoggingApi
+
         @JvmStatic
         var client: ConversationsClient? = null
 
@@ -56,13 +58,9 @@ class TwilioConversationsPlugin : FlutterPlugin {
 
         lateinit var applicationContext: Context
 
-        lateinit var clientListener: ClientListener
+        var clientListener: ClientListener? = null
 
         var conversationListeners: HashMap<String, ConversationListener> = hashMapOf()
-
-        var conversationSink: EventChannel.EventSink? = null
-        var loggingSink: EventChannel.EventSink? = null
-        var notificationSink: EventChannel.EventSink? = null
 
         var handler = Handler(Looper.getMainLooper())
         var nativeDebug: Boolean = false
@@ -72,9 +70,9 @@ class TwilioConversationsPlugin : FlutterPlugin {
         fun debug(msg: String) {
             if (nativeDebug) {
                 Log.d(LOG_TAG, msg)
-                handler.post(Runnable {
-                    loggingSink?.success(msg)
-                })
+                handler.post {
+                    flutterLoggingApi.logFromHost(msg) { }
+                }
             }
         }
     }
@@ -85,79 +83,17 @@ class TwilioConversationsPlugin : FlutterPlugin {
         messenger = flutterPluginBinding.binaryMessenger
         applicationContext = flutterPluginBinding.applicationContext
 
-        methodChannel = MethodChannel(flutterPluginBinding.binaryMessenger, "twilio_conversations")
-
         Api.PluginApi.setup(flutterPluginBinding.binaryMessenger, pluginApi)
         Api.ConversationClientApi.setup(flutterPluginBinding.binaryMessenger, conversationClientApi)
         Api.ConversationApi.setup(flutterPluginBinding.binaryMessenger, conversationApi)
         Api.ParticipantApi.setup(flutterPluginBinding.binaryMessenger, participantApi)
         Api.MessageApi.setup(flutterPluginBinding.binaryMessenger, messageApi)
 
-        clientChannel = EventChannel(messenger, "twilio_conversations/client")
-        clientChannel.setStreamHandler(object : EventChannel.StreamHandler {
-            override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
-                debug("TwilioConversationsPlugin.onAttachedToEngine => Client eventChannel attached")
-                clientListener = ClientListener()
-                clientListener.events = events
-                clientListener.onListen()
-            }
-
-            override fun onCancel(arguments: Any?) {
-                debug("TwilioConversationsPlugin.onAttachedToEngine => Client eventChannel detached")
-                clientListener.events = null
-            }
-        })
-
-        conversationChannel = EventChannel(messenger, "twilio_conversations/conversations")
-        conversationChannel.setStreamHandler(object: EventChannel.StreamHandler {
-            override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
-                debug("TwilioConversationsPlugin.onAttachedToEngine => Conversations eventChannel attached")
-                conversationSink = events
-            }
-
-            override fun onCancel(arguments: Any?) {
-                debug("TwilioConversationsPlugin.onAttachedToEngine => Conversations eventChannel detached")
-                conversationSink = null
-            }
-        })
-
-        loggingChannel = EventChannel(messenger, "twilio_conversations/logging")
-        loggingChannel.setStreamHandler(object : EventChannel.StreamHandler {
-            override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
-                debug("TwilioConversationsPlugin.onAttachedToEngine => Logging eventChannel attached")
-                loggingSink = events
-            }
-
-            override fun onCancel(arguments: Any?) {
-                debug("TwilioConversationsPlugin.onAttachedToEngine => Logging eventChannel detached")
-                loggingSink = null
-            }
-        })
-
-        notificationChannel = EventChannel(messenger, "twilio_conversations/notification")
-        notificationChannel.setStreamHandler(object : EventChannel.StreamHandler {
-            override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
-                debug("TwilioConversationsPlugin.onAttachedToEngine => Notification eventChannel attached")
-                notificationSink = events
-            }
-
-            override fun onCancel(arguments: Any?) {
-                debug("TwilioConversationsPlugin.onAttachedToEngine => Notification eventChannel detached")
-                notificationSink = null
-            }
-        })
+        flutterClientApi = Api.FlutterConversationClientApi(flutterPluginBinding.binaryMessenger)
+        flutterLoggingApi = Api.FlutterLoggingApi(flutterPluginBinding.binaryMessenger)
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
         debug("TwilioConversationsPlugin.onDetachedFromEngine")
-        methodChannel.setMethodCallHandler(null)
-        clientChannel.setStreamHandler(null)
-        loggingChannel.setStreamHandler(null)
-        notificationChannel.setStreamHandler(null)
-    }
-
-    internal fun sendNotificationEvent(name: String, data: Any?, e: ErrorInfo? = null) {
-        val eventData = mapOf("name" to name, "data" to data, "error" to Mapper.errorInfoToMap(e))
-        notificationSink?.success(eventData)
     }
 }

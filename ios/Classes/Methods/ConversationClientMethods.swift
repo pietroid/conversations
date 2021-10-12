@@ -70,10 +70,10 @@ class ConversationClientMethods: NSObject, TWCONConversationClientApi {
             if result.isSuccessful, let conversation = conversation {
                 SwiftTwilioConversationsPlugin.debug("ConversationClientMethods::createConversation => onSuccess")
                 let conversationDict = Mapper.conversationToPigeon(conversation)
-                flutterResult(conversationDict, nil)
+                completion(conversationDict, nil)
             } else {
                 SwiftTwilioConversationsPlugin.debug("ConversationClientMethods::createConversation => onError: \(String(describing: result.error))")
-                flutterResult(nil, FlutterError(code: "ERROR", message: "Error creating conversation with friendlyName '\(friendlyName)': \(String(describing: result.error))", details: nil))
+                completion(nil, FlutterError(code: "ERROR", message: "Error creating conversation with friendlyName '\(friendlyName)': \(String(describing: result.error))", details: nil))
             }
         })
     }

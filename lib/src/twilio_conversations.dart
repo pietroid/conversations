@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:twilio_conversations/api.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
 
-class TwilioConversations {
+class TwilioConversations extends FlutterLoggingApi {
   factory TwilioConversations() => _instance;
   static final TwilioConversations _instance = TwilioConversations._();
 
@@ -24,22 +24,15 @@ class TwilioConversations {
   static final _messageApi = MessageApi();
   static MessageApi get messageApi => _messageApi;
 
-  TwilioConversations._();
+  TwilioConversations._() {
+    FlutterLoggingApi.setup(this);
+  }
 
-  static const EventChannel clientChannel =
-      EventChannel('twilio_conversations/client');
-  static const EventChannel conversationChannel =
-      EventChannel('twilio_conversations/conversations');
-  static const EventChannel notificationChannel =
-      EventChannel('twilio_conversations/notification');
-  static const EventChannel loggingChannel =
-      EventChannel('twilio_conversations/logging');
+  // TODO: deprecate media progress channel and use pigeon instead
   static const EventChannel mediaProgressChannel =
       EventChannel('twilio_programmable_chat/media_progress');
 
   static bool _dartDebug = false;
-  static StreamSubscription<bool>? _clientListener;
-  static StreamSubscription? loggingStream;
   static ConversationClient? conversationClient;
 
   /// Create a [ConversationClient].
@@ -49,33 +42,23 @@ class TwilioConversations {
     assert(jwtToken.isNotEmpty);
 
     conversationClient = ConversationClient();
-    final completer = Completer<ConversationClient?>();
 
-    await _clientListener?.cancel();
-    _clientListener =
-        conversationClient?.onClientListenerAttached.listen((event) async {
-      //TODO Needs to throw a better error when trying
-      // to create with a bad jwtToken. The current error is "Client timeout reached"
-      // (happens in iOS, not sure about Android)
-      await _clientListener?.cancel();
-      final result;
-      try {
-        result = await pluginApi.create(jwtToken);
+    //TODO Needs to throw a better error when trying
+    // to create with a bad jwtToken. The current error is "Client timeout reached"
+    // (happens in iOS, not sure about Android)
+    final result;
+    try {
+      result = await pluginApi.create(jwtToken);
 
-        if (result == null) {
-          conversationClient = null;
-          return completer.completeError(
-              Exception('Unknown error creating ConversationClient'));
-        }
+      conversationClient
+          ?.updateFromMap(Map<String, dynamic>.from(result.encode() as Map));
+    } catch (e) {
+      conversationClient = null;
+      log('create => onError: $e');
+      rethrow;
+    }
 
-        conversationClient?.updateFromMap(Map<String, dynamic>.from(result.encode() as Map));
-        completer.complete(conversationClient);
-      } catch (e) {
-        completer.completeError(e);
-      }
-    });
-
-    return completer.future;
+    return conversationClient;
   }
 
   //TODO: review error throwing/parsing from the native layer to this one
@@ -102,6 +85,12 @@ class TwilioConversations {
     }
   }
 
+  /// Host to Flutter logging API
+  @override
+  void logFromHost(String msg) {
+    print('[  NATIVE  ] $msg');
+  }
+
   /// Enable debug logging.
   ///
   /// For native logging set [native] to `true` and for dart set [dart] to `true`.
@@ -116,17 +105,6 @@ class TwilioConversations {
     } catch (e) {
       TwilioConversations.log(
           'TwilioConversations::debug => Caught Exception: $e');
-    }
-    if (native && loggingStream == null) {
-      loggingStream =
-          loggingChannel.receiveBroadcastStream().listen((dynamic event) {
-        if (native) {
-          print('[  NATIVE  ] $event');
-        }
-      });
-    } else if (!native && loggingStream != null) {
-      await loggingStream?.cancel();
-      loggingStream = null;
     }
   }
 }

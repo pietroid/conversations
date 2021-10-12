@@ -305,4 +305,12 @@ object Mapper {
                 "status" to errorInfo.status
         )
     }
+
+    fun errorInfoToPigeon(errorInfo: ErrorInfo): Api.ErrorInfoData {
+        val errorData = Api.ErrorInfoData()
+        errorData.status = errorInfo.status.toLong()
+        errorData.message = errorInfo.message
+        errorData.code = errorInfo.code.toLong()
+        return errorData
+    }
 }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/services.dart';
 import 'package:collection/collection.dart';
+import 'package:twilio_conversations/api.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
 
 class Conversation {
@@ -153,6 +154,10 @@ class Conversation {
         : DateTime.parse(map['lastMessageDate'] as String);
     _lastReadMessageIndex = map['lastReadMessageIndex'] as int?;
     _lastMessageIndex = map['lastMessageIndex'] as int?;
+  }
+
+  void updateFromPigeon(ConversationData conversationData) {
+    updateFromMap(Map<String, dynamic>.from(conversationData.encode() as Map));
   }
 
   /// Construct from a map.
@@ -347,93 +352,62 @@ class Conversation {
   //TODO: implement setNotificationLevel
   //#endregion
 
-  /// Parse native channel events to the right event streams.
-  void parseEvents(dynamic event) {
-    final eventName = event['name'] as String;
-    final data = Map<String, dynamic>.from(event['data'] as Map);
-    if (data['conversation'] != null) {
-      final conversationMap =
-          Map<String, dynamic>.from(data['conversation'] as Map);
-      updateFromMap(conversationMap);
-    }
+  void messageAdded(MessageData messageData) {
+    final message = Message.fromPigeon(messageData);
+    _onMessageAddedCtrl.add(message);
+  }
 
-    Message? message;
-    if (data['message'] != null) {
-      final messageMap = Map<String, dynamic>.from(data['message'] as Map);
-      message = Message.fromMap(messageMap);
-    }
+  void messageDeleted(MessageData messageData) {
+    final message = Message.fromPigeon(messageData);
+    _onMessageDeletedCtrl.add(message);
+  }
 
-    Participant? participant;
-    if (data['participant'] != null) {
-      final memberMap = Map<String, dynamic>.from(data['participant'] as Map);
-      participant = Participant.fromMap(memberMap);
+  void messageUpdated(MessageData messageData, String reasonString) {
+    final message = Message.fromPigeon(messageData);
+    final reason =
+        EnumToString.fromString(MessageUpdateReason.values, reasonString);
+    if (reason == null) {
+      return;
     }
+    _onMessageUpdatedCtrl.add(MessageUpdatedEvent(message, reason));
+  }
 
-    dynamic reason;
-    if (data['reason'] != null) {
-      final reasonMap =
-          Map<String, dynamic>.from(data['reason'] as Map<dynamic, dynamic>);
-      switch (reasonMap['type'] as String) {
-        case 'message':
-          reason = EnumToString.fromString(
-              MessageUpdateReason.values, reasonMap['value'] as String);
-          break;
-        case 'participant':
-          reason = EnumToString.fromString(
-              ParticipantUpdateReason.values, reasonMap['value'] as String);
-          break;
-      }
-    }
+  void participantAdded(ParticipantData participantData) {
+    final participant = Participant.fromPigeon(participantData);
+    _onParticipantAddedCtrl.add(participant);
+  }
 
-    switch (eventName) {
-      case 'messageAdded':
-        if (message != null) {
-          _onMessageAddedCtrl.add(message);
-        }
-        break;
-      case 'messageUpdated':
-        if (message != null && reason != null) {
-          _onMessageUpdatedCtrl
-              .add(MessageUpdatedEvent(message, reason as MessageUpdateReason));
-        }
-        break;
-      case 'messageDeleted':
-        if (message != null) {
-          _onMessageDeletedCtrl.add(message);
-        }
-        break;
-      case 'participantAdded':
-        if (participant != null) {
-          _onParticipantAddedCtrl.add(participant);
-        }
-        break;
-      case 'participantUpdated':
-        if (participant != null && reason != null) {
-          _onParticipantUpdatedCtrl.add(ParticipantUpdatedEvent(
-              participant, reason as ParticipantUpdateReason));
-        }
-        break;
-      case 'participantDeleted':
-        if (participant != null) {
-          _onParticipantDeletedCtrl.add(participant);
-        }
-        break;
-      case 'typingStarted':
-        if (participant != null) {
-          _onTypingStartedCtrl.add(TypingEvent(this, participant));
-        }
-        break;
-      case 'typingEnded':
-        if (participant != null) {
-          _onTypingEndedCtrl.add(TypingEvent(this, participant));
-        }
-        break;
-      case 'synchronizationChanged':
-        _onSynchronizationChangedCtrl.add(this);
-        break;
-      default:
-        TwilioConversations.log("Event '$eventName' not yet implemented");
-        break;
+  void participantDeleted(ParticipantData participantData) {
+    final participant = Participant.fromPigeon(participantData);
+    _onParticipantDeletedCtrl.add(participant);
+  }
+
+  void participantUpdated(
+      ParticipantData participantData, String reasonString) {
+    final participant = Participant.fromPigeon(participantData);
+    final reason =
+        EnumToString.fromString(ParticipantUpdateReason.values, reasonString);
+    if (reason == null) {
+      return;
     }
+    _onParticipantUpdatedCtrl.add(ParticipantUpdatedEvent(participant, reason));
+  }
+
+  void synchronizationChanged(ConversationData conversationData) {
+    updateFromPigeon(conversationData);
+    _onSynchronizationChangedCtrl.add(this);
+  }
+
+  void typingEnded(
+      ConversationData conversationData, ParticipantData participantData) {
+    updateFromPigeon(conversationData);
+    final participant = Participant.fromPigeon(participantData);
+    _onTypingEndedCtrl.add(TypingEvent(this, participant));
+  }
+
+  void typingStarted(ConversationData conversationData, ParticipantData participantData) {
+    updateFromPigeon(conversationData);
+    final participant = Participant.fromPigeon(participantData);
+    _onTypingStartedCtrl.add(TypingEvent(this, participant));
   }
 }

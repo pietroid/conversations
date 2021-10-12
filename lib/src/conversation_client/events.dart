@@ -29,9 +29,7 @@ class UserUpdatedEvent {
 
 class NewMessageNotificationEvent {
   final String conversationSid;
-  final String messageSid;
   final int messageIndex;
 
-  NewMessageNotificationEvent(
-      this.conversationSid, this.messageSid, this.messageIndex);
+  NewMessageNotificationEvent(this.conversationSid, this.messageIndex);
 }
