@@ -1,6 +1,10 @@
 package twilio.flutter.twilio_conversations.listeners
 
-import com.twilio.conversations.*
+import com.twilio.conversations.Conversation
+import com.twilio.conversations.ConversationsClient
+import com.twilio.conversations.ConversationsClientListener
+import com.twilio.conversations.ErrorInfo
+import com.twilio.conversations.User
 import twilio.flutter.twilio_conversations.Api
 import twilio.flutter.twilio_conversations.Mapper
 import twilio.flutter.twilio_conversations.TwilioConversationsPlugin
@@ -18,7 +22,7 @@ class ClientListener : ConversationsClientListener {
 
     override fun onNotificationSubscribed() {
         TwilioConversationsPlugin.debug("ClientListener.onNotificationSubscribed")
-        TwilioConversationsPlugin.flutterClientApi.notificationSubscribed {  }
+        TwilioConversationsPlugin.flutterClientApi.notificationSubscribed { }
     }
 
     override fun onUserSubscribed(user: User?) {
@@ -47,7 +51,7 @@ class ClientListener : ConversationsClientListener {
 
     override fun onTokenExpired() {
         TwilioConversationsPlugin.debug("ClientListener.onTokenExpired")
-        TwilioConversationsPlugin.flutterClientApi.tokenExpired {  }
+        TwilioConversationsPlugin.flutterClientApi.tokenExpired { }
     }
 
     override fun onConversationUpdated(conversation: Conversation?, reason: Conversation.UpdateReason?) {
@@ -100,6 +104,6 @@ class ClientListener : ConversationsClientListener {
 
     override fun onTokenAboutToExpire() {
         TwilioConversationsPlugin.debug("ClientListener.onTokenAboutToExpire")
-        TwilioConversationsPlugin.flutterClientApi.tokenAboutToExpire {  }
+        TwilioConversationsPlugin.flutterClientApi.tokenAboutToExpire { }
     }
 }

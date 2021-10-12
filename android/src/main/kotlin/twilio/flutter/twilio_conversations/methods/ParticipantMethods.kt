@@ -3,13 +3,11 @@ package twilio.flutter.twilio_conversations.methods
 import com.twilio.conversations.CallbackListener
 import com.twilio.conversations.Conversation
 import com.twilio.conversations.ErrorInfo
-import io.flutter.plugin.common.MethodCall
-import io.flutter.plugin.common.MethodChannel
 import twilio.flutter.twilio_conversations.Api
 import twilio.flutter.twilio_conversations.Mapper
 import twilio.flutter.twilio_conversations.TwilioConversationsPlugin
 
-class ParticipantMethods: Api.ParticipantApi {
+class ParticipantMethods : Api.ParticipantApi {
     private val TAG = "ParticipantMethods"
 
     override fun getUser(

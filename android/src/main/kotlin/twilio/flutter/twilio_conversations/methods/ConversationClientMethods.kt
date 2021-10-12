@@ -1,6 +1,10 @@
 package twilio.flutter.twilio_conversations.methods
 
-import com.twilio.conversations.*
+import com.twilio.conversations.CallbackListener
+import com.twilio.conversations.Conversation
+import com.twilio.conversations.ConversationsClient
+import com.twilio.conversations.ErrorInfo
+import com.twilio.conversations.StatusListener
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -9,7 +13,7 @@ import twilio.flutter.twilio_conversations.Api
 import twilio.flutter.twilio_conversations.Mapper
 import twilio.flutter.twilio_conversations.TwilioConversationsPlugin
 
-class ConversationClientMethods: Api.ConversationClientApi {
+class ConversationClientMethods : Api.ConversationClientApi {
     override fun updateToken(token: String, result: Api.Result<Void>) {
         TwilioConversationsPlugin.debug("ConversationClientMethods::updateToken")
         TwilioConversationsPlugin.client?.updateToken(token, object : StatusListener {
@@ -113,7 +117,7 @@ class ConversationClientMethods: Api.ConversationClientApi {
 
         TwilioConversationsPlugin.client?.registerFCMToken(ConversationsClient.FCMToken(token), object : StatusListener {
             override fun onSuccess() {
-                TwilioConversationsPlugin.flutterClientApi.registered {  }
+                TwilioConversationsPlugin.flutterClientApi.registered { }
                 result.success(null)
             }
 
@@ -131,7 +135,7 @@ class ConversationClientMethods: Api.ConversationClientApi {
 
         TwilioConversationsPlugin.client?.unregisterFCMToken(ConversationsClient.FCMToken(token), object : StatusListener {
             override fun onSuccess() {
-                TwilioConversationsPlugin.flutterClientApi.deregistered {  }
+                TwilioConversationsPlugin.flutterClientApi.deregistered { }
                 result.success(null)
             }
 

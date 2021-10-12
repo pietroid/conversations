@@ -1,16 +1,22 @@
-import com.twilio.conversations.*
+import com.twilio.conversations.Attributes
+import com.twilio.conversations.CallbackListener
+import com.twilio.conversations.Conversation
+import com.twilio.conversations.ErrorInfo
+import com.twilio.conversations.Message
+import com.twilio.conversations.StatusListener
+import java.io.FileInputStream
 import twilio.flutter.twilio_conversations.Api
 import twilio.flutter.twilio_conversations.Mapper
 import twilio.flutter.twilio_conversations.TwilioConversationsPlugin
-import java.io.FileInputStream
 
-class ConversationMethods: Api.ConversationApi {
+class ConversationMethods : Api.ConversationApi {
     private val TAG = "ConversationMethods"
 
     override fun join(conversationSid: String, result: Api.Result<Boolean>) {
         debug("join => conversationSid: $conversationSid")
         try {
-            TwilioConversationsPlugin.client?.getConversation(conversationSid, object : CallbackListener<Conversation> {
+            TwilioConversationsPlugin.client?.getConversation(conversationSid, object :
+                CallbackListener<Conversation> {
                 override fun onSuccess(conversation: Conversation) {
                     conversation.join(object : StatusListener {
                         override fun onSuccess() {
@@ -142,7 +148,7 @@ class ConversationMethods: Api.ConversationApi {
                 messageOptions.withMediaFileName(options.filename as String)
             }
 
-            //TODO: implement MediaProgressListener
+            // TODO: implement MediaProgressListener
 //            if (options.mediaProgressListenerId != null) {
 //                messageOptions.withMediaProgressListener(object : ProgressListener() {
 //                    override fun onStarted() {
@@ -232,7 +238,6 @@ class ConversationMethods: Api.ConversationApi {
                     debug("addParticipantByIdentity => onError: $errorInfo")
                     result.error(RuntimeException(errorInfo.message))
                 }
-
             })
         } catch (err: IllegalArgumentException) {
             return result.error(err)
@@ -268,7 +273,6 @@ class ConversationMethods: Api.ConversationApi {
                     debug("removeParticipantByIdentity` => onError: $errorInfo")
                     result.error(RuntimeException(errorInfo.message))
                 }
-
             })
         } catch (err: IllegalArgumentException) {
             return result.error(err)

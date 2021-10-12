@@ -1,7 +1,9 @@
 package twilio.flutter.twilio_conversations.listeners
 
-import com.twilio.conversations.*
+import com.twilio.conversations.Conversation
 import com.twilio.conversations.ConversationListener
+import com.twilio.conversations.Message
+import com.twilio.conversations.Participant
 import twilio.flutter.twilio_conversations.Mapper
 import twilio.flutter.twilio_conversations.TwilioConversationsPlugin
 
@@ -27,7 +29,6 @@ class ConversationListener(private val conversationSid: String) : ConversationLi
             conversationSid,
             Mapper.messageToPigeon(message)) {}
     }
-
 
     override fun onParticipantAdded(participant: Participant) {
         TwilioConversationsPlugin.debug("ConversationListener.onParticipantAdded => participantSid = ${participant.sid}")

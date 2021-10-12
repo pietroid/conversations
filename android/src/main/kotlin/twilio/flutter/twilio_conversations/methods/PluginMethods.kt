@@ -1,12 +1,14 @@
 package twilio.flutter.twilio_conversations.methods
 
-import com.twilio.conversations.*
+import com.twilio.conversations.CallbackListener
+import com.twilio.conversations.ConversationsClient
+import com.twilio.conversations.ErrorInfo
 import twilio.flutter.twilio_conversations.Api
 import twilio.flutter.twilio_conversations.Mapper
 import twilio.flutter.twilio_conversations.TwilioConversationsPlugin
 import twilio.flutter.twilio_conversations.listeners.ClientListener
 
-class PluginMethods: Api.PluginApi {
+class PluginMethods : Api.PluginApi {
     private val TAG = "PluginMethods"
 
     override fun debug(enableNative: Boolean, enableSdk: Boolean) {
@@ -24,7 +26,8 @@ class PluginMethods: Api.PluginApi {
         debug("create => jwtToken: $jwtToken")
         val props = ConversationsClient.Properties.newBuilder().createProperties()
 
-        ConversationsClient.create(TwilioConversationsPlugin.applicationContext, jwtToken, props, object : CallbackListener<ConversationsClient> {
+        ConversationsClient.create(TwilioConversationsPlugin.applicationContext, jwtToken, props, object :
+            CallbackListener<ConversationsClient> {
             override fun onSuccess(conversationsClient: ConversationsClient) {
                 TwilioConversationsPlugin.client = conversationsClient
                 TwilioConversationsPlugin.clientListener = ClientListener()
