@@ -37,10 +37,10 @@ class MessageOptions {
   ///
   /// If you specify [MessageOptions.withMedia] then you will not be able to specify [MessageOptions.withBody] because they are mutually exclusive message types. Created message type will be [MessageType.MEDIA].
   void withMedia(File input, String mimeType) {
-    if (this.body != null) {
+    if (body != null) {
       throw Exception('MessageOptions.withBody has already been specified');
     }
-    this.inputPath = input.path;
+    inputPath = input.path;
     this.mimeType = mimeType;
   }
 

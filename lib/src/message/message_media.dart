@@ -1,13 +1,8 @@
-import 'package:twilio_conversations/twilio_conversations.dart';
-
 class MessageMedia {
   final String _sid;
   final String? _fileName;
   final String? _type;
   final int _size;
-  final String? _conversationSid;
-  final String? _messageSid;
-  final int? _messageIndex;
 
   //#region Public API properties
   /// Get SID of media stream.
@@ -36,9 +31,6 @@ class MessageMedia {
     this._fileName,
     this._type,
     this._size,
-    this._conversationSid,
-    this._messageSid,
-    this._messageIndex,
   );
 
   /// Construct from a map.
@@ -48,9 +40,6 @@ class MessageMedia {
       map['fileName'],
       map['type'],
       map['size'],
-      map['conversationSid'],
-      map['messageSid'],
-      map['messageIndex'],
     );
   }
 }

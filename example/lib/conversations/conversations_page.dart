@@ -163,7 +163,7 @@ class _ConversationsPageState extends State<ConversationsPage> {
       onLongPress: () async {
         var r = await widget.conversationsNotifier.client
             ?.getConversation(conversationSidOrUniqueName: conversation.sid);
-        print('Conversation details: ${r}');
+        print('Conversation details: $r');
       },
       onTap: () {
         Navigator.push(

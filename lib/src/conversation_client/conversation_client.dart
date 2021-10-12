@@ -276,7 +276,6 @@ class ConversationClient extends FlutterConversationClientApi {
     }
   }
   //#endregion
-
   @override
   void conversationAdded(ConversationData conversationData) {
     TwilioConversations.log('conversationAdded => $conversationData');
@@ -392,6 +391,10 @@ class ConversationClient extends FlutterConversationClientApi {
 
   @override
   void notificationFailed(ErrorInfoData errorInfoData) {
+    // TODO: review notification registration failure handling
+    // Ensure we're not creating duplicate notifications on Android due to using
+    // registered from register success listener, and notificationSubscribed from
+    // conversation client listener.
     final code = errorInfoData.code;
     final status = errorInfoData.status;
 
@@ -451,6 +454,9 @@ class ConversationClient extends FlutterConversationClientApi {
   @override
   void notificationSubscribed() {
     // TODO: implement notificationSubscribed
+    // Ensure we're not creating duplicate notifications on Android due to using
+    // registered from register success listener, and notificationSubscribed from
+    // conversation client listener.
   }
 
   @override
