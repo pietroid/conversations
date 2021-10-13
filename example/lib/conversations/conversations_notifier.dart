@@ -91,7 +91,16 @@ class ConversationsNotifier extends ChangeNotifier {
       conversations = myConversations;
       await Future.forEach(conversations, (Conversation conversation) async {
         final unreadMessages = await conversation.getUnreadMessagesCount();
-        unreadMessageCounts[conversation.sid] = unreadMessages ?? 0;
+        if (unreadMessages == null) {
+          // If unreadMessages comes back as `null` it means that
+          // no last read message index has been set, so unread messages
+          // will continue to report null until this has been done.
+          await conversation.setLastReadMessageIndex(0);
+          var totalMessages = await conversation.getMessagesCount();
+          unreadMessageCounts[conversation.sid] = totalMessages ?? 0;
+        } else {
+          unreadMessageCounts[conversation.sid] = unreadMessages;
+        }
       });
       notifyListeners();
     }

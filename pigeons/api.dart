@@ -6,6 +6,10 @@ class ConversationClientData {
   bool? isReachabilityEnabled;
 }
 
+class PropertiesData {
+  String? region;
+}
+
 class ConversationData {
   String? sid;
   AttributesData? attributes;
@@ -111,7 +115,7 @@ abstract class PluginApi {
   void debug(bool enableNative, bool enableSdk);
 
   @async
-  ConversationClientData create(String jwtToken);
+  ConversationClientData create(String jwtToken, PropertiesData properties);
 }
 
 @HostApi()

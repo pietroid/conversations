@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:twilio_conversations/api.dart';
+import 'package:twilio_conversations/src/conversation_client/properties.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
 
 class TwilioConversations extends FlutterLoggingApi {
@@ -38,6 +39,7 @@ class TwilioConversations extends FlutterLoggingApi {
   /// Create a [ConversationClient].
   Future<ConversationClient?> create({
     required String jwtToken,
+    Properties properties = const Properties(),
   }) async {
     assert(jwtToken.isNotEmpty);
 
@@ -48,7 +50,7 @@ class TwilioConversations extends FlutterLoggingApi {
     // (happens in iOS, not sure about Android)
     final result;
     try {
-      result = await pluginApi.create(jwtToken);
+      result = await pluginApi.create(jwtToken, properties.toPigeon());
 
       conversationClient
           ?.updateFromMap(Map<String, dynamic>.from(result.encode() as Map));

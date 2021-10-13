@@ -26,6 +26,10 @@ static NSDictionary<NSString *, id> *wrapResult(id result, FlutterError *error) 
 + (TWCONConversationClientData *)fromMap:(NSDictionary *)dict;
 - (NSDictionary *)toMap;
 @end
+@interface TWCONPropertiesData ()
++ (TWCONPropertiesData *)fromMap:(NSDictionary *)dict;
+- (NSDictionary *)toMap;
+@end
 @interface TWCONConversationData ()
 + (TWCONConversationData *)fromMap:(NSDictionary *)dict;
 - (NSDictionary *)toMap;
@@ -94,6 +98,20 @@ static NSDictionary<NSString *, id> *wrapResult(id result, FlutterError *error) 
 }
 - (NSDictionary *)toMap {
   return [NSDictionary dictionaryWithObjectsAndKeys:(self.myIdentity ? self.myIdentity : [NSNull null]), @"myIdentity", (self.connectionState ? self.connectionState : [NSNull null]), @"connectionState", (self.isReachabilityEnabled ? self.isReachabilityEnabled : [NSNull null]), @"isReachabilityEnabled", nil];
+}
+@end
+
+@implementation TWCONPropertiesData
++ (TWCONPropertiesData *)fromMap:(NSDictionary *)dict {
+  TWCONPropertiesData *result = [[TWCONPropertiesData alloc] init];
+  result.region = dict[@"region"];
+  if ((NSNull *)result.region == [NSNull null]) {
+    result.region = nil;
+  }
+  return result;
+}
+- (NSDictionary *)toMap {
+  return [NSDictionary dictionaryWithObjectsAndKeys:(self.region ? self.region : [NSNull null]), @"region", nil];
 }
 @end
 
@@ -482,6 +500,9 @@ static NSDictionary<NSString *, id> *wrapResult(id result, FlutterError *error) 
     case 128:     
       return [TWCONConversationClientData fromMap:[self readValue]];
     
+    case 129:     
+      return [TWCONPropertiesData fromMap:[self readValue]];
+    
     default:    
       return [super readValueOfType:type];
     
@@ -496,6 +517,10 @@ static NSDictionary<NSString *, id> *wrapResult(id result, FlutterError *error) 
 {
   if ([value isKindOfClass:[TWCONConversationClientData class]]) {
     [self writeByte:128];
+    [self writeValue:[value toMap]];
+  } else 
+  if ([value isKindOfClass:[TWCONPropertiesData class]]) {
+    [self writeByte:129];
     [self writeValue:[value toMap]];
   } else 
 {
@@ -555,11 +580,12 @@ void TWCONPluginApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<TW
         binaryMessenger:binaryMessenger
         codec:TWCONPluginApiGetCodec()];
     if (api) {
-      NSCAssert([api respondsToSelector:@selector(createJwtToken:completion:)], @"TWCONPluginApi api (%@) doesn't respond to @selector(createJwtToken:completion:)", api);
+      NSCAssert([api respondsToSelector:@selector(createJwtToken:properties:completion:)], @"TWCONPluginApi api (%@) doesn't respond to @selector(createJwtToken:properties:completion:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         NSArray *args = message;
         NSString *arg_jwtToken = args[0];
-        [api createJwtToken:arg_jwtToken completion:^(TWCONConversationClientData *_Nullable output, FlutterError *_Nullable error) {
+        TWCONPropertiesData *arg_properties = args[1];
+        [api createJwtToken:arg_jwtToken properties:arg_properties completion:^(TWCONConversationClientData *_Nullable output, FlutterError *_Nullable error) {
           callback(wrapResult(output, error));
         }];
       }];

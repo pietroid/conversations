@@ -14,6 +14,8 @@ import org.json.JSONObject
 import twilio.flutter.twilio_conversations.listeners.ConversationListener
 
 object Mapper {
+    private const val TAG = "Mapper"
+
     // TODO go through all of the mappers in iOS, Android, and Dart, to make sure they are consistent
     fun conversationsClientToPigeon(client: ConversationsClient): Api.ConversationClientData {
         val result = Api.ConversationClientData()
@@ -65,7 +67,7 @@ object Mapper {
 
         // Setting flutter event listener for the given channel if one does not yet exist.
         if (conversation.sid != null && !TwilioConversationsPlugin.conversationListeners.containsKey(conversation.sid)) {
-            TwilioConversationsPlugin.debug("Creating ConversationListener for conversation: '${conversation.sid}'")
+            debug("setupConversationListener => conversation: ${conversation.sid}")
             TwilioConversationsPlugin.conversationListeners[conversation.sid] = ConversationListener(conversation.sid)
             conversation.addListener(TwilioConversationsPlugin.conversationListeners[conversation.sid])
         }
@@ -175,5 +177,9 @@ object Mapper {
         errorData.message = errorInfo.message
         errorData.code = errorInfo.code.toLong()
         return errorData
+    }
+
+    fun debug(message: String) {
+        TwilioConversationsPlugin.debug("$TAG::$message")
     }
 }

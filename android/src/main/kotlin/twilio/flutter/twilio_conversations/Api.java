@@ -53,6 +53,25 @@ public class Api {
   }
 
   /** Generated class from Pigeon that represents data sent in messages. */
+  public static class PropertiesData {
+    private String region;
+    public String getRegion() { return region; }
+    public void setRegion(String setterArg) { this.region = setterArg; }
+
+    Map<String, Object> toMap() {
+      Map<String, Object> toMapResult = new HashMap<>();
+      toMapResult.put("region", region);
+      return toMapResult;
+    }
+    static PropertiesData fromMap(Map<String, Object> map) {
+      PropertiesData fromMapResult = new PropertiesData();
+      Object region = map.get("region");
+      fromMapResult.region = (String)region;
+      return fromMapResult;
+    }
+  }
+
+  /** Generated class from Pigeon that represents data sent in messages. */
   public static class ConversationData {
     private String sid;
     public String getSid() { return sid; }
@@ -657,6 +676,9 @@ public class Api {
         case (byte)128:         
           return ConversationClientData.fromMap((Map<String, Object>) readValue(buffer));
         
+        case (byte)129:         
+          return PropertiesData.fromMap((Map<String, Object>) readValue(buffer));
+        
         default:        
           return super.readValueOfType(type, buffer);
         
@@ -668,6 +690,10 @@ public class Api {
         stream.write(128);
         writeValue(stream, ((ConversationClientData) value).toMap());
       } else 
+      if (value instanceof PropertiesData) {
+        stream.write(129);
+        writeValue(stream, ((PropertiesData) value).toMap());
+      } else 
 {
         super.writeValue(stream, value);
       }
@@ -677,7 +703,7 @@ public class Api {
   /** Generated interface from Pigeon that represents a handler of messages from Flutter.*/
   public interface PluginApi {
     void debug(Boolean enableNative, Boolean enableSdk);
-    void create(String jwtToken, Result<ConversationClientData> result);
+    void create(String jwtToken, PropertiesData properties, Result<ConversationClientData> result);
 
     /** The codec used by PluginApi. */
     static MessageCodec<Object> getCodec() {
@@ -726,6 +752,10 @@ public class Api {
               if (jwtTokenArg == null) {
                 throw new NullPointerException("jwtTokenArg unexpectedly null.");
               }
+              PropertiesData propertiesArg = (PropertiesData)args.get(1);
+              if (propertiesArg == null) {
+                throw new NullPointerException("propertiesArg unexpectedly null.");
+              }
               Result<ConversationClientData> resultCallback = new Result<ConversationClientData>() {
                 public void success(ConversationClientData result) {
                   wrapped.put("result", result);
@@ -737,7 +767,7 @@ public class Api {
                 }
               };
 
-              api.create(jwtTokenArg, resultCallback);
+              api.create(jwtTokenArg, propertiesArg, resultCallback);
             }
             catch (Error | RuntimeException exception) {
               wrapped.put("error", wrapError(exception));

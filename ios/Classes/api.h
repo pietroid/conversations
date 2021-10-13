@@ -9,6 +9,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class TWCONConversationClientData;
+@class TWCONPropertiesData;
 @class TWCONConversationData;
 @class TWCONAttributesData;
 @class TWCONTokenData;
@@ -26,6 +27,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, copy, nullable) NSString * myIdentity;
 @property(nonatomic, copy, nullable) NSString * connectionState;
 @property(nonatomic, strong, nullable) NSNumber * isReachabilityEnabled;
+@end
+
+@interface TWCONPropertiesData : NSObject
+@property(nonatomic, copy, nullable) NSString * region;
 @end
 
 @interface TWCONConversationData : NSObject
@@ -133,7 +138,7 @@ NSObject<FlutterMessageCodec> *TWCONPluginApiGetCodec(void);
 
 @protocol TWCONPluginApi
 - (void)debugEnableNative:(NSNumber *)enableNative enableSdk:(NSNumber *)enableSdk error:(FlutterError *_Nullable *_Nonnull)error;
-- (void)createJwtToken:(nullable NSString *)jwtToken completion:(void(^)(TWCONConversationClientData *_Nullable, FlutterError *_Nullable))completion;
+- (void)createJwtToken:(nullable NSString *)jwtToken properties:(nullable TWCONPropertiesData *)properties completion:(void(^)(TWCONConversationClientData *_Nullable, FlutterError *_Nullable))completion;
 @end
 
 extern void TWCONPluginApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<TWCONPluginApi> *_Nullable api);

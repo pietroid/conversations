@@ -30,6 +30,22 @@ class ConversationClientData {
   }
 }
 
+class PropertiesData {
+  String? region;
+
+  Object encode() {
+    final Map<Object?, Object?> pigeonMap = <Object?, Object?>{};
+    pigeonMap['region'] = region;
+    return pigeonMap;
+  }
+
+  static PropertiesData decode(Object message) {
+    final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
+    return PropertiesData()
+      ..region = pigeonMap['region'] as String?;
+  }
+}
+
 class ConversationData {
   String? sid;
   AttributesData? attributes;
@@ -400,6 +416,10 @@ class _PluginApiCodec extends StandardMessageCodec {
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
     } else 
+    if (value is PropertiesData) {
+      buffer.putUint8(129);
+      writeValue(buffer, value.encode());
+    } else 
 {
       super.writeValue(buffer, value);
     }
@@ -409,6 +429,9 @@ class _PluginApiCodec extends StandardMessageCodec {
     switch (type) {
       case 128:       
         return ConversationClientData.decode(readValue(buffer)!);
+      
+      case 129:       
+        return PropertiesData.decode(readValue(buffer)!);
       
       default:      
         return super.readValueOfType(type, buffer);
@@ -450,11 +473,11 @@ class PluginApi {
     }
   }
 
-  Future<ConversationClientData> create(String arg_jwtToken) async {
+  Future<ConversationClientData> create(String arg_jwtToken, PropertiesData arg_properties) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.PluginApi.create', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_jwtToken]) as Map<Object?, Object?>?;
+        await channel.send(<Object>[arg_jwtToken, arg_properties]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',

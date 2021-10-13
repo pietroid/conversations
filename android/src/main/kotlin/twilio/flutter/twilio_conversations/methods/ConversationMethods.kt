@@ -345,7 +345,7 @@ class ConversationMethods : Api.ConversationApi {
                 override fun onSuccess(conversation: Conversation) {
                     conversation.getUnreadMessagesCount(object : CallbackListener<Long?> {
                         override fun onSuccess(count: Long?) {
-                            debug("getUnreadMessagesCount => onSuccess")
+                            debug("getUnreadMessagesCount => onSuccess: $count")
                             val messageCount = Api.MessageCount()
                             messageCount.count = count
                             result.success(messageCount)

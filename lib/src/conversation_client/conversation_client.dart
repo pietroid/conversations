@@ -293,7 +293,7 @@ class ConversationClient extends FlutterConversationClientApi {
 
   @override
   void conversationUpdated(ConversationUpdatedData event) {
-    TwilioConversations.log('conversationUpdated => $event');
+    TwilioConversations.log('conversationUpdated => ${event.reason} sid: ${event.conversation?.sid}');
     final conversationData = event.conversation;
     final reasonString = event.reason;
     final reason = reasonString != null
