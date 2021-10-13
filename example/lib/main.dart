@@ -46,10 +46,12 @@ class MyApp extends StatelessWidget {
                 onPressed: conversationsNotifier.identity.isNotEmpty &&
                         !conversationsNotifier.isClientInitialized
                     ? () async {
-                        final jwtToken = (await BackendService.createToken(
-                                TwilioChatTokenRequest(
-                                    identity: conversationsNotifier.identity)))
-                            ?.token; // <Set your JWT token here>
+                        // <Set your JWT token here>
+                        final jwtToken = null;
+                        // jwtToken = (await BackendService.createToken(
+                        //         TwilioChatTokenRequest(
+                        //             identity: conversationsNotifier.identity)))
+                        //     ?.token;
 
                         if (jwtToken == null) {
                           return;
