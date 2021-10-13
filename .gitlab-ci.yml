@@ -53,7 +53,7 @@ pod_lint:
   script:
     - cd ios || exit 1
     - apt-get update && apt-get install -y git curl unzip
-    - gem install cocoapods -v 1.10.0
+    - gem install cocoapods -v 1.11.2
     - adduser --disabled-password --gecos "" cocoapods # Running as root is not allowed for CocoaPods
     - export RUBYOPT='-W0' # Disable ruby deprecation warnings
     - su cocoapods -c "pod lib lint --allow-warnings twilio_conversations.podspec"
