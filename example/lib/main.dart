@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:twilio_conversations_example/conversations/conversations_notifier.dart';
 import 'package:twilio_conversations_example/conversations/conversations_page.dart';
-import 'package:twilio_conversations_example/models/twilio_chat_token_request.dart';
-import 'package:twilio_conversations_example/services/backend_service.dart';
 
 void main() async {
   // await Firebase.initializeApp();
@@ -47,7 +45,7 @@ class MyApp extends StatelessWidget {
                         !conversationsNotifier.isClientInitialized
                     ? () async {
                         // <Set your JWT token here>
-                        final jwtToken = null;
+                        var jwtToken;
                         // jwtToken = (await BackendService.createToken(
                         //         TwilioChatTokenRequest(
                         //             identity: conversationsNotifier.identity)))
@@ -69,10 +67,11 @@ class MyApp extends StatelessWidget {
               ElevatedButton(
                 onPressed: conversationsNotifier.isClientInitialized
                     ? () async {
-                        final jwtToken = (await BackendService.createToken(
-                                TwilioChatTokenRequest(
-                                    identity: conversationsNotifier.identity)))
-                            ?.token; // <Set your JWT token here>
+                        var jwtToken;
+                        // jwtToken = (await BackendService.createToken(
+                        //         TwilioChatTokenRequest(
+                        //             identity: conversationsNotifier.identity)))
+                        //     ?.token; // <Set your JWT token here>
 
                         if (jwtToken == null) {
                           return;
@@ -82,7 +81,8 @@ class MyApp extends StatelessWidget {
                           _showInvalidJWTDialog(context);
                           return;
                         }
-                        await conversationsNotifier.updateToken(jwtToken: jwtToken);
+                        await conversationsNotifier.updateToken(
+                            jwtToken: jwtToken);
                       }
                     : null,
                 child: Text('Update Token'),
