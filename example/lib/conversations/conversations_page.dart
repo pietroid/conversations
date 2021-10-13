@@ -169,7 +169,8 @@ class _ConversationsPageState extends State<ConversationsPage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => MessagesPage(conversation, widget.conversationsNotifier.client!),
+            builder: (context) => MessagesPage(
+                conversation, widget.conversationsNotifier.client!),
           ),
         );
       },

@@ -275,6 +275,7 @@ class ConversationClient extends FlutterConversationClientApi {
       conversations[sid]?.updateFromMap(map);
     }
   }
+
   //#endregion
   @override
   void conversationAdded(ConversationData conversationData) {
@@ -293,7 +294,8 @@ class ConversationClient extends FlutterConversationClientApi {
 
   @override
   void conversationUpdated(ConversationUpdatedData event) {
-    TwilioConversations.log('conversationUpdated => ${event.reason} sid: ${event.conversation?.sid}');
+    TwilioConversations.log(
+        'conversationUpdated => ${event.reason} sid: ${event.conversation?.sid}');
     final conversationData = event.conversation;
     final reasonString = event.reason;
     final reason = reasonString != null
@@ -413,32 +415,32 @@ class ConversationClient extends FlutterConversationClientApi {
 
   @override
   void deregistered() {
-    _onNotificationDeregisteredCtrl.add(
-        NotificationRegistrationEvent(true, null));
+    _onNotificationDeregisteredCtrl
+        .add(NotificationRegistrationEvent(true, null));
   }
 
   @override
   void deregistrationFailed(ErrorInfoData errorInfoData) {
-    final exception = ErrorInfo(errorInfoData.code ?? 0,
-        errorInfoData.message, errorInfoData.status);
+    final exception = ErrorInfo(
+        errorInfoData.code ?? 0, errorInfoData.message, errorInfoData.status);
 
-    _onNotificationDeregisteredCtrl.add(
-        NotificationRegistrationEvent(false, exception));
+    _onNotificationDeregisteredCtrl
+        .add(NotificationRegistrationEvent(false, exception));
   }
 
   @override
   void registered() {
-    _onNotificationRegisteredCtrl.add(
-        NotificationRegistrationEvent(true, null));
+    _onNotificationRegisteredCtrl
+        .add(NotificationRegistrationEvent(true, null));
   }
 
   @override
   void registrationFailed(ErrorInfoData errorInfoData) {
-    final exception = ErrorInfo(errorInfoData.code ?? 0,
-        errorInfoData.message, errorInfoData.status);
+    final exception = ErrorInfo(
+        errorInfoData.code ?? 0, errorInfoData.message, errorInfoData.status);
 
-    _onNotificationRegisteredCtrl.add(
-        NotificationRegistrationEvent(false, exception));
+    _onNotificationRegisteredCtrl
+        .add(NotificationRegistrationEvent(false, exception));
   }
 
   @override

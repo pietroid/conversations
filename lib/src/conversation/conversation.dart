@@ -405,7 +405,8 @@ class Conversation {
     _onTypingEndedCtrl.add(TypingEvent(this, participant));
   }
 
-  void typingStarted(ConversationData conversationData, ParticipantData participantData) {
+  void typingStarted(
+      ConversationData conversationData, ParticipantData participantData) {
     updateFromPigeon(conversationData);
     final participant = Participant.fromPigeon(participantData);
     _onTypingStartedCtrl.add(TypingEvent(this, participant));

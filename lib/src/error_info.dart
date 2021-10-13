@@ -7,7 +7,7 @@ class ErrorInfo implements Exception {
   /// This code is used by [Messages.getMessageByIndex] if general error occurs and message could not be retrieved.
   static const int CANNOT_GET_MESSAGE_BY_INDEX = -4;
 
-  /// This code is used by [ChatClient.updateToken] if updated token does not match the original token.
+  /// This code is used by [ConversationClient.updateToken] if updated token does not match the original token.
   ///
   /// This error often indicates that you have updated token with a different identity, which is not allowed - you cannot change client identity mid-flight.
   /// If this error is returned, you should shutdown and re-create ChatClient.
