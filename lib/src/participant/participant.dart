@@ -68,7 +68,10 @@ class Participant {
     return User.fromMap(Map<String, dynamic>.from(result.encode() as Map));
   }
 
-  Future<Conversation?> getConversation() async {}
+  Future<Conversation?> getConversation() async {
+    return TwilioConversations.conversationClient
+        ?.getConversation(conversationSidOrUniqueName: conversationSid);
+  }
 
   //TODO: implement setAttributes
   //TODO: implement updateFromMap, and use as appropriate
