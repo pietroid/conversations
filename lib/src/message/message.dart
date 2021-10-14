@@ -81,7 +81,8 @@ class Message {
   Future<String?> getMediaUrl() async {
     final uMessageIndex = messageIndex;
     if (uMessageIndex != null) {
-      final result = await TwilioConversations().messageApi
+      final result = await TwilioConversations()
+          .messageApi
           .getMediaContentTemporaryUrl(conversationSid, uMessageIndex);
       return result;
     }

@@ -207,7 +207,8 @@ class ConversationClient extends FlutterConversationClientApi {
   Future<void> registerForNotification(String? token) async {
     try {
       final tokenData = TokenData()..token = token;
-      await TwilioConversations().conversationsClientApi
+      await TwilioConversations()
+          .conversationsClientApi
           .registerForNotification(tokenData);
     } on PlatformException catch (err) {
       throw TwilioConversations.convertException(err);
@@ -218,7 +219,8 @@ class ConversationClient extends FlutterConversationClientApi {
   Future<void> unregisterForNotification(String? token) async {
     try {
       final tokenData = TokenData()..token = token;
-      await TwilioConversations().conversationsClientApi
+      await TwilioConversations()
+          .conversationsClientApi
           .unregisterForNotification(tokenData);
     } on PlatformException catch (err) {
       throw TwilioConversations.convertException(err);
@@ -228,7 +230,8 @@ class ConversationClient extends FlutterConversationClientApi {
   //#region Conversations
   Future<Conversation?> createConversation(
       {required String friendlyName}) async {
-    final result = await TwilioConversations().conversationsClientApi
+    final result = await TwilioConversations()
+        .conversationsClientApi
         .createConversation(friendlyName);
     if (result.sid == null) {
       return null;
@@ -241,7 +244,8 @@ class ConversationClient extends FlutterConversationClientApi {
 
   Future<Conversation?> getConversation(
       {required String conversationSidOrUniqueName}) async {
-    final result = await TwilioConversations().conversationsClientApi
+    final result = await TwilioConversations()
+        .conversationsClientApi
         .getConversation(conversationSidOrUniqueName);
     final conversationMap = Map<String, dynamic>.from(result.encode() as Map);
     updateConversationFromMap(conversationMap);

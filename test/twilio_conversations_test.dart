@@ -24,8 +24,7 @@ void main() {
     plugin = TwilioConversations.mock(pluginApi);
   });
 
-  tearDown(() {
-  });
+  tearDown(() {});
 
   test('Create ConversationClient', () async {
     final client = await plugin.create(jwtToken: 'mockToken');
