@@ -1,15 +1,15 @@
 /// Represents client initialization status.
 enum ClientSynchronizationStatus {
-  /// [Client] Initialization is started.
+  /// [ConversationClient] Initialization is started.
   STARTED,
 
   /// [Conversation] list initialization is completed.
   CONVERSATIONS_COMPLETED,
 
-  /// [Client] Initialization completed.
+  /// [ConversationClient] Initialization completed.
   COMPLETED,
 
-  /// [Client] Initialization failed.
+  /// [ConversationClient] Initialization failed.
   FAILED,
 
   UNKNOWN,

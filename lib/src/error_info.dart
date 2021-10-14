@@ -4,7 +4,7 @@ class ErrorInfo implements Exception {
   /// This status is set if error occurred in the SDK and is not related to network operations.
   static const int CLIENT_ERROR = 0;
 
-  /// This code is used by [Messages.getMessageByIndex] if general error occurs and message could not be retrieved.
+  /// This code is used by [Conversation.getMessageByIndex] if general error occurs and message could not be retrieved.
   static const int CANNOT_GET_MESSAGE_BY_INDEX = -4;
 
   /// This code is used by [ConversationClient.updateToken] if updated token does not match the original token.

@@ -68,6 +68,8 @@ class Participant {
     return User.fromMap(Map<String, dynamic>.from(result.encode() as Map));
   }
 
+  Future<Conversation?> getConversation() async {}
+
   //TODO: implement setAttributes
   //TODO: implement updateFromMap, and use as appropriate
   //TODO: implement remove
