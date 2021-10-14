@@ -14,24 +14,25 @@ import twilio.flutter.twilio_conversations.Mapper
 import twilio.flutter.twilio_conversations.TwilioConversationsPlugin
 
 class ConversationClientMethods : Api.ConversationClientApi {
+    private val TAG = "ConversationClientMethods"
+
     override fun updateToken(token: String, result: Api.Result<Void>) {
-        TwilioConversationsPlugin.debug("ConversationClientMethods::updateToken")
+        debug("updateToken")
         TwilioConversationsPlugin.client?.updateToken(token, object : StatusListener {
             override fun onSuccess() {
-                TwilioConversationsPlugin.debug("updateToken => onSuccess")
+                debug("updateToken => onSuccess")
                 result.success(null)
             }
 
             override fun onError(errorInfo: ErrorInfo) {
-                TwilioConversationsPlugin.debug("updateToken => onError: $errorInfo")
+                debug("updateToken => onError: $errorInfo")
                 result.error(RuntimeException(errorInfo.message))
             }
         })
-        TwilioConversationsPlugin.debug("updateToken => END")
     }
 
     override fun shutdown() {
-        TwilioConversationsPlugin.debug("ConversationClientMethods::shutdown")
+        debug("shutdown")
         TwilioConversationsPlugin.client?.shutdown()
         disposeListeners()
     }
@@ -40,23 +41,23 @@ class ConversationClientMethods : Api.ConversationClientApi {
         friendlyName: String,
         result: Api.Result<Api.ConversationData?>
     ) {
-        TwilioConversationsPlugin.debug("ConversationClientMethods::createConversation")
+        debug("createConversation")
         try {
             TwilioConversationsPlugin.client?.createConversation(friendlyName, object :
                 CallbackListener<Conversation?> {
                 override fun onSuccess(conversation: Conversation?) {
                     if (conversation == null) {
-                        TwilioConversationsPlugin.debug("ConversationClientMethods::createConversation => onError: Conversation null")
+                        debug("createConversation => onError: Conversation null")
                         result.error(RuntimeException("Error creating conversation: Conversation null"))
                         return
                     }
-                    TwilioConversationsPlugin.debug("ConversationClientMethods::createConversation => onSuccess")
+                    debug("createConversation => onSuccess")
                     val conversationMap = Mapper.conversationToPigeon(conversation)
                     result.success(conversationMap)
                 }
 
                 override fun onError(errorInfo: ErrorInfo) {
-                    TwilioConversationsPlugin.debug("ConversationClientMethods::createConversation => onError: $errorInfo")
+                    debug("createConversation => onError: $errorInfo")
                     result.error(RuntimeException(errorInfo.message))
                 }
             })
@@ -66,7 +67,7 @@ class ConversationClientMethods : Api.ConversationClientApi {
     }
 
     override fun getMyConversations(result: Api.Result<MutableList<Api.ConversationData>>) {
-        TwilioConversationsPlugin.debug("ConversationClientMethods::getMyConversations")
+        debug("getMyConversations")
         GlobalScope.launch {
             val myConversations = TwilioConversationsPlugin.client?.myConversations
             var conversationsSynchronized = false
@@ -83,7 +84,7 @@ class ConversationClientMethods : Api.ConversationClientApi {
             }
 
             launch(Dispatchers.Main) {
-                TwilioConversationsPlugin.debug("ConversationClientMethods::getMyConversations => onSuccess")
+                debug("getMyConversations => onSuccess")
                 val conversationsList = Mapper.conversationsListToPigeon(myConversations)
                 result.success(conversationsList.toMutableList())
             }
@@ -97,15 +98,15 @@ class ConversationClientMethods : Api.ConversationClientApi {
         val client = TwilioConversationsPlugin.client
             ?: return result.error(RuntimeException("Client is not initialized"))
 
-        TwilioConversationsPlugin.debug("ConversationClientMethods::getConversations => conversationSidOrUniqueName: $conversationSidOrUniqueName")
+        debug("getConversations => conversationSidOrUniqueName: $conversationSidOrUniqueName")
         client.getConversation(conversationSidOrUniqueName, object : CallbackListener<Conversation> {
             override fun onSuccess(conversation: Conversation) {
-                TwilioConversationsPlugin.debug("ConversationClientMethods::getConversations => onSuccess")
+                debug("getConversations => onSuccess")
                 result.success(Mapper.conversationToPigeon(conversation))
             }
 
             override fun onError(errorInfo: ErrorInfo) {
-                TwilioConversationsPlugin.debug("ConversationClientMethods::getConversations => onError: $errorInfo")
+                debug("getConversations => onError: $errorInfo")
                 result.error(RuntimeException(errorInfo.message))
             }
         })
@@ -149,5 +150,9 @@ class ConversationClientMethods : Api.ConversationClientApi {
 
     private fun disposeListeners() {
         TwilioConversationsPlugin.conversationListeners.clear()
+    }
+
+    fun debug(message: String) {
+        TwilioConversationsPlugin.debug("$TAG::$message")
     }
 }
