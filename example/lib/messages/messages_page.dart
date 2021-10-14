@@ -15,7 +15,7 @@ class MessagesPage extends StatefulWidget {
 }
 
 class _MessagesPageState extends State<MessagesPage> {
-  late final messagesNotifier;
+  late final MessagesNotifier messagesNotifier;
 
   @override
   void initState() {
@@ -400,8 +400,8 @@ class _MessagesPageState extends State<MessagesPage> {
           fontSize: 13,
         ),
       );
-    } else if (messagesNotifier.hasMedia(message.sid)) {
-      return Center(child: Image.memory(messagesNotifier.media(message.sid)!));
+    } else if (message.sid != null && messagesNotifier.hasMedia(message.sid!)) {
+      return Center(child: Image.memory(messagesNotifier.media(message.sid!)!));
     } else {
       return Center(
         child: CircularProgressIndicator(),

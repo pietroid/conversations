@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 /// Represents the type of message.
 enum MessageType {
   /// [Message] is a regular text message.

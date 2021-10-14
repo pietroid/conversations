@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 /// Indicates reason for member info update.
 enum ParticipantUpdateReason {
   /// Participant last read message index has changed.

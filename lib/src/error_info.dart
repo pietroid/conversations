@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 /// Representation of a Conversation Error Object.
 class ErrorInfo implements Exception {
   //#region Error codes

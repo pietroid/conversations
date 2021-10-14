@@ -45,7 +45,7 @@ class MyApp extends StatelessWidget {
                         !conversationsNotifier.isClientInitialized
                     ? () async {
                         // <Set your JWT token here>
-                        var jwtToken;
+                        String? jwtToken;
                         // jwtToken = (await BackendService.createToken(
                         //         TwilioChatTokenRequest(
                         //             identity: conversationsNotifier.identity)))
@@ -67,7 +67,7 @@ class MyApp extends StatelessWidget {
               ElevatedButton(
                 onPressed: conversationsNotifier.isClientInitialized
                     ? () async {
-                        var jwtToken;
+                        String? jwtToken;
                         // jwtToken = (await BackendService.createToken(
                         //         TwilioChatTokenRequest(
                         //             identity: conversationsNotifier.identity)))

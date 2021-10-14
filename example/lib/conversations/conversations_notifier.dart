@@ -110,7 +110,7 @@ class ConversationsNotifier extends ChangeNotifier {
   }
 
   Future<void> registerForNotification() async {
-    var token;
+    String? token;
     if (Platform.isAndroid) {
       token = await FirebaseMessaging.instance.getToken();
     }
@@ -118,7 +118,7 @@ class ConversationsNotifier extends ChangeNotifier {
   }
 
   Future<void> unregisterForNotification() async {
-    var token;
+    String? token;
     if (Platform.isAndroid) {
       token = await FirebaseMessaging.instance.getToken();
     }
@@ -126,8 +126,8 @@ class ConversationsNotifier extends ChangeNotifier {
   }
 
   void cancelSubscriptions() {
-    subscriptions.forEach((sub) {
+    for (var sub in subscriptions) {
       sub.cancel();
-    });
+    }
   }
 }

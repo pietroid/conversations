@@ -141,11 +141,11 @@ class MessagesNotifier extends ChangeNotifier {
       final nextMessages = await conversation.getLastMessages(numberOfMessages);
 
       messages.addAll(nextMessages.reversed);
-      messages.forEach((message) {
+      for (var message in messages) {
         if (message.type == MessageType.MEDIA) {
           _getMedia(message);
         }
-      });
+      }
     }
 
     await conversation.setAllMessagesRead();
@@ -198,8 +198,8 @@ class MessagesNotifier extends ChangeNotifier {
   void cancelSubscriptions() {
     messageInputTextController.removeListener(notifyListeners);
     messageInputTextController.removeListener(conversation.typing);
-    subscriptions.forEach((sub) {
+    for (var sub in subscriptions) {
       sub.cancel();
-    });
+    }
   }
 }

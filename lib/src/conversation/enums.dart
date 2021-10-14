@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 /// Represents the various statuses of the user with respect to the conversation.
 enum ConversationStatus {
   /// [User] has joined this conversation.

@@ -259,9 +259,9 @@ class ConversationClient extends FlutterConversationClientApi {
             Map<String, dynamic>.from(c.encode() as Map))
         .toList();
 
-    conversationsMapList.forEach((element) {
+    for (var element in conversationsMapList) {
       updateConversationFromMap(element);
-    });
+    }
 
     return conversations.values.toList();
   }

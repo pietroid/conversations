@@ -51,7 +51,7 @@ class TwilioConversations extends FlutterLoggingApi {
     //TODO Needs to throw a better error when trying
     // to create with a bad jwtToken. The current error is "Client timeout reached"
     // (happens in iOS, not sure about Android)
-    final result;
+    final ConversationClientData result;
     try {
       result = await pluginApi.create(jwtToken, properties.toPigeon());
 
