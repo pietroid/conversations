@@ -1,22 +1,36 @@
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
+import 'package:twilio_conversations/api.dart';
+import 'package:twilio_conversations/src/src.dart';
 
+import 'twilio_conversations_test.mocks.dart';
+
+@GenerateMocks([PluginApi])
 void main() {
-  const channel = MethodChannel('twilio_conversations');
+  final pluginApi = MockPluginApi();
+  late TwilioConversations plugin;
 
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUp(() {
-    channel.setMockMethodCallHandler((MethodCall methodCall) async {
-      return '42';
+    when(pluginApi.create(any, any)).thenAnswer((realInvocation) async {
+      final result = ConversationClientData();
+      result.myIdentity = 'mockIdentity';
+      result.connectionState = 'CONNECTED';
+      result.isReachabilityEnabled = false;
+      return result;
     });
+    plugin = TwilioConversations.mock(pluginApi);
   });
 
   tearDown(() {
-    channel.setMockMethodCallHandler(null);
   });
 
-  test('getPlatformVersion', () async {
-    //expect(await TwilioConversations.platformVersion, '42');
+  test('Create ConversationClient', () async {
+    final client = await plugin.create(jwtToken: 'mockToken');
+    expect(client is ConversationClient, true);
+    expect(client?.myIdentity, 'mockIdentity');
+    expect(client?.connectionState, ConnectionState.CONNECTED);
   });
 }

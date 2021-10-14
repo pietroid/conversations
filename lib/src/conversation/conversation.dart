@@ -171,7 +171,7 @@ class Conversation {
 
   //#region Participants
   Future<bool?> addParticipantByIdentity(String identity) async {
-    final result = await TwilioConversations.conversationApi
+    final result = await TwilioConversations().conversationApi
         .addParticipantByIdentity(sid, identity);
 
     return result;
@@ -183,7 +183,7 @@ class Conversation {
   // TODO: implement getParticipantBySid
 
   Future<bool?> removeParticipantByIdentity(String identity) async {
-    final result = await TwilioConversations.conversationApi
+    final result = await TwilioConversations().conversationApi
         .removeParticipantByIdentity(sid, identity);
 
     return result;
@@ -191,7 +191,7 @@ class Conversation {
 
   Future<List<Participant>> getParticipantsList() async {
     final result =
-        await TwilioConversations.conversationApi.getParticipantsList(sid);
+        await TwilioConversations().conversationApi.getParticipantsList(sid);
 
     var participants = List.from(result)
         .map((e) =>
@@ -204,14 +204,14 @@ class Conversation {
   //#region Counts
   Future<int?> getMessagesCount() async {
     final result =
-        await TwilioConversations.conversationApi.getMessagesCount(sid);
+        await TwilioConversations().conversationApi.getMessagesCount(sid);
 
     return result.count;
   }
 
   Future<int?> getUnreadMessagesCount() async {
     final result =
-        await TwilioConversations.conversationApi.getUnreadMessagesCount(sid);
+        await TwilioConversations().conversationApi.getUnreadMessagesCount(sid);
 
     return result.count;
   }
@@ -221,19 +221,19 @@ class Conversation {
 
   //#region Actions
   Future<bool?> join() async {
-    final result = await TwilioConversations.conversationApi.join(sid);
+    final result = await TwilioConversations().conversationApi.join(sid);
 
     return result;
   }
 
   Future<bool?> leave() async {
-    final result = await TwilioConversations.conversationApi.leave(sid);
+    final result = await TwilioConversations().conversationApi.leave(sid);
 
     return result;
   }
 
   Future<void> destroy() async {
-    return TwilioConversations.conversationApi.destroy(sid);
+    return TwilioConversations().conversationApi.destroy(sid);
   }
 
   /// Indicate that Participant is typing in this conversation.
@@ -243,7 +243,7 @@ class Conversation {
   /// One common way to implement this indicator is to call [Conversation.typing] repeatedly in response to key input events.
   Future<void> typing() async {
     try {
-      return TwilioConversations.conversationApi.typing(sid);
+      return TwilioConversations().conversationApi.typing(sid);
     } on PlatformException catch (err) {
       throw TwilioConversations.convertException(err);
     }
@@ -254,7 +254,7 @@ class Conversation {
   Future<Message> sendMessage(MessageOptions options) async {
     try {
       final optionsData = options.toPigeon();
-      final result = await TwilioConversations.conversationApi
+      final result = await TwilioConversations().conversationApi
           .sendMessage(sid, optionsData);
 
       return Message.fromMap(Map<String, dynamic>.from(result.encode() as Map));
@@ -267,7 +267,7 @@ class Conversation {
 
   Future<int> setLastReadMessageIndex(int lastReadMessageIndex) async {
     try {
-      final result = await TwilioConversations.conversationApi
+      final result = await TwilioConversations().conversationApi
           .setLastReadMessageIndex(sid, lastReadMessageIndex);
 // TODO: decide if defaulting to 0 makes sense as `null` could indicate action that needs to be taken
       return result.index ?? 0;
@@ -284,7 +284,7 @@ class Conversation {
     }
     try {
       final result =
-          await TwilioConversations.conversationApi.setAllMessagesRead(sid);
+          await TwilioConversations().conversationApi.setAllMessagesRead(sid);
       return result.index ?? 0;
     } on PlatformException catch (err) {
       throw TwilioConversations.convertException(err);
@@ -302,7 +302,7 @@ class Conversation {
       return [];
     }
     try {
-      final result = await TwilioConversations.conversationApi
+      final result = await TwilioConversations().conversationApi
           .getMessagesBefore(sid, index, count);
 
       final messages = result
@@ -324,7 +324,7 @@ class Conversation {
       return [];
     }
     final result =
-        await TwilioConversations.conversationApi.getLastMessages(sid, count);
+        await TwilioConversations().conversationApi.getLastMessages(sid, count);
 
     final messages = result
         .whereNotNull()
@@ -342,7 +342,7 @@ class Conversation {
 
   //#region Setters
   Future<String> setFriendlyName(String friendlyName) async {
-    final result = await TwilioConversations.conversationApi
+    final result = await TwilioConversations().conversationApi
         .setFriendlyName(sid, friendlyName);
 
     this.friendlyName = result.toString();

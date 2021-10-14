@@ -63,7 +63,7 @@ class Participant {
 
   Future<User?> getUser() async {
     final result =
-        await TwilioConversations.participantApi.getUser(conversationSid, sid);
+        await TwilioConversations().participantApi.getUser(conversationSid, sid);
 
     return User.fromMap(Map<String, dynamic>.from(result.encode() as Map));
   }

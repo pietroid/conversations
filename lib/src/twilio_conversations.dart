@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:twilio_conversations/api.dart';
 import 'package:twilio_conversations/src/conversation_client/properties.dart';
@@ -9,25 +10,27 @@ class TwilioConversations extends FlutterLoggingApi {
   factory TwilioConversations() => _instance;
   static final TwilioConversations _instance = TwilioConversations._();
 
-  static final _pluginApi = PluginApi();
-  static PluginApi get pluginApi => _pluginApi;
+  PluginApi _pluginApi = PluginApi();
+  PluginApi get pluginApi => _pluginApi;
 
-  static final _conversationsClientApi = ConversationClientApi();
-  static ConversationClientApi get conversationsClientApi =>
-      _conversationsClientApi;
+  final _conversationsClientApi = ConversationClientApi();
+  ConversationClientApi get conversationsClientApi => _conversationsClientApi;
 
-  static final _conversationApi = ConversationApi();
-  static ConversationApi get conversationApi => _conversationApi;
+  final _conversationApi = ConversationApi();
+  ConversationApi get conversationApi => _conversationApi;
 
-  static final _participantApi = ParticipantApi();
-  static ParticipantApi get participantApi => _participantApi;
+  final _participantApi = ParticipantApi();
+  ParticipantApi get participantApi => _participantApi;
 
-  static final _messageApi = MessageApi();
-  static MessageApi get messageApi => _messageApi;
+  final _messageApi = MessageApi();
+  MessageApi get messageApi => _messageApi;
 
   TwilioConversations._() {
     FlutterLoggingApi.setup(this);
   }
+
+  @visibleForTesting
+  TwilioConversations.mock(this._pluginApi);
 
   // TODO: deprecate media progress channel and use pigeon instead
   static const EventChannel mediaProgressChannel =
@@ -103,7 +106,7 @@ class TwilioConversations extends FlutterLoggingApi {
   }) async {
     _dartDebug = dart;
     try {
-      await pluginApi.debug(native, sdk);
+      await TwilioConversations().pluginApi.debug(native, sdk);
     } catch (e) {
       TwilioConversations.log(
           'TwilioConversations::debug => Caught Exception: $e');

@@ -95,7 +95,10 @@ class ConversationsNotifier extends ChangeNotifier {
           // If unreadMessages comes back as `null` it means that
           // no last read message index has been set, so unread messages
           // will continue to report null until this has been done.
-          await conversation.setLastReadMessageIndex(0);
+          final messagesCount = await conversation.getMessagesCount();
+          if (messagesCount != null && messagesCount > 0) {
+            await conversation.setLastReadMessageIndex(0);
+          }
           var totalMessages = await conversation.getMessagesCount();
           unreadMessageCounts[conversation.sid] = totalMessages ?? 0;
         } else {

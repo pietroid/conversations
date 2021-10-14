@@ -8,15 +8,17 @@ import twilio.flutter.twilio_conversations.Mapper
 import twilio.flutter.twilio_conversations.TwilioConversationsPlugin
 
 class ConversationListener(private val conversationSid: String) : ConversationListener {
+    private val TAG = "ConversationListener"
+
     override fun onMessageAdded(message: Message) {
-        TwilioConversationsPlugin.debug("ConversationListener.onMessageAdded => messageSid = ${message.sid}")
+        debug("onMessageAdded => messageSid = ${message.sid}")
         TwilioConversationsPlugin.flutterClientApi.messageAdded(
             conversationSid,
             Mapper.messageToPigeon(message)) {}
     }
 
     override fun onMessageUpdated(message: Message, reason: Message.UpdateReason) {
-        TwilioConversationsPlugin.debug("ConversationListener.onMessageUpdated => messageSid = ${message.sid}, reason = $reason")
+        debug("onMessageUpdated => messageSid = ${message.sid}, reason = $reason")
         TwilioConversationsPlugin.flutterClientApi.messageUpdated(
             conversationSid,
             Mapper.messageToPigeon(message),
@@ -24,21 +26,21 @@ class ConversationListener(private val conversationSid: String) : ConversationLi
     }
 
     override fun onMessageDeleted(message: Message) {
-        TwilioConversationsPlugin.debug("ConversationListener.onMessageDeleted => messageSid = ${message.sid}")
+        debug("onMessageDeleted => messageSid = ${message.sid}")
         TwilioConversationsPlugin.flutterClientApi.messageDeleted(
             conversationSid,
             Mapper.messageToPigeon(message)) {}
     }
 
     override fun onParticipantAdded(participant: Participant) {
-        TwilioConversationsPlugin.debug("ConversationListener.onParticipantAdded => participantSid = ${participant.sid}")
+        debug("onParticipantAdded => participantSid = ${participant.sid}")
         TwilioConversationsPlugin.flutterClientApi.participantAdded(
             conversationSid,
             Mapper.participantToPigeon(participant)) {}
     }
 
     override fun onParticipantUpdated(participant: Participant, reason: Participant.UpdateReason) {
-        TwilioConversationsPlugin.debug("ConversationListener.onParticipantUpdated => participantSid = ${participant.sid}, reason = $reason")
+        debug("onParticipantUpdated => participantSid = ${participant.sid}, reason = $reason")
         TwilioConversationsPlugin.flutterClientApi.participantUpdated(
             conversationSid,
             Mapper.participantToPigeon(participant),
@@ -46,14 +48,14 @@ class ConversationListener(private val conversationSid: String) : ConversationLi
     }
 
     override fun onParticipantDeleted(participant: Participant) {
-        TwilioConversationsPlugin.debug("ConversationListener.onParticipantDeleted => participantSid = ${participant.sid}")
+        debug(".onParticipantDeleted => participantSid = ${participant.sid}")
         TwilioConversationsPlugin.flutterClientApi.participantDeleted(
             conversationSid,
             Mapper.participantToPigeon(participant)) {}
     }
 
     override fun onTypingStarted(conversation: Conversation, participant: Participant) {
-        TwilioConversationsPlugin.debug("ConversationListener.onTypingStarted => conversationSid = ${conversation.sid}, participantSid = ${conversation.sid}")
+        debug("onTypingStarted => conversationSid = ${conversation.sid}, participantSid = ${conversation.sid}")
         TwilioConversationsPlugin.flutterClientApi.typingStarted(
             conversationSid,
             Mapper.conversationToPigeon(conversation),
@@ -61,7 +63,7 @@ class ConversationListener(private val conversationSid: String) : ConversationLi
     }
 
     override fun onTypingEnded(conversation: Conversation, participant: Participant) {
-        TwilioConversationsPlugin.debug("ConversationListener.onTypingEnded => conversationSid = ${conversation.sid}, participantSid = ${participant.sid}")
+        debug("onTypingEnded => conversationSid = ${conversation.sid}, participantSid = ${participant.sid}")
         TwilioConversationsPlugin.flutterClientApi.typingEnded(
             conversationSid,
             Mapper.conversationToPigeon(conversation),
@@ -69,9 +71,13 @@ class ConversationListener(private val conversationSid: String) : ConversationLi
     }
 
     override fun onSynchronizationChanged(conversation: Conversation) {
-        TwilioConversationsPlugin.debug("ConversationListener.onSynchronizationChanged => sid: ${conversation.sid}, status: ${conversation.synchronizationStatus}")
+        debug("onSynchronizationChanged => sid: ${conversation.sid}, status: ${conversation.synchronizationStatus}")
         TwilioConversationsPlugin.flutterClientApi.synchronizationChanged(
             conversationSid,
             Mapper.conversationToPigeon(conversation)) {}
+    }
+
+    fun debug(message: String) {
+        TwilioConversationsPlugin.debug("$TAG::$message")
     }
 }
