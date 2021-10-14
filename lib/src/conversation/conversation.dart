@@ -335,7 +335,9 @@ class Conversation {
     return messages;
   }
 
-  //TODO: implement getMessageByIndex
+  Future<Message?> getMessageByIndex(int messageIndex) async {
+    //TODO: implement getMessageByIndex
+  }
   //#endregion
 
   //#region Setters
