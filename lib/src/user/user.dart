@@ -43,10 +43,10 @@ class User {
   User(
     this._identity,
     this._attributes,
-    // this.friendlyName,
-    // this.isNotifiable,
-    // this.isOnline,
-    // this.isSubscribed,
+    this._friendlyName,
+    this._isNotifiable,
+    this._isOnline,
+    this._isSubscribed,
   );
 
   /// Construct from a map.
@@ -56,21 +56,12 @@ class User {
       map['attributes'] != null
           ? Attributes.fromMap(map['attributes'].cast<String, dynamic>())
           : Attributes(AttributesType.NULL, null),
+      map['friendlyName'],
+      map['isNotifiable'] ?? false,
+      map['isOnline'] ?? false,
+      map['isSubscribed'] ?? false,
     );
-    user._updateFromMap(map);
     return user;
-  }
-
-  //TODO: review _updateFromMap usage, and ensure used as needed
-  /// Update properties from a map.
-  void _updateFromMap(Map<String, dynamic> map) {
-    _friendlyName = map['friendlyName'];
-    _isOnline = map['isOnline'] ?? false;
-    _isNotifiable = map['isNotifiable'] ?? false;
-    _isSubscribed = map['isSubscribed'] ?? false;
-    _attributes = map['attributes'] != null
-        ? Attributes.fromMap(map['attributes'].cast<String, dynamic>())
-        : _attributes;
   }
 
   //TODO: implement setFriendlyName

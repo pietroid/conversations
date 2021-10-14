@@ -52,7 +52,6 @@ class Participant {
       map['lastReadMessageIndex'],
       map['lastReadTimestamp'],
     );
-    // member._updateFromMap(map);
     return participant;
   }
 
@@ -75,6 +74,5 @@ class Participant {
   }
 
   //TODO: implement setAttributes
-  //TODO: implement updateFromMap, and use as appropriate
   //TODO: implement remove
 }
