@@ -22,6 +22,7 @@ dev_dependencies:
   pigeon: ^1.0.7
   mockito: ^5.0.16
   lints: ^1.0.1
+  analyzer: ^2.1.0
 
 dependency_overrides:
   analyzer: ^2.1.0

@@ -9,7 +9,7 @@ packages:
     source: hosted
     version: "29.0.0"
   analyzer:
-    dependency: "direct overridden"
+    dependency: "direct dev"
     description:
       name: analyzer
       url: "https://pub.dartlang.org"
