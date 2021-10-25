@@ -172,6 +172,10 @@ abstract class ConversationApi {
       String conversationSid, String identity);
 
   @async
+  ParticipantData getParticipantBySid(
+      String conversationSid, String participantSid);
+
+  @async
   List<ParticipantData> getParticipantsList(String conversationSid);
 
   @async

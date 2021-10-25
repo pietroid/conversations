@@ -789,6 +789,10 @@ class _ConversationApiCodec extends StandardMessageCodec {
       buffer.putUint8(141);
       writeValue(buffer, value.encode());
     } else 
+    if (value is ParticipantData) {
+      buffer.putUint8(142);
+      writeValue(buffer, value.encode());
+    } else 
 {
       super.writeValue(buffer, value);
     }
@@ -836,6 +840,9 @@ class _ConversationApiCodec extends StandardMessageCodec {
         return ParticipantData.decode(readValue(buffer)!);
       
       case 141:       
+        return ParticipantData.decode(readValue(buffer)!);
+      
+      case 142:       
         return ParticipantData.decode(readValue(buffer)!);
       
       default:      
@@ -1044,6 +1051,29 @@ class ConversationApi {
         'dev.flutter.pigeon.ConversationApi.getParticipantByIdentity', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
         await channel.send(<Object>[arg_conversationSid, arg_identity]) as Map<Object?, Object?>?;
+    if (replyMap == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+        details: null,
+      );
+    } else if (replyMap['error'] != null) {
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      throw PlatformException(
+        code: (error['code'] as String?)!,
+        message: error['message'] as String?,
+        details: error['details'],
+      );
+    } else {
+      return (replyMap['result'] as ParticipantData?)!;
+    }
+  }
+
+  Future<ParticipantData> getParticipantBySid(String arg_conversationSid, String arg_participantSid) async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.ConversationApi.getParticipantBySid', codec, binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap =
+        await channel.send(<Object>[arg_conversationSid, arg_participantSid]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',

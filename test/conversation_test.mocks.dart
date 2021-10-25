@@ -88,6 +88,14 @@ class MockConversationApi extends _i1.Mock implements _i2.ConversationApi {
           returnValue: Future<_i2.ParticipantData>.value(
               _FakeParticipantData_1())) as _i3.Future<_i2.ParticipantData>);
   @override
+  _i3.Future<_i2.ParticipantData> getParticipantBySid(
+          String? arg_conversationSid, String? arg_participantSid) =>
+      (super.noSuchMethod(
+          Invocation.method(
+              #getParticipantBySid, [arg_conversationSid, arg_participantSid]),
+          returnValue: Future<_i2.ParticipantData>.value(
+              _FakeParticipantData_1())) as _i3.Future<_i2.ParticipantData>);
+  @override
   _i3.Future<List<_i2.ParticipantData?>> getParticipantsList(
           String? arg_conversationSid) =>
       (super.noSuchMethod(

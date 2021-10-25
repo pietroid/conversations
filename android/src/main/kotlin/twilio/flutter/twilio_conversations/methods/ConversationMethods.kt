@@ -328,15 +328,40 @@ class ConversationMethods : Api.ConversationApi {
 
         client.getConversation(conversationSid, object : CallbackListener<Conversation> {
             override fun onSuccess(conversation: Conversation) {
-                debug("getParticipantByIdentity => onSuccess")
                 val participant = conversation.getParticipantByIdentity(identity)
                     ?: return result.error(RuntimeException("No participant found with identity $identity"))
+                debug("getParticipantByIdentity => onSuccess")
                 val participantData = Mapper.participantToPigeon(participant)
                 result.success(participantData)
             }
 
             override fun onError(errorInfo: ErrorInfo) {
                 debug("getParticipantByIdentity => onError: $errorInfo")
+                result.error(RuntimeException(errorInfo.message))
+            }
+        })
+    }
+
+    override fun getParticipantBySid(
+        conversationSid: String,
+        participantSid: String,
+        result: Api.Result<Api.ParticipantData>
+    ) {
+        debug("getParticipantBySid => conversationSid: $conversationSid participantSid: $participantSid")
+        val client = TwilioConversationsPlugin.client
+            ?: return result.error(RuntimeException("Client is not initialized"))
+
+        client.getConversation(conversationSid, object : CallbackListener<Conversation> {
+            override fun onSuccess(conversation: Conversation) {
+                val participant = conversation.getParticipantBySid(participantSid)
+                    ?: return result.error(RuntimeException("No participant found with sid $participantSid"))
+                debug("getParticipantBySid => onSuccess")
+                val participantData = Mapper.participantToPigeon(participant)
+                result.success(participantData)
+            }
+
+            override fun onError(errorInfo: ErrorInfo) {
+                debug("getParticipantBySid => onError: $errorInfo")
                 result.error(RuntimeException(errorInfo.message))
             }
         })

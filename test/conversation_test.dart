@@ -24,6 +24,7 @@ void main() {
       invocation = realInvocation;
       return true;
     });
+
     when(conversationApi.getParticipantByIdentity(any, any))
         .thenAnswer((realInvocation) async {
       invocation = realInvocation;
@@ -32,6 +33,17 @@ void main() {
       responseData.type = chatType;
       responseData.conversationSid = invocation?.positionalArguments[0];
       responseData.identity = invocation?.positionalArguments[1];
+      return responseData;
+    });
+
+    when(conversationApi.getParticipantBySid(any, any))
+        .thenAnswer((realInvocation) async {
+      invocation = realInvocation;
+      final responseData = ParticipantData();
+      responseData.sid = invocation?.positionalArguments[1];
+      responseData.type = chatType;
+      responseData.conversationSid = invocation?.positionalArguments[0];
+      responseData.identity = Uuid().v4();
       return responseData;
     });
 
@@ -72,5 +84,17 @@ void main() {
     expect(participant?.type, EnumToString.fromString(Type.values, chatType));
     expect(invocation?.positionalArguments[0], conversationSid);
     expect(invocation?.positionalArguments[1], identity);
+  });
+
+  test('Calls API to retrieve participant by SID', () async {
+    final participantSid = Uuid().v4();
+    final conversationSid = Uuid().v4();
+    final conversation = Conversation(conversationSid);
+    final participant = await conversation.getParticipantBySid(participantSid);
+    expect(participant?.sid, participantSid);
+    expect(participant?.conversationSid, conversationSid);
+    expect(participant?.type, EnumToString.fromString(Type.values, chatType));
+    expect(invocation?.positionalArguments[0], conversationSid);
+    expect(invocation?.positionalArguments[1], participantSid);
   });
 }

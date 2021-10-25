@@ -1126,6 +1126,9 @@ public class Api {
         case (byte)141:         
           return ParticipantData.fromMap((Map<String, Object>) readValue(buffer));
         
+        case (byte)142:         
+          return ParticipantData.fromMap((Map<String, Object>) readValue(buffer));
+        
         default:        
           return super.readValueOfType(type, buffer);
         
@@ -1189,6 +1192,10 @@ public class Api {
         stream.write(141);
         writeValue(stream, ((ParticipantData) value).toMap());
       } else 
+      if (value instanceof ParticipantData) {
+        stream.write(142);
+        writeValue(stream, ((ParticipantData) value).toMap());
+      } else 
 {
         super.writeValue(stream, value);
       }
@@ -1206,6 +1213,7 @@ public class Api {
     void removeParticipant(String conversationSid, String participantSid, Result<Boolean> result);
     void removeParticipantByIdentity(String conversationSid, String identity, Result<Boolean> result);
     void getParticipantByIdentity(String conversationSid, String identity, Result<ParticipantData> result);
+    void getParticipantBySid(String conversationSid, String participantSid, Result<ParticipantData> result);
     void getParticipantsList(String conversationSid, Result<List<ParticipantData>> result);
     void getMessagesCount(String conversationSid, Result<MessageCount> result);
     void getUnreadMessagesCount(String conversationSid, Result<MessageCount> result);
@@ -1538,6 +1546,44 @@ public class Api {
               };
 
               api.getParticipantByIdentity(conversationSidArg, identityArg, resultCallback);
+            }
+            catch (Error | RuntimeException exception) {
+              wrapped.put("error", wrapError(exception));
+              reply.reply(wrapped);
+            }
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.ConversationApi.getParticipantBySid", getCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            Map<String, Object> wrapped = new HashMap<>();
+            try {
+              ArrayList<Object> args = (ArrayList<Object>)message;
+              String conversationSidArg = (String)args.get(0);
+              if (conversationSidArg == null) {
+                throw new NullPointerException("conversationSidArg unexpectedly null.");
+              }
+              String participantSidArg = (String)args.get(1);
+              if (participantSidArg == null) {
+                throw new NullPointerException("participantSidArg unexpectedly null.");
+              }
+              Result<ParticipantData> resultCallback = new Result<ParticipantData>() {
+                public void success(ParticipantData result) {
+                  wrapped.put("result", result);
+                  reply.reply(wrapped);
+                }
+                public void error(Throwable error) {
+                  wrapped.put("error", wrapError(error));
+                  reply.reply(wrapped);
+                }
+              };
+
+              api.getParticipantBySid(conversationSidArg, participantSidArg, resultCallback);
             }
             catch (Error | RuntimeException exception) {
               wrapped.put("error", wrapError(exception));

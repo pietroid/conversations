@@ -199,14 +199,31 @@ class Conversation {
   }
 
   Future<Participant?> getParticipantByIdentity(String identity) async {
-    final result = await TwilioConversations()
-        .conversationApi
-        .getParticipantByIdentity(sid, identity);
+    try {
+      final result = await TwilioConversations()
+          .conversationApi
+          .getParticipantByIdentity(sid, identity);
 
-    final participant =
-        Participant.fromMap(Map<String, dynamic>.from(result.encode() as Map));
+      final participant = Participant.fromPigeon(result);
 
-    return participant;
+      return participant;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<Participant?> getParticipantBySid(String participantSid) async {
+    try {
+      final result = await TwilioConversations()
+          .conversationApi
+          .getParticipantBySid(sid, participantSid);
+
+      final participant = Participant.fromPigeon(result);
+
+      return participant;
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<List<Participant>> getParticipantsList() async {

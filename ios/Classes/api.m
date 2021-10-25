@@ -869,6 +869,9 @@ void TWCONConversationClientApiSetup(id<FlutterBinaryMessenger> binaryMessenger,
     case 141:     
       return [TWCONParticipantData fromMap:[self readValue]];
     
+    case 142:     
+      return [TWCONParticipantData fromMap:[self readValue]];
+    
     default:    
       return [super readValueOfType:type];
     
@@ -935,6 +938,10 @@ void TWCONConversationClientApiSetup(id<FlutterBinaryMessenger> binaryMessenger,
   } else 
   if ([value isKindOfClass:[TWCONParticipantData class]]) {
     [self writeByte:141];
+    [self writeValue:[value toMap]];
+  } else 
+  if ([value isKindOfClass:[TWCONParticipantData class]]) {
+    [self writeByte:142];
     [self writeValue:[value toMap]];
   } else 
 {
@@ -1143,6 +1150,27 @@ void TWCONConversationApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObj
         NSString *arg_conversationSid = args[0];
         NSString *arg_identity = args[1];
         [api getParticipantByIdentityConversationSid:arg_conversationSid identity:arg_identity completion:^(TWCONParticipantData *_Nullable output, FlutterError *_Nullable error) {
+          callback(wrapResult(output, error));
+        }];
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [FlutterBasicMessageChannel
+        messageChannelWithName:@"dev.flutter.pigeon.ConversationApi.getParticipantBySid"
+        binaryMessenger:binaryMessenger
+        codec:TWCONConversationApiGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(getParticipantBySidConversationSid:participantSid:completion:)], @"TWCONConversationApi api (%@) doesn't respond to @selector(getParticipantBySidConversationSid:participantSid:completion:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        NSString *arg_conversationSid = args[0];
+        NSString *arg_participantSid = args[1];
+        [api getParticipantBySidConversationSid:arg_conversationSid participantSid:arg_participantSid completion:^(TWCONParticipantData *_Nullable output, FlutterError *_Nullable error) {
           callback(wrapResult(output, error));
         }];
       }];
