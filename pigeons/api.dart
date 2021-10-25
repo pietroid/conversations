@@ -162,6 +162,9 @@ abstract class ConversationApi {
   bool addParticipantByIdentity(String conversationSid, String identity);
 
   @async
+  bool removeParticipant(String conversationSid, String participantSid);
+
+  @async
   bool removeParticipantByIdentity(String conversationSid, String identity);
 
   @async

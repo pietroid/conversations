@@ -86,11 +86,8 @@ class MessagesNotifier extends ChangeNotifier {
   }
 
   Future<void> removeParticipant(Participant participant) async {
-    final uIdentity = participant.identity;
-    if (uIdentity != null) {
-      await conversation.removeParticipantByIdentity(uIdentity);
-      await getParticipants();
-    }
+    await conversation.removeParticipant(participant);
+    await getParticipants();
   }
 
   Future<void> setFriendlyName(String name) async {

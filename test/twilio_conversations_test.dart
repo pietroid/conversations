@@ -8,8 +8,8 @@ import 'twilio_conversations_test.mocks.dart';
 
 @GenerateMocks([PluginApi])
 void main() {
-  final pluginApi = MockPluginApi();
   late TwilioConversations plugin;
+  final pluginApi = MockPluginApi();
 
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -21,12 +21,14 @@ void main() {
       result.isReachabilityEnabled = false;
       return result;
     });
-    plugin = TwilioConversations.mock(pluginApi);
+    plugin = TwilioConversations.mock(
+      pluginApi: pluginApi,
+    );
   });
 
   tearDown(() {});
 
-  test('Create ConversationClient', () async {
+  test('Calls API to create ConversationClient', () async {
     final client = await plugin.create(jwtToken: 'mockToken');
     expect(client is ConversationClient, true);
     expect(client?.myIdentity, 'mockIdentity');

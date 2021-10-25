@@ -354,6 +354,73 @@ class ConversationMethods: NSObject, TWCONConversationApi {
         })
     }
 
+    // removeParticipant
+    func removeParticipantConversationSid(_ conversationSid: String?, participantSid: String?, completion: @escaping (NSNumber?, FlutterError?) -> Void) {
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(
+                nil,
+                FlutterError(
+                    code: "ERROR",
+                    message: "Client has not been initialized.",
+                    details: nil))
+        }
+
+        guard let conversationSid = conversationSid else {
+            return completion(
+                nil,
+                FlutterError(
+                    code: "MISSING_PARAMS",
+                    message: "Missing 'conversationSid' parameter",
+                    details: nil))
+        }
+
+        guard let participantSid = participantSid else {
+            return completion(
+                nil,
+                FlutterError(
+                    code: "MISSING_PARAMS",
+                    message: "Missing 'sid' parameter",
+                    details: nil))
+        }
+
+        debug("removeParticipant => conversationSid: \(conversationSid) participantSid: \(participantSid)")
+        
+        client.conversation(withSidOrUniqueName: conversationSid) { (result: TCHResult, conversation: TCHConversation?) in
+            if result.isSuccessful, let conversation = conversation {
+                guard let participant = conversation.participant(withSid: participantSid) else {
+                    return completion(
+                        nil,
+                        FlutterError(
+                            code: "ERROR",
+                            message: "Error retrieving participant \(participantSid)",
+                            details: nil))
+                }
+                conversation.removeParticipant(participant) { (result: TCHResult) in
+                    if result.isSuccessful {
+                        return completion(true, nil)
+                    } else {
+                        return completion(
+                            nil,
+                            FlutterError(
+                                code: "ERROR",
+                                message: "Error removing participant \(participantSid)",
+                                details: nil))
+                    }
+                }
+            } else {
+                let errorMessage = String(describing: result.error)
+                self.debug("removeParticipant => onError: \(errorMessage)")
+                completion(
+                    nil,
+                    FlutterError(
+                        code: "ERROR",
+                        message: "Error retrieving conversation \(conversationSid)",
+                        details: nil))
+            }
+        }
+    }
+    
+    // removeParticipantByIdentity
     func removeParticipant(
         byIdentityConversationSid conversationSid: String?,
         identity: String?, completion: @escaping (NSNumber?, FlutterError?) -> Void) {
@@ -384,7 +451,7 @@ class ConversationMethods: NSObject, TWCONConversationApi {
                     details: nil))
         }
 
-        debug("removeParticipantByIdentity => conversationSid: \(conversationSid)")
+        debug("removeParticipantByIdentity => conversationSid: \(conversationSid) identity: \(identity)")
 
         client.conversation(
             withSidOrUniqueName: conversationSid,
@@ -551,7 +618,7 @@ class ConversationMethods: NSObject, TWCONConversationApi {
             if result.isSuccessful, let conversation = conversation {
                 conversation.getUnreadMessagesCount { (result: TCHResult, count: NSNumber?) in
                     if result.isSuccessful {
-                        self.debug("getUnreadMessagesCount => onSuccess: \(count)")
+                        self.debug("getUnreadMessagesCount => onSuccess: \(String(describing: count))")
                         let result = TWCONMessageCount()
                         result.count = count
                         completion(result, nil)

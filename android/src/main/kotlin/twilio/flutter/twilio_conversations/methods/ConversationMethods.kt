@@ -244,12 +244,50 @@ class ConversationMethods : Api.ConversationApi {
         }
     }
 
+    override fun removeParticipant(
+        conversationSid: String,
+        participantSid: String,
+        result: Api.Result<Boolean>
+    ) {
+        debug("removeParticipant => conversationSid: $conversationSid participantSid: $participantSid")
+        val client = TwilioConversationsPlugin.client
+            ?: return result.error(RuntimeException("Client is not initialized"))
+
+        try {
+            client.getConversation(conversationSid, object : CallbackListener<Conversation> {
+                override fun onSuccess(conversation: Conversation) {
+                    val participant = conversation.getParticipantBySid(participantSid)
+                        ?: return result.error(RuntimeException("Participant $participantSid not found."))
+
+                    conversation.removeParticipant(participant, object : StatusListener {
+                        override fun onSuccess() {
+                            debug("removeParticipant => onSuccess")
+                            result.success(true)
+                        }
+
+                        override fun onError(errorInfo: ErrorInfo) {
+                            debug("removeParticipant => onError: $errorInfo")
+                            result.error(RuntimeException(errorInfo.message))
+                        }
+                    })
+                }
+
+                override fun onError(errorInfo: ErrorInfo) {
+                    debug("removeParticipant => onError: $errorInfo")
+                    result.error(RuntimeException(errorInfo.message))
+                }
+            })
+        } catch (err: IllegalArgumentException) {
+            return result.error(err)
+        }
+    }
+
     override fun removeParticipantByIdentity(
         conversationSid: String,
         identity: String,
         result: Api.Result<Boolean>
     ) {
-        debug("removeParticipantByIdentity => conversationSid: $conversationSid")
+        debug("removeParticipantByIdentity => conversationSid: $conversationSid identity: $identity")
         val client = TwilioConversationsPlugin.client
             ?: return result.error(RuntimeException("Client is not initialized"))
 
@@ -258,19 +296,19 @@ class ConversationMethods : Api.ConversationApi {
                 override fun onSuccess(conversation: Conversation) {
                     conversation.removeParticipantByIdentity(identity, object : StatusListener {
                         override fun onSuccess() {
-                            debug("removeParticipantByIdentity` => onSuccess")
+                            debug("removeParticipantByIdentity => onSuccess")
                             result.success(true)
                         }
 
                         override fun onError(errorInfo: ErrorInfo) {
-                            debug("removeParticipantByIdentity` => onError: $errorInfo")
+                            debug("removeParticipantByIdentity => onError: $errorInfo")
                             result.error(RuntimeException(errorInfo.message))
                         }
                     })
                 }
 
                 override fun onError(errorInfo: ErrorInfo) {
-                    debug("removeParticipantByIdentity` => onError: $errorInfo")
+                    debug("removeParticipantByIdentity => onError: $errorInfo")
                     result.error(RuntimeException(errorInfo.message))
                 }
             })

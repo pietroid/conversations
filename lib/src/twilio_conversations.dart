@@ -7,16 +7,40 @@ import 'package:twilio_conversations/src/conversation_client/properties.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
 
 class TwilioConversations extends FlutterLoggingApi {
-  factory TwilioConversations() => _instance;
-  static final TwilioConversations _instance = TwilioConversations._();
+  factory TwilioConversations() {
+    _instance ??= TwilioConversations._();
+    return _instance!;
+  }
+  static TwilioConversations? _instance;
 
-  PluginApi _pluginApi = PluginApi();
+  TwilioConversations._({
+    PluginApi? pluginApi,
+    ConversationApi? conversationApi,
+  }) {
+    _pluginApi = pluginApi ?? PluginApi();
+    _conversationApi = conversationApi ?? ConversationApi();
+    FlutterLoggingApi.setup(this);
+  }
+
+  @visibleForTesting
+  factory TwilioConversations.mock({
+    PluginApi? pluginApi,
+    ConversationApi? conversationApi,
+  }) {
+    _instance = TwilioConversations._(
+      pluginApi: pluginApi,
+      conversationApi: conversationApi,
+    );
+    return _instance!;
+  }
+
+  late PluginApi _pluginApi;
   PluginApi get pluginApi => _pluginApi;
 
   final _conversationsClientApi = ConversationClientApi();
   ConversationClientApi get conversationsClientApi => _conversationsClientApi;
 
-  final _conversationApi = ConversationApi();
+  late ConversationApi _conversationApi;
   ConversationApi get conversationApi => _conversationApi;
 
   final _participantApi = ParticipantApi();
@@ -24,13 +48,6 @@ class TwilioConversations extends FlutterLoggingApi {
 
   final _messageApi = MessageApi();
   MessageApi get messageApi => _messageApi;
-
-  TwilioConversations._() {
-    FlutterLoggingApi.setup(this);
-  }
-
-  @visibleForTesting
-  TwilioConversations.mock(this._pluginApi);
 
   // TODO: deprecate media progress channel and use pigeon instead
   static const EventChannel mediaProgressChannel =

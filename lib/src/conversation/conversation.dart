@@ -102,6 +102,7 @@ class Conversation {
 
   final StreamController<Conversation> _onSynchronizationChangedCtrl =
       StreamController<Conversation>.broadcast();
+  //#endregion
 
   /// Called when conversation synchronization status changed.
   late Stream<Conversation> onSynchronizationChanged;
@@ -179,9 +180,15 @@ class Conversation {
   }
 
   // TODO: implement addParticipantByAddress
-  // TODO: implement removeParticipant
   // TODO: implement getParticipantByIdentity
   // TODO: implement getParticipantBySid
+
+  Future<bool?> removeParticipant(Participant participant) async {
+    final result = await TwilioConversations()
+        .conversationApi
+        .removeParticipant(sid, participant.sid);
+    return result;
+  }
 
   Future<bool?> removeParticipantByIdentity(String identity) async {
     final result = await TwilioConversations()
