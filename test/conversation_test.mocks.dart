@@ -18,9 +18,11 @@ import 'package:twilio_conversations/api.dart' as _i2;
 
 class _FakeMessageData_0 extends _i1.Fake implements _i2.MessageData {}
 
-class _FakeMessageCount_1 extends _i1.Fake implements _i2.MessageCount {}
+class _FakeParticipantData_1 extends _i1.Fake implements _i2.ParticipantData {}
 
-class _FakeMessageIndex_2 extends _i1.Fake implements _i2.MessageIndex {}
+class _FakeMessageCount_2 extends _i1.Fake implements _i2.MessageCount {}
+
+class _FakeMessageIndex_3 extends _i1.Fake implements _i2.MessageIndex {}
 
 /// A class which mocks [ConversationApi].
 ///
@@ -78,6 +80,14 @@ class MockConversationApi extends _i1.Mock implements _i2.ConversationApi {
               [arg_conversationSid, arg_identity]),
           returnValue: Future<bool>.value(false)) as _i3.Future<bool>);
   @override
+  _i3.Future<_i2.ParticipantData> getParticipantByIdentity(
+          String? arg_conversationSid, String? arg_identity) =>
+      (super.noSuchMethod(
+          Invocation.method(
+              #getParticipantByIdentity, [arg_conversationSid, arg_identity]),
+          returnValue: Future<_i2.ParticipantData>.value(
+              _FakeParticipantData_1())) as _i3.Future<_i2.ParticipantData>);
+  @override
   _i3.Future<List<_i2.ParticipantData?>> getParticipantsList(
           String? arg_conversationSid) =>
       (super.noSuchMethod(
@@ -90,7 +100,7 @@ class MockConversationApi extends _i1.Mock implements _i2.ConversationApi {
       (super.noSuchMethod(
               Invocation.method(#getMessagesCount, [arg_conversationSid]),
               returnValue:
-                  Future<_i2.MessageCount>.value(_FakeMessageCount_1()))
+                  Future<_i2.MessageCount>.value(_FakeMessageCount_2()))
           as _i3.Future<_i2.MessageCount>);
   @override
   _i3.Future<_i2.MessageCount> getUnreadMessagesCount(
@@ -98,7 +108,7 @@ class MockConversationApi extends _i1.Mock implements _i2.ConversationApi {
       (super.noSuchMethod(
               Invocation.method(#getUnreadMessagesCount, [arg_conversationSid]),
               returnValue:
-                  Future<_i2.MessageCount>.value(_FakeMessageCount_1()))
+                  Future<_i2.MessageCount>.value(_FakeMessageCount_2()))
           as _i3.Future<_i2.MessageCount>);
   @override
   _i3.Future<_i2.MessageIndex> setLastReadMessageIndex(
@@ -107,7 +117,7 @@ class MockConversationApi extends _i1.Mock implements _i2.ConversationApi {
               Invocation.method(#setLastReadMessageIndex,
                   [arg_conversationSid, arg_lastReadMessageIndex]),
               returnValue:
-                  Future<_i2.MessageIndex>.value(_FakeMessageIndex_2()))
+                  Future<_i2.MessageIndex>.value(_FakeMessageIndex_3()))
           as _i3.Future<_i2.MessageIndex>);
   @override
   _i3.Future<_i2.MessageIndex> setAllMessagesRead(
@@ -115,7 +125,7 @@ class MockConversationApi extends _i1.Mock implements _i2.ConversationApi {
       (super.noSuchMethod(
               Invocation.method(#setAllMessagesRead, [arg_conversationSid]),
               returnValue:
-                  Future<_i2.MessageIndex>.value(_FakeMessageIndex_2()))
+                  Future<_i2.MessageIndex>.value(_FakeMessageIndex_3()))
           as _i3.Future<_i2.MessageIndex>);
   @override
   _i3.Future<List<_i2.MessageData?>> getMessagesBefore(

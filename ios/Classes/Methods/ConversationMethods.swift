@@ -486,6 +486,64 @@ class ConversationMethods: NSObject, TWCONConversationApi {
         })
     }
 
+    // getParticipantByIdentity
+    func getParticipantByIdentityConversationSid(_ conversationSid: String?, identity: String?, completion: @escaping (TWCONParticipantData?, FlutterError?) -> Void) {
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(
+                nil,
+                FlutterError(
+                    code: "ERROR",
+                    message: "Client has not been initialized.",
+                    details: nil))
+        }
+
+        guard let conversationSid = conversationSid else {
+            return completion(
+                nil,
+                FlutterError(
+                    code: "MISSING_PARAMS",
+                    message: "Missing 'conversationSid' parameter",
+                    details: nil))
+        }
+
+        guard let identity = identity else {
+            return completion(
+                nil,
+                FlutterError(
+                    code: "MISSING_PARAMS",
+                    message: "Missing 'identity' parameter",
+                    details: nil))
+        }
+        
+        debug("getParticipantByIdentity => conversationSid: \(conversationSid) identity: \(identity)")
+
+        client.conversation(
+            withSidOrUniqueName: conversationSid,
+            completion: { (result: TCHResult, conversation: TCHConversation?) in
+            if result.isSuccessful, let conversation = conversation {
+                self.debug("getParticipantByIdentity => onSuccess")
+                guard let participant = conversation.participant(withIdentity: identity) else {
+                    completion(nil, FlutterError(
+                        code: "NOT_FOUND",
+                        message: "No participant found with identity \(identity)",
+                        details: nil))
+                    return
+                }
+                let participantData = Mapper.participantToPigeon(participant, conversationSid: conversationSid)
+                completion(participantData, nil)
+            } else {
+                let errorMessage = String(describing: result.error)
+                self.debug("getParticipantByIdentity => onError: \(errorMessage)")
+                completion(
+                    nil,
+                    FlutterError(
+                        code: "ERROR",
+                        message: "Error getting conversation \(conversationSid)",
+                        details: nil))
+            }
+        })
+    }
+
     func getParticipantsListConversationSid(
         _ conversationSid: String?,
         completion: @escaping ([TWCONParticipantData]?, FlutterError?) -> Void) {

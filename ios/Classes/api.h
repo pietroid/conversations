@@ -170,6 +170,7 @@ NSObject<FlutterMessageCodec> *TWCONConversationApiGetCodec(void);
 - (void)addParticipantByIdentityConversationSid:(nullable NSString *)conversationSid identity:(nullable NSString *)identity completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion;
 - (void)removeParticipantConversationSid:(nullable NSString *)conversationSid participantSid:(nullable NSString *)participantSid completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion;
 - (void)removeParticipantByIdentityConversationSid:(nullable NSString *)conversationSid identity:(nullable NSString *)identity completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion;
+- (void)getParticipantByIdentityConversationSid:(nullable NSString *)conversationSid identity:(nullable NSString *)identity completion:(void(^)(TWCONParticipantData *_Nullable, FlutterError *_Nullable))completion;
 - (void)getParticipantsListConversationSid:(nullable NSString *)conversationSid completion:(void(^)(NSArray<TWCONParticipantData *> *_Nullable, FlutterError *_Nullable))completion;
 - (void)getMessagesCountConversationSid:(nullable NSString *)conversationSid completion:(void(^)(TWCONMessageCount *_Nullable, FlutterError *_Nullable))completion;
 - (void)getUnreadMessagesCountConversationSid:(nullable NSString *)conversationSid completion:(void(^)(TWCONMessageCount *_Nullable, FlutterError *_Nullable))completion;

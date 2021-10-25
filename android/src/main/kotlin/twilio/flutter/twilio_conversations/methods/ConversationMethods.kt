@@ -317,6 +317,31 @@ class ConversationMethods : Api.ConversationApi {
         }
     }
 
+    override fun getParticipantByIdentity(
+        conversationSid: String,
+        identity: String,
+        result: Api.Result<Api.ParticipantData>
+    ) {
+        debug("getParticipantByIdentity => conversationSid: $conversationSid identity: $identity")
+        val client = TwilioConversationsPlugin.client
+            ?: return result.error(RuntimeException("Client is not initialized"))
+
+        client.getConversation(conversationSid, object : CallbackListener<Conversation> {
+            override fun onSuccess(conversation: Conversation) {
+                debug("getParticipantByIdentity => onSuccess")
+                val participant = conversation.getParticipantByIdentity(identity)
+                    ?: return result.error(RuntimeException("No participant found with identity $identity"))
+                val participantData = Mapper.participantToPigeon(participant)
+                result.success(participantData)
+            }
+
+            override fun onError(errorInfo: ErrorInfo) {
+                debug("getParticipantByIdentity => onError: $errorInfo")
+                result.error(RuntimeException(errorInfo.message))
+            }
+        })
+    }
+
     override fun getParticipantsList(
         conversationSid: String,
         result: Api.Result<MutableList<Api.ParticipantData>>
@@ -327,13 +352,13 @@ class ConversationMethods : Api.ConversationApi {
 
         client.getConversation(conversationSid, object : CallbackListener<Conversation> {
             override fun onSuccess(conversation: Conversation) {
-                debug("getParticipantsList` => onSuccess")
+                debug("getParticipantsList => onSuccess")
                 val participantsListData = Mapper.participantListToPigeon(conversation.participantsList)
                 result.success(participantsListData.toMutableList())
             }
 
             override fun onError(errorInfo: ErrorInfo) {
-                debug("getParticipantsList` => onError: $errorInfo")
+                debug("getParticipantsList => onError: $errorInfo")
                 result.error(RuntimeException(errorInfo.message))
             }
         })

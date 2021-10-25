@@ -198,6 +198,17 @@ class Conversation {
     return result;
   }
 
+  Future<Participant?> getParticipantByIdentity(String identity) async {
+    final result = await TwilioConversations()
+        .conversationApi
+        .getParticipantByIdentity(sid, identity);
+
+    final participant =
+        Participant.fromMap(Map<String, dynamic>.from(result.encode() as Map));
+
+    return participant;
+  }
+
   Future<List<Participant>> getParticipantsList() async {
     final result =
         await TwilioConversations().conversationApi.getParticipantsList(sid);

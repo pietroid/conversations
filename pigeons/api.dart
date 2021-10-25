@@ -168,6 +168,10 @@ abstract class ConversationApi {
   bool removeParticipantByIdentity(String conversationSid, String identity);
 
   @async
+  ParticipantData getParticipantByIdentity(
+      String conversationSid, String identity);
+
+  @async
   List<ParticipantData> getParticipantsList(String conversationSid);
 
   @async
