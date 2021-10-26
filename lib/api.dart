@@ -349,22 +349,6 @@ class MessageCount {
   }
 }
 
-class MessageIndex {
-  int? index;
-
-  Object encode() {
-    final Map<Object?, Object?> pigeonMap = <Object?, Object?>{};
-    pigeonMap['index'] = index;
-    return pigeonMap;
-  }
-
-  static MessageIndex decode(Object message) {
-    final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
-    return MessageIndex()
-      ..index = pigeonMap['index'] as int?;
-  }
-}
-
 class ConversationUpdatedData {
   ConversationData? conversation;
   String? reason;
@@ -753,35 +737,35 @@ class _ConversationApiCodec extends StandardMessageCodec {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
     } else 
-    if (value is MessageData) {
+    if (value is MessageCount) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
     } else 
-    if (value is MessageData) {
+    if (value is MessageCount) {
       buffer.putUint8(134);
       writeValue(buffer, value.encode());
     } else 
-    if (value is MessageData) {
+    if (value is MessageCount) {
       buffer.putUint8(135);
       writeValue(buffer, value.encode());
     } else 
-    if (value is MessageIndex) {
+    if (value is MessageData) {
       buffer.putUint8(136);
       writeValue(buffer, value.encode());
     } else 
-    if (value is MessageIndex) {
+    if (value is MessageData) {
       buffer.putUint8(137);
       writeValue(buffer, value.encode());
     } else 
-    if (value is MessageMediaData) {
+    if (value is MessageData) {
       buffer.putUint8(138);
       writeValue(buffer, value.encode());
     } else 
-    if (value is MessageOptionsData) {
+    if (value is MessageMediaData) {
       buffer.putUint8(139);
       writeValue(buffer, value.encode());
     } else 
-    if (value is ParticipantData) {
+    if (value is MessageOptionsData) {
       buffer.putUint8(140);
       writeValue(buffer, value.encode());
     } else 
@@ -791,6 +775,10 @@ class _ConversationApiCodec extends StandardMessageCodec {
     } else 
     if (value is ParticipantData) {
       buffer.putUint8(142);
+      writeValue(buffer, value.encode());
+    } else 
+    if (value is ParticipantData) {
+      buffer.putUint8(143);
       writeValue(buffer, value.encode());
     } else 
 {
@@ -816,33 +804,36 @@ class _ConversationApiCodec extends StandardMessageCodec {
         return MessageCount.decode(readValue(buffer)!);
       
       case 133:       
-        return MessageData.decode(readValue(buffer)!);
+        return MessageCount.decode(readValue(buffer)!);
       
       case 134:       
-        return MessageData.decode(readValue(buffer)!);
+        return MessageCount.decode(readValue(buffer)!);
       
       case 135:       
-        return MessageData.decode(readValue(buffer)!);
+        return MessageCount.decode(readValue(buffer)!);
       
       case 136:       
-        return MessageIndex.decode(readValue(buffer)!);
+        return MessageData.decode(readValue(buffer)!);
       
       case 137:       
-        return MessageIndex.decode(readValue(buffer)!);
+        return MessageData.decode(readValue(buffer)!);
       
       case 138:       
-        return MessageMediaData.decode(readValue(buffer)!);
+        return MessageData.decode(readValue(buffer)!);
       
       case 139:       
-        return MessageOptionsData.decode(readValue(buffer)!);
+        return MessageMediaData.decode(readValue(buffer)!);
       
       case 140:       
-        return ParticipantData.decode(readValue(buffer)!);
+        return MessageOptionsData.decode(readValue(buffer)!);
       
       case 141:       
         return ParticipantData.decode(readValue(buffer)!);
       
       case 142:       
+        return ParticipantData.decode(readValue(buffer)!);
+      
+      case 143:       
         return ParticipantData.decode(readValue(buffer)!);
       
       default:      
@@ -1161,7 +1152,30 @@ class ConversationApi {
     }
   }
 
-  Future<MessageIndex> setLastReadMessageIndex(String arg_conversationSid, int arg_lastReadMessageIndex) async {
+  Future<MessageCount> advanceLastReadMessageIndex(String arg_conversationSid, int arg_lastReadMessageIndex) async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.ConversationApi.advanceLastReadMessageIndex', codec, binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap =
+        await channel.send(<Object>[arg_conversationSid, arg_lastReadMessageIndex]) as Map<Object?, Object?>?;
+    if (replyMap == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+        details: null,
+      );
+    } else if (replyMap['error'] != null) {
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      throw PlatformException(
+        code: (error['code'] as String?)!,
+        message: error['message'] as String?,
+        details: error['details'],
+      );
+    } else {
+      return (replyMap['result'] as MessageCount?)!;
+    }
+  }
+
+  Future<MessageCount> setLastReadMessageIndex(String arg_conversationSid, int arg_lastReadMessageIndex) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.ConversationApi.setLastReadMessageIndex', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
@@ -1180,11 +1194,11 @@ class ConversationApi {
         details: error['details'],
       );
     } else {
-      return (replyMap['result'] as MessageIndex?)!;
+      return (replyMap['result'] as MessageCount?)!;
     }
   }
 
-  Future<MessageIndex> setAllMessagesRead(String arg_conversationSid) async {
+  Future<MessageCount> setAllMessagesRead(String arg_conversationSid) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.ConversationApi.setAllMessagesRead', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
@@ -1203,7 +1217,7 @@ class ConversationApi {
         details: error['details'],
       );
     } else {
-      return (replyMap['result'] as MessageIndex?)!;
+      return (replyMap['result'] as MessageCount?)!;
     }
   }
 

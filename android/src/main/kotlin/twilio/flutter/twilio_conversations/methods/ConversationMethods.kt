@@ -434,9 +434,9 @@ class ConversationMethods : Api.ConversationApi {
                     conversation.getUnreadMessagesCount(object : CallbackListener<Long?> {
                         override fun onSuccess(count: Long?) {
                             debug("getUnreadMessagesCount => onSuccess: $count")
-                            val messageCount = Api.MessageCount()
-                            messageCount.count = count
-                            result.success(messageCount)
+                            val unreadMessages = Api.MessageCount()
+                            unreadMessages.count = count
+                            result.success(unreadMessages)
                         }
 
                         override fun onError(errorInfo: ErrorInfo) {
@@ -456,23 +456,56 @@ class ConversationMethods : Api.ConversationApi {
         }
     }
 
+    override fun advanceLastReadMessageIndex(
+        conversationSid: String,
+        lastReadMessageIndex: Long,
+        result: Api.Result<Api.MessageCount>
+    ) {
+        debug("advanceLastReadMessageIndex => conversationSid: $conversationSid index: $lastReadMessageIndex")
+        val client = TwilioConversationsPlugin.client
+            ?: return result.error(RuntimeException("Client is not initialized"))
+
+        client.getConversation(conversationSid, object : CallbackListener<Conversation> {
+            override fun onSuccess(conversation: Conversation) {
+                conversation.advanceLastReadMessageIndex(lastReadMessageIndex, object : CallbackListener<Long> {
+                    override fun onSuccess(count: Long) {
+                        debug("advanceLastReadMessageIndex => onSuccess")
+                        val unreadMessages = Api.MessageCount()
+                        unreadMessages.count = count
+                        result.success(unreadMessages)
+                    }
+
+                    override fun onError(errorInfo: ErrorInfo) {
+                        debug("advanceLastReadMessageIndex => onError: $errorInfo")
+                        result.error(RuntimeException(errorInfo.message))
+                    }
+                })
+            }
+
+            override fun onError(errorInfo: ErrorInfo) {
+                debug("advanceLastReadMessageIndex => onError: $errorInfo")
+                result.error(RuntimeException(errorInfo.message))
+            }
+        })
+    }
+
     override fun setLastReadMessageIndex(
         conversationSid: String,
         lastReadMessageIndex: Long,
-        result: Api.Result<Api.MessageIndex>
+        result: Api.Result<Api.MessageCount>
     ) {
-        debug("setLastReadMessageIndex => conversationSid: $conversationSid")
+        debug("setLastReadMessageIndex => conversationSid: $conversationSid index: $lastReadMessageIndex")
         val client = TwilioConversationsPlugin.client
             ?: return result.error(RuntimeException("Client is not initialized"))
 
         client.getConversation(conversationSid, object : CallbackListener<Conversation> {
             override fun onSuccess(conversation: Conversation) {
                 conversation.setLastReadMessageIndex(lastReadMessageIndex, object : CallbackListener<Long> {
-                    override fun onSuccess(newIndex: Long) {
+                    override fun onSuccess(count: Long) {
                         debug("setLastReadMessageIndex => onSuccess")
-                        val index = Api.MessageIndex()
-                        index.index = newIndex
-                        result.success(index)
+                        val unreadMessages = Api.MessageCount()
+                        unreadMessages.count = count
+                        result.success(unreadMessages)
                     }
 
                     override fun onError(errorInfo: ErrorInfo) {
@@ -491,7 +524,7 @@ class ConversationMethods : Api.ConversationApi {
 
     override fun setAllMessagesRead(
         conversationSid: String,
-        result: Api.Result<Api.MessageIndex>
+        result: Api.Result<Api.MessageCount>
     ) {
         debug("setAllMessagesRead => conversationSid: $conversationSid")
         val client = TwilioConversationsPlugin.client
@@ -500,10 +533,10 @@ class ConversationMethods : Api.ConversationApi {
         client.getConversation(conversationSid, object : CallbackListener<Conversation> {
             override fun onSuccess(conversation: Conversation) {
                 conversation.setAllMessagesRead(object : CallbackListener<Long> {
-                    override fun onSuccess(index: Long) {
-                        val newIndex = Api.MessageIndex()
-                        newIndex.index = index
-                        result.success(newIndex)
+                    override fun onSuccess(count: Long) {
+                        val unreadMessages = Api.MessageCount()
+                        unreadMessages.count = count
+                        result.success(unreadMessages)
                     }
 
                     override fun onError(errorInfo: ErrorInfo) {

@@ -29,6 +29,7 @@ Read the [Frequently Asked Questions](https://gitlab.com/twilio-flutter/conversa
 - Notification handling must also be set up by the user of the plugin
 
 ### Code Gen
+`./run_pigeon.sh`
 `flutter packages pub run build_runner build --delete-conflicting-outputs`
 
 # Contributions By

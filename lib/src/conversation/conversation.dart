@@ -317,28 +317,50 @@ class Conversation {
     }
   }
 
-  Future<int> setLastReadMessageIndex(int lastReadMessageIndex) async {
+  /// Set the last read index for this Participant and Conversation. Allows you to set any value, including smaller than the current index.
+  ///
+  /// Returns an updated unread message count for the user on this conversation.
+  Future<int?> setLastReadMessageIndex(int lastReadMessageIndex) async {
     try {
       final result = await TwilioConversations()
           .conversationApi
           .setLastReadMessageIndex(sid, lastReadMessageIndex);
-// TODO: decide if defaulting to 0 makes sense as `null` could indicate action that needs to be taken
-      return result.index ?? 0;
+      return result.count;
     } on PlatformException catch (err) {
+      TwilioConversations.log('setLastReadMessageIndex => onError: $err');
       throw TwilioConversations.convertException(err);
     }
   }
 
-  //TODO: implement advanceLastReadMessageIndex
+  /// Update the last read index for this Participant and Conversation.
+  /// Only update the index if the value specified is larger than the previous value.
+  ///
+  /// Note: It appears that the constraint is only enforced on Android, not iOS.
+  ///
+  /// Returns an updated unread message count for the user on this conversation.
+  Future<int?> advanceLastReadMessageIndex(int lastReadMessageIndex) async {
+    try {
+      final result = await TwilioConversations()
+          .conversationApi
+          .advanceLastReadMessageIndex(sid, lastReadMessageIndex);
+      return result.count;
+    } on PlatformException catch (err) {
+      TwilioConversations.log('advanceLastReadMessageIndex => onError: $err');
+      throw TwilioConversations.convertException(err);
+    }
+  }
 
-  Future<int> setAllMessagesRead() async {
+  /// Mark all messages in conversation as read.
+  ///
+  /// Returns an updated unread message count for the user on this conversation.
+  Future<int?> setAllMessagesRead() async {
     if (!hasMessages) {
-      return 0;
+      return null;
     }
     try {
       final result =
           await TwilioConversations().conversationApi.setAllMessagesRead(sid);
-      return result.index ?? 0;
+      return result.count;
     } on PlatformException catch (err) {
       throw TwilioConversations.convertException(err);
     }

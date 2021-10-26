@@ -38,7 +38,7 @@ class MessagesNotifier extends ChangeNotifier {
       messages.insert(0, message);
       final messageIndex = message.messageIndex;
       if (messageIndex != null) {
-        conversation.setLastReadMessageIndex(messageIndex);
+        conversation.advanceLastReadMessageIndex(messageIndex);
       }
 
       if (message.type == MessageType.MEDIA) {

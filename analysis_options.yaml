@@ -21,3 +21,4 @@ analyzer:
     invalid_dependency: ignore # Ignored for local platform_interface dependency
   exclude:
     - test/twilio_conversations_test.mocks.dart
+    - test/conversation/conversation_test.mocks.dart

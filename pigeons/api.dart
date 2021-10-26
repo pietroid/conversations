@@ -95,10 +95,6 @@ class MessageCount {
   int? count;
 }
 
-class MessageIndex {
-  int? index;
-}
-
 class ConversationUpdatedData {
   ConversationData? conversation;
   String? reason;
@@ -185,11 +181,15 @@ abstract class ConversationApi {
   MessageCount getUnreadMessagesCount(String conversationSid);
 
   @async
-  MessageIndex setLastReadMessageIndex(
+  MessageCount advanceLastReadMessageIndex(
       String conversationSid, int lastReadMessageIndex);
 
   @async
-  MessageIndex setAllMessagesRead(String conversationSid);
+  MessageCount setLastReadMessageIndex(
+      String conversationSid, int lastReadMessageIndex);
+
+  @async
+  MessageCount setAllMessagesRead(String conversationSid);
 
   @async
   List<MessageData> getMessagesBefore(

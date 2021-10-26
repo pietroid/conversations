@@ -66,10 +66,6 @@ static NSDictionary<NSString *, id> *wrapResult(id result, FlutterError *error) 
 + (TWCONMessageCount *)fromMap:(NSDictionary *)dict;
 - (NSDictionary *)toMap;
 @end
-@interface TWCONMessageIndex ()
-+ (TWCONMessageIndex *)fromMap:(NSDictionary *)dict;
-- (NSDictionary *)toMap;
-@end
 @interface TWCONConversationUpdatedData ()
 + (TWCONConversationUpdatedData *)fromMap:(NSDictionary *)dict;
 - (NSDictionary *)toMap;
@@ -434,20 +430,6 @@ static NSDictionary<NSString *, id> *wrapResult(id result, FlutterError *error) 
 }
 - (NSDictionary *)toMap {
   return [NSDictionary dictionaryWithObjectsAndKeys:(self.count ? self.count : [NSNull null]), @"count", nil];
-}
-@end
-
-@implementation TWCONMessageIndex
-+ (TWCONMessageIndex *)fromMap:(NSDictionary *)dict {
-  TWCONMessageIndex *result = [[TWCONMessageIndex alloc] init];
-  result.index = dict[@"index"];
-  if ((NSNull *)result.index == [NSNull null]) {
-    result.index = nil;
-  }
-  return result;
-}
-- (NSDictionary *)toMap {
-  return [NSDictionary dictionaryWithObjectsAndKeys:(self.index ? self.index : [NSNull null]), @"index", nil];
 }
 @end
 
@@ -843,33 +825,36 @@ void TWCONConversationClientApiSetup(id<FlutterBinaryMessenger> binaryMessenger,
       return [TWCONMessageCount fromMap:[self readValue]];
     
     case 133:     
-      return [TWCONMessageData fromMap:[self readValue]];
+      return [TWCONMessageCount fromMap:[self readValue]];
     
     case 134:     
-      return [TWCONMessageData fromMap:[self readValue]];
+      return [TWCONMessageCount fromMap:[self readValue]];
     
     case 135:     
-      return [TWCONMessageData fromMap:[self readValue]];
+      return [TWCONMessageCount fromMap:[self readValue]];
     
     case 136:     
-      return [TWCONMessageIndex fromMap:[self readValue]];
+      return [TWCONMessageData fromMap:[self readValue]];
     
     case 137:     
-      return [TWCONMessageIndex fromMap:[self readValue]];
+      return [TWCONMessageData fromMap:[self readValue]];
     
     case 138:     
-      return [TWCONMessageMediaData fromMap:[self readValue]];
+      return [TWCONMessageData fromMap:[self readValue]];
     
     case 139:     
-      return [TWCONMessageOptionsData fromMap:[self readValue]];
+      return [TWCONMessageMediaData fromMap:[self readValue]];
     
     case 140:     
-      return [TWCONParticipantData fromMap:[self readValue]];
+      return [TWCONMessageOptionsData fromMap:[self readValue]];
     
     case 141:     
       return [TWCONParticipantData fromMap:[self readValue]];
     
     case 142:     
+      return [TWCONParticipantData fromMap:[self readValue]];
+    
+    case 143:     
       return [TWCONParticipantData fromMap:[self readValue]];
     
     default:    
@@ -904,35 +889,35 @@ void TWCONConversationClientApiSetup(id<FlutterBinaryMessenger> binaryMessenger,
     [self writeByte:132];
     [self writeValue:[value toMap]];
   } else 
-  if ([value isKindOfClass:[TWCONMessageData class]]) {
+  if ([value isKindOfClass:[TWCONMessageCount class]]) {
     [self writeByte:133];
     [self writeValue:[value toMap]];
   } else 
-  if ([value isKindOfClass:[TWCONMessageData class]]) {
+  if ([value isKindOfClass:[TWCONMessageCount class]]) {
     [self writeByte:134];
     [self writeValue:[value toMap]];
   } else 
-  if ([value isKindOfClass:[TWCONMessageData class]]) {
+  if ([value isKindOfClass:[TWCONMessageCount class]]) {
     [self writeByte:135];
     [self writeValue:[value toMap]];
   } else 
-  if ([value isKindOfClass:[TWCONMessageIndex class]]) {
+  if ([value isKindOfClass:[TWCONMessageData class]]) {
     [self writeByte:136];
     [self writeValue:[value toMap]];
   } else 
-  if ([value isKindOfClass:[TWCONMessageIndex class]]) {
+  if ([value isKindOfClass:[TWCONMessageData class]]) {
     [self writeByte:137];
     [self writeValue:[value toMap]];
   } else 
-  if ([value isKindOfClass:[TWCONMessageMediaData class]]) {
+  if ([value isKindOfClass:[TWCONMessageData class]]) {
     [self writeByte:138];
     [self writeValue:[value toMap]];
   } else 
-  if ([value isKindOfClass:[TWCONMessageOptionsData class]]) {
+  if ([value isKindOfClass:[TWCONMessageMediaData class]]) {
     [self writeByte:139];
     [self writeValue:[value toMap]];
   } else 
-  if ([value isKindOfClass:[TWCONParticipantData class]]) {
+  if ([value isKindOfClass:[TWCONMessageOptionsData class]]) {
     [self writeByte:140];
     [self writeValue:[value toMap]];
   } else 
@@ -942,6 +927,10 @@ void TWCONConversationClientApiSetup(id<FlutterBinaryMessenger> binaryMessenger,
   } else 
   if ([value isKindOfClass:[TWCONParticipantData class]]) {
     [self writeByte:142];
+    [self writeValue:[value toMap]];
+  } else 
+  if ([value isKindOfClass:[TWCONParticipantData class]]) {
+    [self writeByte:143];
     [self writeValue:[value toMap]];
   } else 
 {
@@ -1242,6 +1231,27 @@ void TWCONConversationApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObj
   {
     FlutterBasicMessageChannel *channel =
       [FlutterBasicMessageChannel
+        messageChannelWithName:@"dev.flutter.pigeon.ConversationApi.advanceLastReadMessageIndex"
+        binaryMessenger:binaryMessenger
+        codec:TWCONConversationApiGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(advanceLastReadMessageIndexConversationSid:lastReadMessageIndex:completion:)], @"TWCONConversationApi api (%@) doesn't respond to @selector(advanceLastReadMessageIndexConversationSid:lastReadMessageIndex:completion:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        NSString *arg_conversationSid = args[0];
+        NSNumber *arg_lastReadMessageIndex = args[1];
+        [api advanceLastReadMessageIndexConversationSid:arg_conversationSid lastReadMessageIndex:arg_lastReadMessageIndex completion:^(TWCONMessageCount *_Nullable output, FlutterError *_Nullable error) {
+          callback(wrapResult(output, error));
+        }];
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [FlutterBasicMessageChannel
         messageChannelWithName:@"dev.flutter.pigeon.ConversationApi.setLastReadMessageIndex"
         binaryMessenger:binaryMessenger
         codec:TWCONConversationApiGetCodec()];
@@ -1251,7 +1261,7 @@ void TWCONConversationApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObj
         NSArray *args = message;
         NSString *arg_conversationSid = args[0];
         NSNumber *arg_lastReadMessageIndex = args[1];
-        [api setLastReadMessageIndexConversationSid:arg_conversationSid lastReadMessageIndex:arg_lastReadMessageIndex completion:^(TWCONMessageIndex *_Nullable output, FlutterError *_Nullable error) {
+        [api setLastReadMessageIndexConversationSid:arg_conversationSid lastReadMessageIndex:arg_lastReadMessageIndex completion:^(TWCONMessageCount *_Nullable output, FlutterError *_Nullable error) {
           callback(wrapResult(output, error));
         }];
       }];
@@ -1271,7 +1281,7 @@ void TWCONConversationApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObj
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         NSArray *args = message;
         NSString *arg_conversationSid = args[0];
-        [api setAllMessagesReadConversationSid:arg_conversationSid completion:^(TWCONMessageIndex *_Nullable output, FlutterError *_Nullable error) {
+        [api setAllMessagesReadConversationSid:arg_conversationSid completion:^(TWCONMessageCount *_Nullable output, FlutterError *_Nullable error) {
           callback(wrapResult(output, error));
         }];
       }];

@@ -6,6 +6,7 @@ class ConversationMethods: NSObject, TWCONConversationApi {
     let TAG = "ConversationMethods"
 
     // swiftlint:disable function_body_length
+    /// joinConversation
     func joinConversationSid(_ conversationSid: String?, completion: @escaping (NSNumber?, FlutterError?) -> Void) {
         debug("join => conversationSid: \(String(describing: conversationSid))")
         guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
@@ -58,6 +59,7 @@ class ConversationMethods: NSObject, TWCONConversationApi {
         })
     }
 
+    /// leaveConversation
     func leaveConversationSid(_ conversationSid: String?, completion: @escaping (NSNumber?, FlutterError?) -> Void) {
         debug("leave => conversationSid: \(String(describing: conversationSid))")
         guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
@@ -111,6 +113,7 @@ class ConversationMethods: NSObject, TWCONConversationApi {
         })
     }
 
+    /// destroyConversation
     func destroyConversationSid(_ conversationSid: String?, completion: @escaping (FlutterError?) -> Void) {
         debug("destroy => conversationSid: \(String(describing: conversationSid))")
         guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
@@ -155,6 +158,7 @@ class ConversationMethods: NSObject, TWCONConversationApi {
         })
     }
 
+    /// typing
     func typingConversationSid(_ conversationSid: String?, completion: @escaping (FlutterError?) -> Void) {
         debug("typing => conversationSid: \(String(describing: conversationSid))")
         guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
@@ -188,6 +192,7 @@ class ConversationMethods: NSObject, TWCONConversationApi {
         })
     }
 
+    /// sendMessage
     func sendMessageConversationSid(
         _ conversationSid: String?,
         options: TWCONMessageOptionsData?,
@@ -291,6 +296,7 @@ class ConversationMethods: NSObject, TWCONConversationApi {
         })
     }
 
+    /// addParticipantByIdentity
     func addParticipant(
         byIdentityConversationSid conversationSid: String?,
         identity: String?, completion: @escaping (NSNumber?, FlutterError?) -> Void) {
@@ -354,7 +360,7 @@ class ConversationMethods: NSObject, TWCONConversationApi {
         })
     }
 
-    // removeParticipant
+    /// removeParticipant
     func removeParticipantConversationSid(_ conversationSid: String?, participantSid: String?, completion: @escaping (NSNumber?, FlutterError?) -> Void) {
         guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
             return completion(
@@ -420,7 +426,7 @@ class ConversationMethods: NSObject, TWCONConversationApi {
         }
     }
     
-    // removeParticipantByIdentity
+    /// removeParticipantByIdentity
     func removeParticipant(
         byIdentityConversationSid conversationSid: String?,
         identity: String?, completion: @escaping (NSNumber?, FlutterError?) -> Void) {
@@ -486,7 +492,7 @@ class ConversationMethods: NSObject, TWCONConversationApi {
         })
     }
 
-    // getParticipantByIdentity
+    /// getParticipantByIdentity
     func getParticipantByIdentityConversationSid(_ conversationSid: String?, identity: String?, completion: @escaping (TWCONParticipantData?, FlutterError?) -> Void) {
         guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
             return completion(
@@ -544,7 +550,7 @@ class ConversationMethods: NSObject, TWCONConversationApi {
         })
     }
 
-    // getParticipantBySid
+    /// getParticipantBySid
     func getParticipantBySidConversationSid(_ conversationSid: String?, participantSid: String?, completion: @escaping (TWCONParticipantData?, FlutterError?) -> Void) {
         guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
             return completion(
@@ -602,6 +608,7 @@ class ConversationMethods: NSObject, TWCONConversationApi {
         })
     }
 
+    /// getParticipantsList
     func getParticipantsListConversationSid(
         _ conversationSid: String?,
         completion: @escaping ([TWCONParticipantData]?, FlutterError?) -> Void) {
@@ -647,6 +654,7 @@ class ConversationMethods: NSObject, TWCONConversationApi {
         })
     }
 
+    /// getMessagesCount
     func getMessagesCountConversationSid(
         _ conversationSid: String?,
         completion: @escaping (TWCONMessageCount?, FlutterError?) -> Void) {
@@ -706,6 +714,7 @@ class ConversationMethods: NSObject, TWCONConversationApi {
         })
     }
 
+    /// getUnreadMessagesCount
     func getUnreadMessagesCountConversationSid(
         _ conversationSid: String?,
         completion: @escaping (TWCONMessageCount?, FlutterError?) -> Void) {
@@ -763,10 +772,11 @@ class ConversationMethods: NSObject, TWCONConversationApi {
         })
     }
 
-    func setLastReadMessageIndexConversationSid(
+    /// advanceLastReadMessageIndex
+    func advanceLastReadMessageIndexConversationSid(
         _ conversationSid: String?,
         lastReadMessageIndex: NSNumber?,
-        completion: @escaping (TWCONMessageIndex?, FlutterError?) -> Void) {
+        completion: @escaping (TWCONMessageCount?, FlutterError?) -> Void) {
         guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
             return completion(
                 nil,
@@ -794,7 +804,79 @@ class ConversationMethods: NSObject, TWCONConversationApi {
                     details: nil))
         }
 
-        debug("setLastReadMessageIndex => conversationSid: \(conversationSid)")
+        debug("advanceLastReadMessageIndex => conversationSid: \(conversationSid) index: \(lastReadMessageIndex)")
+
+        client.conversation(
+            withSidOrUniqueName: conversationSid,
+            completion: { (result: TCHResult, conversation: TCHConversation?) in
+            if result.isSuccessful,
+               let conversation = conversation {
+                conversation.advanceLastReadMessageIndex(
+                    lastReadMessageIndex,
+                    completion: { (result: TCHResult, count: UInt) in
+                    if result.isSuccessful {
+                        self.debug("advanceLastReadMessageIndex => onSuccess")
+                        let result = TWCONMessageCount()
+                        result.count = NSNumber(value: count)
+                        completion(result, nil)
+                    } else {
+                        let errorMessage = String(describing: result.error)
+                        self.debug("advanceLastReadMessageIndex => onError: \(errorMessage))")
+                        completion(
+                            nil,
+                            FlutterError(
+                                code: "ERROR",
+                                message: "Error advancing last consumed message index \(lastReadMessageIndex) "
+                                    + "for conversation \(conversationSid): \(errorMessage)",
+                                details: nil))
+                    }
+                })
+            } else {
+                let errorMessage = String(describing: result.error)
+                self.debug("advanceLastReadMessageIndex => onError: \(errorMessage))")
+                completion(
+                    nil,
+                    FlutterError(
+                        code: "ERROR",
+                        message: "Error retrieving conversation \(conversationSid): \(errorMessage)",
+                        details: nil))
+            }
+        })
+    }
+    
+    /// setLastReadMessageIndex
+    func setLastReadMessageIndexConversationSid(
+        _ conversationSid: String?,
+        lastReadMessageIndex: NSNumber?,
+        completion: @escaping (TWCONMessageCount?, FlutterError?) -> Void) {
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(
+                nil,
+                FlutterError(
+                    code: "ERROR",
+                    message: "Client has not been initialized.",
+                    details: nil))
+        }
+
+        guard let conversationSid = conversationSid else {
+            return completion(
+                nil,
+                FlutterError(
+                    code: "MISSING_PARAMS",
+                    message: "Missing 'conversationSid' parameter",
+                    details: nil))
+        }
+
+        guard let lastReadMessageIndex = lastReadMessageIndex else {
+            return completion(
+                nil,
+                FlutterError(
+                    code: "MISSING_PARAMS",
+                    message: "Missing 'lastReadMessageIndex' parameter",
+                    details: nil))
+        }
+
+        debug("setLastReadMessageIndex => conversationSid: \(conversationSid) index: \(lastReadMessageIndex)")
 
         client.conversation(
             withSidOrUniqueName: conversationSid,
@@ -806,34 +888,38 @@ class ConversationMethods: NSObject, TWCONConversationApi {
                     completion: { (result: TCHResult, count: UInt) in
                     if result.isSuccessful {
                         self.debug("setLastReadMessageIndex => onSuccess")
-                        let result = TWCONMessageIndex()
-                        result.index = NSNumber(value: count)
+                        let result = TWCONMessageCount()
+                        result.count = NSNumber(value: count)
                         completion(result, nil)
                     } else {
-                        self.debug("setLastReadMessageIndex => onError: \(result.error.debugDescription))")
+                        let errorMessage = String(describing: result.error)
+                        self.debug("setLastReadMessageIndex => onError: \(errorMessage))")
                         completion(
                             nil,
                             FlutterError(
                                 code: "ERROR",
                                 message: "Error setting last consumed message index \(lastReadMessageIndex) "
-                                    + "for conversation \(conversationSid)",
+                                    + "for conversation \(conversationSid): \(errorMessage)",
                                 details: nil))
                     }
                 })
             } else {
+                let errorMessage = String(describing: result.error)
+                self.debug("setLastReadMessageIndex => onError: \(errorMessage))")
                 completion(
                     nil,
                     FlutterError(
                         code: "ERROR",
-                        message: "Error retrieving conversation \(conversationSid)",
+                        message: "Error retrieving conversation \(conversationSid): \(errorMessage)",
                         details: nil))
             }
         })
     }
 
+    /// setAllMessagesRead
     func setAllMessagesReadConversationSid(
         _ conversationSid: String?,
-        completion: @escaping (TWCONMessageIndex?, FlutterError?) -> Void) {
+        completion: @escaping (TWCONMessageCount?, FlutterError?) -> Void) {
         guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
             return completion(
                 nil,
@@ -862,8 +948,8 @@ class ConversationMethods: NSObject, TWCONConversationApi {
                 conversation.setAllMessagesReadWithCompletion({ (result: TCHResult, count: UInt) in
                     if result.isSuccessful {
                         self.debug("setAllMessagesRead => onSuccess")
-                        let result = TWCONMessageIndex()
-                        result.index = NSNumber(value: count)
+                        let result = TWCONMessageCount()
+                        result.count = NSNumber(value: count)
                         completion(result, nil)
                     } else {
                         self.debug("setAllMessagesRead => onError: \(String(describing: result.error))")
@@ -886,7 +972,7 @@ class ConversationMethods: NSObject, TWCONConversationApi {
         })
     }
 
-    // removeMessage
+    /// removeMessage
     func removeMessageConversationSid(
         _ conversationSid: String?,
         messageIndex: NSNumber?,
@@ -957,6 +1043,7 @@ class ConversationMethods: NSObject, TWCONConversationApi {
         })
     }
 
+    /// getMessagesBefore
     func getMessagesBeforeConversationSid(
         _ conversationSid: String?,
         index: NSNumber?,
@@ -1036,6 +1123,7 @@ class ConversationMethods: NSObject, TWCONConversationApi {
         })
     }
 
+    /// getLastMessages
     func getLastMessagesConversationSid(
         _ conversationSid: String?,
         count: NSNumber?,
@@ -1102,6 +1190,7 @@ class ConversationMethods: NSObject, TWCONConversationApi {
         })
     }
 
+    /// setFriendlyName
     func setFriendlyNameConversationSid(
         _ conversationSid: String?,
         friendlyName: String?,

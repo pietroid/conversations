@@ -586,25 +586,6 @@ public class Api {
   }
 
   /** Generated class from Pigeon that represents data sent in messages. */
-  public static class MessageIndex {
-    private Long index;
-    public Long getIndex() { return index; }
-    public void setIndex(Long setterArg) { this.index = setterArg; }
-
-    Map<String, Object> toMap() {
-      Map<String, Object> toMapResult = new HashMap<>();
-      toMapResult.put("index", index);
-      return toMapResult;
-    }
-    static MessageIndex fromMap(Map<String, Object> map) {
-      MessageIndex fromMapResult = new MessageIndex();
-      Object index = map.get("index");
-      fromMapResult.index = (index == null) ? null : ((index instanceof Integer) ? (Integer)index : (Long)index);
-      return fromMapResult;
-    }
-  }
-
-  /** Generated class from Pigeon that represents data sent in messages. */
   public static class ConversationUpdatedData {
     private ConversationData conversation;
     public ConversationData getConversation() { return conversation; }
@@ -1100,33 +1081,36 @@ public class Api {
           return MessageCount.fromMap((Map<String, Object>) readValue(buffer));
         
         case (byte)133:         
-          return MessageData.fromMap((Map<String, Object>) readValue(buffer));
+          return MessageCount.fromMap((Map<String, Object>) readValue(buffer));
         
         case (byte)134:         
-          return MessageData.fromMap((Map<String, Object>) readValue(buffer));
+          return MessageCount.fromMap((Map<String, Object>) readValue(buffer));
         
         case (byte)135:         
-          return MessageData.fromMap((Map<String, Object>) readValue(buffer));
+          return MessageCount.fromMap((Map<String, Object>) readValue(buffer));
         
         case (byte)136:         
-          return MessageIndex.fromMap((Map<String, Object>) readValue(buffer));
+          return MessageData.fromMap((Map<String, Object>) readValue(buffer));
         
         case (byte)137:         
-          return MessageIndex.fromMap((Map<String, Object>) readValue(buffer));
+          return MessageData.fromMap((Map<String, Object>) readValue(buffer));
         
         case (byte)138:         
-          return MessageMediaData.fromMap((Map<String, Object>) readValue(buffer));
+          return MessageData.fromMap((Map<String, Object>) readValue(buffer));
         
         case (byte)139:         
-          return MessageOptionsData.fromMap((Map<String, Object>) readValue(buffer));
+          return MessageMediaData.fromMap((Map<String, Object>) readValue(buffer));
         
         case (byte)140:         
-          return ParticipantData.fromMap((Map<String, Object>) readValue(buffer));
+          return MessageOptionsData.fromMap((Map<String, Object>) readValue(buffer));
         
         case (byte)141:         
           return ParticipantData.fromMap((Map<String, Object>) readValue(buffer));
         
         case (byte)142:         
+          return ParticipantData.fromMap((Map<String, Object>) readValue(buffer));
+        
+        case (byte)143:         
           return ParticipantData.fromMap((Map<String, Object>) readValue(buffer));
         
         default:        
@@ -1156,37 +1140,37 @@ public class Api {
         stream.write(132);
         writeValue(stream, ((MessageCount) value).toMap());
       } else 
-      if (value instanceof MessageData) {
+      if (value instanceof MessageCount) {
         stream.write(133);
-        writeValue(stream, ((MessageData) value).toMap());
+        writeValue(stream, ((MessageCount) value).toMap());
       } else 
-      if (value instanceof MessageData) {
+      if (value instanceof MessageCount) {
         stream.write(134);
+        writeValue(stream, ((MessageCount) value).toMap());
+      } else 
+      if (value instanceof MessageCount) {
+        stream.write(135);
+        writeValue(stream, ((MessageCount) value).toMap());
+      } else 
+      if (value instanceof MessageData) {
+        stream.write(136);
         writeValue(stream, ((MessageData) value).toMap());
       } else 
       if (value instanceof MessageData) {
-        stream.write(135);
+        stream.write(137);
         writeValue(stream, ((MessageData) value).toMap());
       } else 
-      if (value instanceof MessageIndex) {
-        stream.write(136);
-        writeValue(stream, ((MessageIndex) value).toMap());
-      } else 
-      if (value instanceof MessageIndex) {
-        stream.write(137);
-        writeValue(stream, ((MessageIndex) value).toMap());
+      if (value instanceof MessageData) {
+        stream.write(138);
+        writeValue(stream, ((MessageData) value).toMap());
       } else 
       if (value instanceof MessageMediaData) {
-        stream.write(138);
+        stream.write(139);
         writeValue(stream, ((MessageMediaData) value).toMap());
       } else 
       if (value instanceof MessageOptionsData) {
-        stream.write(139);
-        writeValue(stream, ((MessageOptionsData) value).toMap());
-      } else 
-      if (value instanceof ParticipantData) {
         stream.write(140);
-        writeValue(stream, ((ParticipantData) value).toMap());
+        writeValue(stream, ((MessageOptionsData) value).toMap());
       } else 
       if (value instanceof ParticipantData) {
         stream.write(141);
@@ -1194,6 +1178,10 @@ public class Api {
       } else 
       if (value instanceof ParticipantData) {
         stream.write(142);
+        writeValue(stream, ((ParticipantData) value).toMap());
+      } else 
+      if (value instanceof ParticipantData) {
+        stream.write(143);
         writeValue(stream, ((ParticipantData) value).toMap());
       } else 
 {
@@ -1217,8 +1205,9 @@ public class Api {
     void getParticipantsList(String conversationSid, Result<List<ParticipantData>> result);
     void getMessagesCount(String conversationSid, Result<MessageCount> result);
     void getUnreadMessagesCount(String conversationSid, Result<MessageCount> result);
-    void setLastReadMessageIndex(String conversationSid, Long lastReadMessageIndex, Result<MessageIndex> result);
-    void setAllMessagesRead(String conversationSid, Result<MessageIndex> result);
+    void advanceLastReadMessageIndex(String conversationSid, Long lastReadMessageIndex, Result<MessageCount> result);
+    void setLastReadMessageIndex(String conversationSid, Long lastReadMessageIndex, Result<MessageCount> result);
+    void setAllMessagesRead(String conversationSid, Result<MessageCount> result);
     void getMessagesBefore(String conversationSid, Long index, Long count, Result<List<MessageData>> result);
     void getLastMessages(String conversationSid, Long count, Result<List<MessageData>> result);
     void removeMessage(String conversationSid, Long messageIndex, Result<Boolean> result);
@@ -1699,6 +1688,44 @@ public class Api {
       }
       {
         BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.ConversationApi.advanceLastReadMessageIndex", getCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            Map<String, Object> wrapped = new HashMap<>();
+            try {
+              ArrayList<Object> args = (ArrayList<Object>)message;
+              String conversationSidArg = (String)args.get(0);
+              if (conversationSidArg == null) {
+                throw new NullPointerException("conversationSidArg unexpectedly null.");
+              }
+              Number lastReadMessageIndexArg = (Number)args.get(1);
+              if (lastReadMessageIndexArg == null) {
+                throw new NullPointerException("lastReadMessageIndexArg unexpectedly null.");
+              }
+              Result<MessageCount> resultCallback = new Result<MessageCount>() {
+                public void success(MessageCount result) {
+                  wrapped.put("result", result);
+                  reply.reply(wrapped);
+                }
+                public void error(Throwable error) {
+                  wrapped.put("error", wrapError(error));
+                  reply.reply(wrapped);
+                }
+              };
+
+              api.advanceLastReadMessageIndex(conversationSidArg, lastReadMessageIndexArg.longValue(), resultCallback);
+            }
+            catch (Error | RuntimeException exception) {
+              wrapped.put("error", wrapError(exception));
+              reply.reply(wrapped);
+            }
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
             new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.ConversationApi.setLastReadMessageIndex", getCodec());
         if (api != null) {
           channel.setMessageHandler((message, reply) -> {
@@ -1713,8 +1740,8 @@ public class Api {
               if (lastReadMessageIndexArg == null) {
                 throw new NullPointerException("lastReadMessageIndexArg unexpectedly null.");
               }
-              Result<MessageIndex> resultCallback = new Result<MessageIndex>() {
-                public void success(MessageIndex result) {
+              Result<MessageCount> resultCallback = new Result<MessageCount>() {
+                public void success(MessageCount result) {
                   wrapped.put("result", result);
                   reply.reply(wrapped);
                 }
@@ -1747,8 +1774,8 @@ public class Api {
               if (conversationSidArg == null) {
                 throw new NullPointerException("conversationSidArg unexpectedly null.");
               }
-              Result<MessageIndex> resultCallback = new Result<MessageIndex>() {
-                public void success(MessageIndex result) {
+              Result<MessageCount> resultCallback = new Result<MessageCount>() {
+                public void success(MessageCount result) {
                   wrapped.put("result", result);
                   reply.reply(wrapped);
                 }
