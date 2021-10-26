@@ -134,13 +134,13 @@ class Conversation {
     uniqueName = map['uniqueName'] as String?;
     friendlyName = map['friendlyName'] as String?;
 
-    status =
-        EnumToString.fromString(ConversationStatus.values, map['status']) ??
-            ConversationStatus.UNKNOWN;
+    status = EnumToString.fromString(
+            ConversationStatus.values, (map['status'] ?? '')) ??
+        ConversationStatus.UNKNOWN;
 
     synchronizationStatus = EnumToString.fromString(
             ConversationSynchronizationStatus.values,
-            map['synchronizationStatus']) ??
+            map['synchronizationStatus'] ?? '') ??
         ConversationSynchronizationStatus.NONE;
 
     dateCreated = map['dateCreated'] == null
@@ -366,7 +366,21 @@ class Conversation {
     }
   }
 
-  //TODO: implement setAllMessagesUnread
+  /// Mark all messages in conversation as unread.
+  ///
+  /// Returns an updated unread message count for the user on this conversation.
+  Future<int?> setAllMessagesUnread() async {
+    if (!hasMessages) {
+      return null;
+    }
+    try {
+      final result =
+          await TwilioConversations().conversationApi.setAllMessagesUnread(sid);
+      return result.count;
+    } on PlatformException catch (err) {
+      throw TwilioConversations.convertException(err);
+    }
+  }
 
   /// Fetch at most count messages including and prior to the specified index.
   Future<List<Message>> getMessagesBefore({

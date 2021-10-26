@@ -160,11 +160,7 @@ class _ConversationsPageState extends State<ConversationsPage> {
 
   Widget _buildConversationListItem(Conversation conversation) {
     return InkWell(
-      onLongPress: () async {
-        var r = await widget.conversationsNotifier.client
-            ?.getConversation(conversationSidOrUniqueName: conversation.sid);
-        print('Conversation details: $r');
-      },
+      onLongPress: () => _showConversationOptionsDialog(conversation),
       onTap: () {
         Navigator.push(
           context,
@@ -217,4 +213,52 @@ class _ConversationsPageState extends State<ConversationsPage> {
       ),
     );
   }
+
+  Future _showConversationOptionsDialog(Conversation conversation) async {
+    final option = (await showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: Text(conversation.friendlyName ?? conversation.sid),
+                actions: <Widget>[
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(ConversationOptions.close);
+                    },
+                    child: Text('CLOSE'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(ConversationOptions.markRead);
+                    },
+                    child: Text('MARK READ'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(ConversationOptions.markUnread);
+                    },
+                    child: Text('MARK UNREAD'),
+                  ),
+                ],
+              );
+            })) ??
+        ConversationOptions.close;
+
+    switch (option) {
+      case ConversationOptions.close:
+        break;
+      case ConversationOptions.markRead:
+        widget.conversationsNotifier.markRead(conversation);
+        break;
+      case ConversationOptions.markUnread:
+        widget.conversationsNotifier.markUnread(conversation);
+        break;
+    }
+  }
+}
+
+enum ConversationOptions {
+  close,
+  markRead,
+  markUnread,
 }

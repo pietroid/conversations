@@ -65,6 +65,16 @@ class ConversationsNotifier extends ChangeNotifier {
     }
   }
 
+  Future<void> markRead(Conversation conversation) async {
+    await conversation.setAllMessagesRead();
+    notifyListeners();
+  }
+
+  Future<void> markUnread(Conversation conversation) async {
+    await conversation.setAllMessagesUnread();
+    notifyListeners();
+  }
+
   Future<void> join(Conversation conversation) async {
     await conversation.join();
     notifyListeners();

@@ -534,6 +534,7 @@ class ConversationMethods : Api.ConversationApi {
             override fun onSuccess(conversation: Conversation) {
                 conversation.setAllMessagesRead(object : CallbackListener<Long> {
                     override fun onSuccess(count: Long) {
+                        debug("setAllMessagesRead => onSuccess")
                         val unreadMessages = Api.MessageCount()
                         unreadMessages.count = count
                         result.success(unreadMessages)
@@ -548,6 +549,38 @@ class ConversationMethods : Api.ConversationApi {
 
             override fun onError(errorInfo: ErrorInfo) {
                 debug("setAllMessagesRead => onError: $errorInfo")
+                result.error(RuntimeException(errorInfo.message))
+            }
+        })
+    }
+
+    override fun setAllMessagesUnread(
+        conversationSid: String,
+        result: Api.Result<Api.MessageCount>
+    ) {
+        debug("setAllMessagesUnread => conversationSid: $conversationSid")
+        val client = TwilioConversationsPlugin.client
+            ?: return result.error(RuntimeException("Client is not initialized"))
+
+        client.getConversation(conversationSid, object : CallbackListener<Conversation> {
+            override fun onSuccess(conversation: Conversation) {
+                conversation.setAllMessagesUnread(object : CallbackListener<Long> {
+                    override fun onSuccess(count: Long?) {
+                        debug("setAllMessagesUnread => onSuccess: $count")
+                        val unreadMessages = Api.MessageCount()
+                        unreadMessages.count = count
+                        result.success(unreadMessages)
+                    }
+
+                    override fun onError(errorInfo: ErrorInfo) {
+                        debug("setAllMessagesUnread => onError: $errorInfo")
+                        result.error(RuntimeException(errorInfo.message))
+                    }
+                })
+            }
+
+            override fun onError(errorInfo: ErrorInfo) {
+                debug("setAllMessagesUnread => onError: $errorInfo")
                 result.error(RuntimeException(errorInfo.message))
             }
         })

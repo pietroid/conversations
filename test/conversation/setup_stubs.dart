@@ -65,6 +65,28 @@ class ConversationTestStubs {
     });
   }
 
+  static void stubSetAllMessagesRead(
+      MockConversationApi conversationApi, int updatedUnreadMessageCount) {
+    when(conversationApi.setAllMessagesRead(any))
+        .thenAnswer((realInvocation) async {
+      invocation = realInvocation;
+      final responseData = MessageCount();
+      responseData.count = updatedUnreadMessageCount;
+      return responseData;
+    });
+  }
+
+  static void stubSetAllMessagesUnread(
+      MockConversationApi conversationApi, int updatedUnreadMessageCount) {
+    when(conversationApi.setAllMessagesUnread(any))
+        .thenAnswer((realInvocation) async {
+      invocation = realInvocation;
+      final responseData = MessageCount();
+      responseData.count = updatedUnreadMessageCount;
+      return responseData;
+    });
+  }
+
   static Participant createMockParticipant(
       String conversationSid, String participantSid) {
     final participant = Participant(

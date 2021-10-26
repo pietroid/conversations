@@ -192,6 +192,9 @@ abstract class ConversationApi {
   MessageCount setAllMessagesRead(String conversationSid);
 
   @async
+  MessageCount setAllMessagesUnread(String conversationSid);
+
+  @async
   List<MessageData> getMessagesBefore(
       String conversationSid, int index, int count);
 

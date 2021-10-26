@@ -10,7 +10,6 @@ import 'setup_stubs.dart';
 
 @GenerateMocks([ConversationApi])
 void main() {
-  late TwilioConversations plugin;
   final conversationApi = MockConversationApi();
 
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -18,7 +17,7 @@ void main() {
   setUp(() {
     ConversationTestStubs.invocation = null;
 
-    plugin = TwilioConversations.mock(
+    TwilioConversations.mock(
       conversationApi: conversationApi,
     );
   });
@@ -106,6 +105,68 @@ void main() {
     final invocation = ConversationTestStubs.invocation;
     expect(invocation?.positionalArguments[0], conversationSid);
     expect(invocation?.positionalArguments[1], messageIndex);
+    expect(updatedUnreadMessageCount, expectedUnreadMessageCount);
+  });
+
+  test(
+      'Does not call the API to set all messages read '
+      'when a conversation has no messages.', () async {
+    final expectedUnreadMessageCount = 0;
+    ConversationTestStubs.stubSetAllMessagesRead(
+        conversationApi, expectedUnreadMessageCount);
+    final conversationSid = Uuid().v4();
+    final conversation = Conversation(conversationSid);
+
+    final updatedUnreadMessageCount = await conversation.setAllMessagesRead();
+
+    final invocation = ConversationTestStubs.invocation;
+    expect(invocation, null);
+    expect(updatedUnreadMessageCount, null);
+  });
+
+  test('Calls API to set all messages read', () async {
+    final expectedUnreadMessageCount = 0;
+    ConversationTestStubs.stubSetAllMessagesRead(
+        conversationApi, expectedUnreadMessageCount);
+    final conversationSid = Uuid().v4();
+    final conversation = Conversation(conversationSid);
+    conversation.updateFromMap(<String, dynamic>{'lastMessageIndex': 7});
+
+    final updatedUnreadMessageCount = await conversation.setAllMessagesRead();
+
+    final invocation = ConversationTestStubs.invocation;
+    expect(invocation?.positionalArguments[0], conversationSid);
+    expect(updatedUnreadMessageCount, expectedUnreadMessageCount);
+  });
+
+  test(
+      'Does not call the API to set all messages unread '
+      'when a conversation has no messages.', () async {
+    final expectedUnreadMessageCount = 17;
+    ConversationTestStubs.stubSetAllMessagesUnread(
+        conversationApi, expectedUnreadMessageCount);
+    final conversationSid = Uuid().v4();
+    final conversation = Conversation(conversationSid);
+
+    final updatedUnreadMessageCount = await conversation.setAllMessagesUnread();
+
+    final invocation = ConversationTestStubs.invocation;
+    expect(invocation, null);
+    expect(updatedUnreadMessageCount, null);
+  });
+
+  test('Calls API to set all messages unread', () async {
+    final expectedUnreadMessageCount = 17;
+    ConversationTestStubs.stubSetAllMessagesUnread(
+        conversationApi, expectedUnreadMessageCount);
+    final conversationSid = Uuid().v4();
+    final conversation = Conversation(conversationSid);
+    conversation.updateFromMap(<String, dynamic>{'lastMessageIndex': 7});
+
+    final updatedUnreadMessageCount = await conversation.setAllMessagesUnread();
+
+    final invocation = ConversationTestStubs.invocation;
+    expect(invocation?.positionalArguments[0], conversationSid);
     expect(updatedUnreadMessageCount, expectedUnreadMessageCount);
   });
 }

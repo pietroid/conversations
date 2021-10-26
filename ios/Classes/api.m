@@ -834,7 +834,7 @@ void TWCONConversationClientApiSetup(id<FlutterBinaryMessenger> binaryMessenger,
       return [TWCONMessageCount fromMap:[self readValue]];
     
     case 136:     
-      return [TWCONMessageData fromMap:[self readValue]];
+      return [TWCONMessageCount fromMap:[self readValue]];
     
     case 137:     
       return [TWCONMessageData fromMap:[self readValue]];
@@ -843,18 +843,21 @@ void TWCONConversationClientApiSetup(id<FlutterBinaryMessenger> binaryMessenger,
       return [TWCONMessageData fromMap:[self readValue]];
     
     case 139:     
-      return [TWCONMessageMediaData fromMap:[self readValue]];
+      return [TWCONMessageData fromMap:[self readValue]];
     
     case 140:     
-      return [TWCONMessageOptionsData fromMap:[self readValue]];
+      return [TWCONMessageMediaData fromMap:[self readValue]];
     
     case 141:     
-      return [TWCONParticipantData fromMap:[self readValue]];
+      return [TWCONMessageOptionsData fromMap:[self readValue]];
     
     case 142:     
       return [TWCONParticipantData fromMap:[self readValue]];
     
     case 143:     
+      return [TWCONParticipantData fromMap:[self readValue]];
+    
+    case 144:     
       return [TWCONParticipantData fromMap:[self readValue]];
     
     default:    
@@ -901,7 +904,7 @@ void TWCONConversationClientApiSetup(id<FlutterBinaryMessenger> binaryMessenger,
     [self writeByte:135];
     [self writeValue:[value toMap]];
   } else 
-  if ([value isKindOfClass:[TWCONMessageData class]]) {
+  if ([value isKindOfClass:[TWCONMessageCount class]]) {
     [self writeByte:136];
     [self writeValue:[value toMap]];
   } else 
@@ -913,15 +916,15 @@ void TWCONConversationClientApiSetup(id<FlutterBinaryMessenger> binaryMessenger,
     [self writeByte:138];
     [self writeValue:[value toMap]];
   } else 
-  if ([value isKindOfClass:[TWCONMessageMediaData class]]) {
+  if ([value isKindOfClass:[TWCONMessageData class]]) {
     [self writeByte:139];
     [self writeValue:[value toMap]];
   } else 
-  if ([value isKindOfClass:[TWCONMessageOptionsData class]]) {
+  if ([value isKindOfClass:[TWCONMessageMediaData class]]) {
     [self writeByte:140];
     [self writeValue:[value toMap]];
   } else 
-  if ([value isKindOfClass:[TWCONParticipantData class]]) {
+  if ([value isKindOfClass:[TWCONMessageOptionsData class]]) {
     [self writeByte:141];
     [self writeValue:[value toMap]];
   } else 
@@ -931,6 +934,10 @@ void TWCONConversationClientApiSetup(id<FlutterBinaryMessenger> binaryMessenger,
   } else 
   if ([value isKindOfClass:[TWCONParticipantData class]]) {
     [self writeByte:143];
+    [self writeValue:[value toMap]];
+  } else 
+  if ([value isKindOfClass:[TWCONParticipantData class]]) {
+    [self writeByte:144];
     [self writeValue:[value toMap]];
   } else 
 {
@@ -1282,6 +1289,26 @@ void TWCONConversationApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObj
         NSArray *args = message;
         NSString *arg_conversationSid = args[0];
         [api setAllMessagesReadConversationSid:arg_conversationSid completion:^(TWCONMessageCount *_Nullable output, FlutterError *_Nullable error) {
+          callback(wrapResult(output, error));
+        }];
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [FlutterBasicMessageChannel
+        messageChannelWithName:@"dev.flutter.pigeon.ConversationApi.setAllMessagesUnread"
+        binaryMessenger:binaryMessenger
+        codec:TWCONConversationApiGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(setAllMessagesUnreadConversationSid:completion:)], @"TWCONConversationApi api (%@) doesn't respond to @selector(setAllMessagesUnreadConversationSid:completion:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        NSString *arg_conversationSid = args[0];
+        [api setAllMessagesUnreadConversationSid:arg_conversationSid completion:^(TWCONMessageCount *_Nullable output, FlutterError *_Nullable error) {
           callback(wrapResult(output, error));
         }];
       }];
