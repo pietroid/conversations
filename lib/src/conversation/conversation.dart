@@ -301,7 +301,21 @@ class Conversation {
     }
   }
 
-  //TODO: implement removeMessage
+  Future<bool> removeMessage(Message message) async {
+    try {
+      final messageIndex = message.messageIndex;
+      if (messageIndex == null) {
+        return false;
+      }
+
+      final result = await TwilioConversations()
+          .conversationApi
+          .removeMessage(sid, messageIndex);
+      return result;
+    } catch (e) {
+      return false;
+    }
+  }
 
   Future<int> setLastReadMessageIndex(int lastReadMessageIndex) async {
     try {

@@ -1253,6 +1253,29 @@ class ConversationApi {
     }
   }
 
+  Future<bool> removeMessage(String arg_conversationSid, int arg_messageIndex) async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.ConversationApi.removeMessage', codec, binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap =
+        await channel.send(<Object>[arg_conversationSid, arg_messageIndex]) as Map<Object?, Object?>?;
+    if (replyMap == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+        details: null,
+      );
+    } else if (replyMap['error'] != null) {
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      throw PlatformException(
+        code: (error['code'] as String?)!,
+        message: error['message'] as String?,
+        details: error['details'],
+      );
+    } else {
+      return (replyMap['result'] as bool?)!;
+    }
+  }
+
   Future<String> setFriendlyName(String arg_conversationSid, String arg_friendlyName) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.ConversationApi.setFriendlyName', codec, binaryMessenger: _binaryMessenger);

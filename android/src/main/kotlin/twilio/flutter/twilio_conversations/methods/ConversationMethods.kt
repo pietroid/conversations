@@ -520,6 +520,46 @@ class ConversationMethods : Api.ConversationApi {
         })
     }
 
+    override fun removeMessage(
+        conversationSid: String,
+        messageIndex: Long,
+        result: Api.Result<Boolean>
+    ) {
+        debug("removeMessage => conversationSid: $conversationSid messageSid: $messageIndex")
+        val client = TwilioConversationsPlugin.client
+            ?: return result.error(RuntimeException("Client is not initialized"))
+
+        client.getConversation(conversationSid, object : CallbackListener<Conversation> {
+            override fun onSuccess(conversation: Conversation) {
+                conversation.getMessageByIndex(messageIndex, object : CallbackListener<Message> {
+                    override fun onSuccess(message: Message) {
+                        conversation.removeMessage(message, object: StatusListener {
+                            override fun onSuccess() {
+                                debug("removeMessage => onSuccess")
+                                result.success(true)
+                            }
+
+                            override fun onError(errorInfo: ErrorInfo) {
+                                debug("removeMessage => onError: $errorInfo")
+                                result.error(RuntimeException(errorInfo.message))
+                            }
+                        })
+                    }
+
+                    override fun onError(errorInfo: ErrorInfo) {
+                        debug("removeMessage => onError: $errorInfo")
+                        result.error(RuntimeException(errorInfo.message))
+                    }
+                })
+            }
+
+            override fun onError(errorInfo: ErrorInfo) {
+                debug("removeMessage => onError: $errorInfo")
+                result.error(RuntimeException(errorInfo.message))
+            }
+        })
+    }
+
     override fun getMessagesBefore(
         conversationSid: String,
         index: Long,

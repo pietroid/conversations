@@ -36,7 +36,9 @@ public class SwiftTwilioConversationsPlugin: NSObject, FlutterPlugin {
                 return
             }
             loggingApi.log(fromHostMsg: msg) { (error: Error?) in
-                NSLog("Exception when using FlutterLoggingApi: \(String(describing: error))")
+                if let error = error {
+                    NSLog("Exception when using FlutterLoggingApi: \(String(describing: error))")
+                }
             }
         }
     }

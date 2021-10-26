@@ -886,6 +886,77 @@ class ConversationMethods: NSObject, TWCONConversationApi {
         })
     }
 
+    // removeMessage
+    func removeMessageConversationSid(
+        _ conversationSid: String?,
+        messageIndex: NSNumber?,
+        completion: @escaping (NSNumber?, FlutterError?) -> Void) {
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(
+                nil,
+                FlutterError(
+                    code: "ERROR",
+                    message: "Client has not been initialized.",
+                    details: nil))
+        }
+
+        guard let conversationSid = conversationSid else {
+            return completion(
+                nil,
+                FlutterError(
+                    code: "MISSING_PARAMS",
+                    message: "Missing 'conversationSid' parameter",
+                    details: nil))
+        }
+
+        guard let index = messageIndex else {
+            return completion(
+                nil,
+                FlutterError(
+                    code: "MISSING_PARAMS",
+                    message: "Missing 'index' parameter",
+                    details: nil))
+        }
+
+        debug("removeMessage => conversationSid: \(conversationSid) index: \(index)")
+
+        client.conversation(
+            withSidOrUniqueName: conversationSid,
+            completion: { (result: TCHResult, conversation: TCHConversation?) in
+            if result.isSuccessful, let conversation = conversation {
+                conversation.message(withIndex: index) { (_ result: TCHResult, message: TCHMessage?) in
+                    if result.isSuccessful, let message = message {
+                        conversation.remove(message) { (result: TCHResult) in
+                            if result.isSuccessful {
+                                completion(true, nil)
+                            } else {
+                                let errorMessage = String(describing: result.error)
+                                self.debug("removeMessage => onError: \(errorMessage)")
+
+                                completion(
+                                    false,
+                                    FlutterError(
+                                        code: "ERROR",
+                                        message: "Error removing message \(index): \(errorMessage)",
+                                        details: nil))
+                            }
+                        }
+                    }
+                }
+            } else {
+                let errorMessage = String(describing: result.error)
+                self.debug("removeMessage => onError: \(errorMessage)")
+                
+                completion(
+                    nil,
+                    FlutterError(
+                        code: "ERROR",
+                        message: "Error retrieving conversation \(conversationSid): \(errorMessage)",
+                        details: nil))
+            }
+        })
+    }
+
     func getMessagesBeforeConversationSid(
         _ conversationSid: String?,
         index: NSNumber?,

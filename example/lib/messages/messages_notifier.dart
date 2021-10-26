@@ -45,6 +45,9 @@ class MessagesNotifier extends ChangeNotifier {
         _getMedia(message);
       }
     }));
+    subscriptions.add(conversation.onMessageDeleted.listen((message) {
+      loadConversation();
+    }));
     subscriptions.add(conversation.onTypingStarted.listen((event) {
       final identity = event.participant.identity;
       if (identity != null) {
@@ -64,9 +67,9 @@ class MessagesNotifier extends ChangeNotifier {
     }));
   }
 
-  void init() {
+  void loadConversation() {
     reset();
-    fetchMore();
+    loadMessages();
   }
 
   Future addUserByIdentity(String identity) async {
@@ -88,6 +91,11 @@ class MessagesNotifier extends ChangeNotifier {
   Future<void> removeParticipant(Participant participant) async {
     await conversation.removeParticipant(participant);
     await getParticipants();
+  }
+
+  Future<bool> removeMessage(Message message) async {
+    final result = await conversation.removeMessage(message);
+    return result;
   }
 
   Future<void> setFriendlyName(String name) async {
@@ -126,10 +134,10 @@ class MessagesNotifier extends ChangeNotifier {
   }
 
   void refetchAfterError() {
-    init();
+    loadConversation();
   }
 
-  void fetchMore() async {
+  void loadMessages() async {
     isLoading = true;
     notifyListeners();
 

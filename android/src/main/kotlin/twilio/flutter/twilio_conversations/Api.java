@@ -1221,6 +1221,7 @@ public class Api {
     void setAllMessagesRead(String conversationSid, Result<MessageIndex> result);
     void getMessagesBefore(String conversationSid, Long index, Long count, Result<List<MessageData>> result);
     void getLastMessages(String conversationSid, Long count, Result<List<MessageData>> result);
+    void removeMessage(String conversationSid, Long messageIndex, Result<Boolean> result);
     void setFriendlyName(String conversationSid, String friendlyName, Result<String> result);
 
     /** The codec used by ConversationApi. */
@@ -1838,6 +1839,44 @@ public class Api {
               };
 
               api.getLastMessages(conversationSidArg, countArg.longValue(), resultCallback);
+            }
+            catch (Error | RuntimeException exception) {
+              wrapped.put("error", wrapError(exception));
+              reply.reply(wrapped);
+            }
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.ConversationApi.removeMessage", getCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            Map<String, Object> wrapped = new HashMap<>();
+            try {
+              ArrayList<Object> args = (ArrayList<Object>)message;
+              String conversationSidArg = (String)args.get(0);
+              if (conversationSidArg == null) {
+                throw new NullPointerException("conversationSidArg unexpectedly null.");
+              }
+              Number messageIndexArg = (Number)args.get(1);
+              if (messageIndexArg == null) {
+                throw new NullPointerException("messageIndexArg unexpectedly null.");
+              }
+              Result<Boolean> resultCallback = new Result<Boolean>() {
+                public void success(Boolean result) {
+                  wrapped.put("result", result);
+                  reply.reply(wrapped);
+                }
+                public void error(Throwable error) {
+                  wrapped.put("error", wrapError(error));
+                  reply.reply(wrapped);
+                }
+              };
+
+              api.removeMessage(conversationSidArg, messageIndexArg.longValue(), resultCallback);
             }
             catch (Error | RuntimeException exception) {
               wrapped.put("error", wrapError(exception));

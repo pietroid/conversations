@@ -199,6 +199,9 @@ abstract class ConversationApi {
   List<MessageData> getLastMessages(String conversationSid, int count);
 
   @async
+  bool removeMessage(String conversationSid, int messageIndex);
+
+  @async
   String setFriendlyName(String conversationSid, String friendlyName);
 }
 

@@ -1326,6 +1326,27 @@ void TWCONConversationApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObj
   {
     FlutterBasicMessageChannel *channel =
       [FlutterBasicMessageChannel
+        messageChannelWithName:@"dev.flutter.pigeon.ConversationApi.removeMessage"
+        binaryMessenger:binaryMessenger
+        codec:TWCONConversationApiGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(removeMessageConversationSid:messageIndex:completion:)], @"TWCONConversationApi api (%@) doesn't respond to @selector(removeMessageConversationSid:messageIndex:completion:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        NSString *arg_conversationSid = args[0];
+        NSNumber *arg_messageIndex = args[1];
+        [api removeMessageConversationSid:arg_conversationSid messageIndex:arg_messageIndex completion:^(NSNumber *_Nullable output, FlutterError *_Nullable error) {
+          callback(wrapResult(output, error));
+        }];
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [FlutterBasicMessageChannel
         messageChannelWithName:@"dev.flutter.pigeon.ConversationApi.setFriendlyName"
         binaryMessenger:binaryMessenger
         codec:TWCONConversationApiGetCodec()];
