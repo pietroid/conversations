@@ -626,6 +626,40 @@ class ConversationMethods : Api.ConversationApi {
         })
     }
 
+    override fun getMessagesAfter(
+        conversationSid: String,
+        index: Long,
+        count: Long,
+        result: Api.Result<MutableList<Api.MessageData>>
+    ) {
+        debug("getMessagesAfter => conversationSid: $conversationSid")
+        val client = TwilioConversationsPlugin.client
+            ?: return result.error(RuntimeException("Client is not initialized"))
+
+        client.getConversation(conversationSid, object : CallbackListener<Conversation> {
+            override fun onSuccess(conversation: Conversation) {
+                conversation.getMessagesAfter(index, count.toInt(), object : CallbackListener<List<Message>> {
+                    override fun onSuccess(messages: List<Message>) {
+                        debug("getMessagesAfter => onSuccess")
+                        val messagesMap = messages.map { Mapper.messageToPigeon(it) }
+                        result.success(messagesMap.toMutableList())
+                    }
+
+                    override fun onError(errorInfo: ErrorInfo) {
+                        debug("getMessagesAfter => onError: $errorInfo")
+                        result.error(RuntimeException(errorInfo.message))
+                    }
+                })
+            }
+
+            override fun onError(errorInfo: ErrorInfo) {
+                debug("getMessagesAfter => onError: $errorInfo")
+
+                result.error(RuntimeException(errorInfo.message))
+            }
+        })
+    }
+
     override fun getMessagesBefore(
         conversationSid: String,
         index: Long,

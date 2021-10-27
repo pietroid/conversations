@@ -165,6 +165,14 @@ class _MessagesPageState extends State<MessagesPage> {
     final textColor = isMyMessage ? Colors.white : Colors.black;
 
     return GestureDetector(
+      onDoubleTap: () async {
+        final messagesBefore = await messagesNotifier.conversation
+            .getMessagesBefore(index: message.messageIndex!, count: 3);
+        final messagesAfter = await messagesNotifier.conversation
+            .getMessagesAfter(index: message.messageIndex!, count: 3);
+        print(
+            'messagesBefore: $messagesBefore\n\tmessagesAfter: $messagesAfter');
+      },
       onLongPress: () => _showShouldRemoveMessageDialog(message),
       child: Column(
         crossAxisAlignment:

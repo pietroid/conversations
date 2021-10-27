@@ -174,6 +174,7 @@ NSObject<FlutterMessageCodec> *TWCONConversationApiGetCodec(void);
 - (void)setLastReadMessageIndexConversationSid:(nullable NSString *)conversationSid lastReadMessageIndex:(nullable NSNumber *)lastReadMessageIndex completion:(void(^)(TWCONMessageCount *_Nullable, FlutterError *_Nullable))completion;
 - (void)setAllMessagesReadConversationSid:(nullable NSString *)conversationSid completion:(void(^)(TWCONMessageCount *_Nullable, FlutterError *_Nullable))completion;
 - (void)setAllMessagesUnreadConversationSid:(nullable NSString *)conversationSid completion:(void(^)(TWCONMessageCount *_Nullable, FlutterError *_Nullable))completion;
+- (void)getMessagesAfterConversationSid:(nullable NSString *)conversationSid index:(nullable NSNumber *)index count:(nullable NSNumber *)count completion:(void(^)(NSArray<TWCONMessageData *> *_Nullable, FlutterError *_Nullable))completion;
 - (void)getMessagesBeforeConversationSid:(nullable NSString *)conversationSid index:(nullable NSNumber *)index count:(nullable NSNumber *)count completion:(void(^)(NSArray<TWCONMessageData *> *_Nullable, FlutterError *_Nullable))completion;
 - (void)getLastMessagesConversationSid:(nullable NSString *)conversationSid count:(nullable NSNumber *)count completion:(void(^)(NSArray<TWCONMessageData *> *_Nullable, FlutterError *_Nullable))completion;
 - (void)removeMessageConversationSid:(nullable NSString *)conversationSid messageIndex:(nullable NSNumber *)messageIndex completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion;

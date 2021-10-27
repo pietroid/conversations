@@ -87,6 +87,24 @@ class ConversationTestStubs {
     });
   }
 
+  static void stubGetMessagesAfter(MockConversationApi conversationApi) {
+    when(conversationApi.getMessagesAfter(any, any, any))
+        .thenAnswer((realInvocation) async {
+      invocation = realInvocation;
+      final responseData = <MessageData>[];
+      return responseData;
+    });
+  }
+
+  static void stubGetMessagesBefore(MockConversationApi conversationApi) {
+    when(conversationApi.getMessagesBefore(any, any, any))
+        .thenAnswer((realInvocation) async {
+      invocation = realInvocation;
+      final responseData = <MessageData>[];
+      return responseData;
+    });
+  }
+
   static Participant createMockParticipant(
       String conversationSid, String participantSid) {
     final participant = Participant(

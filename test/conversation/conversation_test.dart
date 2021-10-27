@@ -169,4 +169,76 @@ void main() {
     expect(invocation?.positionalArguments[0], conversationSid);
     expect(updatedUnreadMessageCount, expectedUnreadMessageCount);
   });
+
+  test('Calls API to getMessagesAfter', () async {
+    ConversationTestStubs.stubGetMessagesAfter(conversationApi);
+    final conversationSid = Uuid().v4();
+    final conversation = Conversation(conversationSid);
+    conversation.updateFromMap(<String, dynamic>{'lastMessageIndex': 7});
+    final messageIndex = 0;
+    final maxMessageCount = 2;
+
+    final response = await conversation.getMessagesAfter(
+        index: messageIndex, count: maxMessageCount);
+
+    final invocation = ConversationTestStubs.invocation;
+    expect(invocation?.positionalArguments[0], conversationSid);
+    expect(invocation?.positionalArguments[1], messageIndex);
+    expect(invocation?.positionalArguments[2], maxMessageCount);
+    expect(response is List<Message>, true);
+  });
+
+  test(
+      'Does not call the API to getMessagesAfter if Conversation does not have messages',
+      () async {
+    ConversationTestStubs.stubGetMessagesAfter(conversationApi);
+    final conversationSid = Uuid().v4();
+    final conversation = Conversation(conversationSid);
+    final messageIndex = 0;
+    final maxMessageCount = 2;
+
+    final response = await conversation.getMessagesAfter(
+        index: messageIndex, count: maxMessageCount);
+
+    final invocation = ConversationTestStubs.invocation;
+    expect(conversation.hasMessages, false);
+    expect(invocation, null);
+    expect(response is List<Message>, true);
+  });
+
+  test('Calls API to getMessagesBefore', () async {
+    ConversationTestStubs.stubGetMessagesBefore(conversationApi);
+    final conversationSid = Uuid().v4();
+    final conversation = Conversation(conversationSid);
+    conversation.updateFromMap(<String, dynamic>{'lastMessageIndex': 7});
+    final messageIndex = 0;
+    final maxMessageCount = 2;
+
+    final response = await conversation.getMessagesBefore(
+        index: messageIndex, count: maxMessageCount);
+
+    final invocation = ConversationTestStubs.invocation;
+    expect(invocation?.positionalArguments[0], conversationSid);
+    expect(invocation?.positionalArguments[1], messageIndex);
+    expect(invocation?.positionalArguments[2], maxMessageCount);
+    expect(response is List<Message>, true);
+  });
+
+  test(
+      'Does not call the API to getMessagesBefore if Conversation does not have messages',
+      () async {
+    ConversationTestStubs.stubGetMessagesBefore(conversationApi);
+    final conversationSid = Uuid().v4();
+    final conversation = Conversation(conversationSid);
+    final messageIndex = 0;
+    final maxMessageCount = 2;
+
+    final response = await conversation.getMessagesBefore(
+        index: messageIndex, count: maxMessageCount);
+
+    final invocation = ConversationTestStubs.invocation;
+    expect(conversation.hasMessages, false);
+    expect(invocation, null);
+    expect(response is List<Message>, true);
+  });
 }

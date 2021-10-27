@@ -1113,6 +1113,90 @@ class ConversationMethods: NSObject, TWCONConversationApi {
         })
     }
 
+    /// getMessagesAfter
+    func getMessagesAfterConversationSid(
+        _ conversationSid: String?,
+        index: NSNumber?,
+        count: NSNumber?,
+        completion: @escaping ([TWCONMessageData]?, FlutterError?) -> Void) {
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(
+                nil,
+                FlutterError(
+                    code: "ERROR",
+                    message: "Client has not been initialized.",
+                    details: nil))
+        }
+
+        guard let conversationSid = conversationSid else {
+            return completion(
+                nil,
+                FlutterError(
+                    code: "MISSING_PARAMS",
+                    message: "Missing 'conversationSid' parameter",
+                    details: nil))
+        }
+
+        guard let index = index else {
+            return completion(
+                nil,
+                FlutterError(
+                    code: "MISSING_PARAMS",
+                    message: "Missing 'index' parameter",
+                    details: nil))
+        }
+
+        guard let count = count else {
+            return completion(
+                nil,
+                FlutterError(
+                    code: "MISSING_PARAMS",
+                    message: "Missing 'count' parameter",
+                    details: nil))
+        }
+
+        debug("getMessagesAfter => conversationSid: \(conversationSid) index: \(index) count: \(count)")
+
+        client.conversation(
+            withSidOrUniqueName: conversationSid,
+            completion: { (result: TCHResult, conversation: TCHConversation?) in
+            if result.isSuccessful, let conversation = conversation {
+                conversation.getMessagesAfter(
+                    index.uintValue,
+                    withCount: count.uintValue,
+                    completion: { (result: TCHResult, messages: [TCHMessage]?) in
+                    if result.isSuccessful, let messages = messages {
+                        self.debug("getMessagesAfter => onSuccess")
+                        let messagesMap = messages.map { message in
+                            Mapper.messageToPigeon(message, conversationSid: conversationSid)
+                        }
+                        completion(messagesMap, nil)
+                    } else {
+                        let errorMessage = String(describing: result.error)
+                        self.debug("getMessagesAfter => onError: \(errorMessage)")
+                        completion(
+                            nil,
+                            FlutterError(
+                                code: "ERROR",
+                                message: "Error retrieving \(count) messages before " +
+                                    "message index: \(index) from conversation \(conversationSid): " +
+                                    "\(errorMessage)",
+                                details: nil))
+                    }
+                })
+            } else {
+                let errorMessage = String(describing: result.error)
+                self.debug("getMessagesAfter => onError: \(errorMessage)")
+                completion(
+                    nil,
+                    FlutterError(
+                        code: "ERROR",
+                        message: "Error retrieving conversation \(conversationSid): \(errorMessage)",
+                        details: nil))
+            }
+        })
+    }
+    
     /// getMessagesBefore
     func getMessagesBeforeConversationSid(
         _ conversationSid: String?,
@@ -1172,22 +1256,26 @@ class ConversationMethods: NSObject, TWCONConversationApi {
                         }
                         completion(messagesMap, nil)
                     } else {
-                        self.debug("getMessagesBefore => onError: \(String(describing: result.error))")
+                        let errorMessage = String(describing: result.error)
+                        self.debug("getMessagesBefore => onError: \(errorMessage)")
                         completion(
                             nil,
                             FlutterError(
                                 code: "ERROR",
-                                message: "Error retrieving \(count) messages before "
-                                    + "message index: \(index) from conversation \(conversationSid)",
+                                message: "Error retrieving \(count) messages before " +
+                                    "message index: \(index) from conversation \(conversationSid)" +
+                                    "\(errorMessage)",
                                 details: nil))
                     }
                 })
             } else {
+                let errorMessage = String(describing: result.error)
+                self.debug("getMessagesBefore => onError: \(errorMessage)")
                 completion(
                     nil,
                     FlutterError(
                         code: "ERROR",
-                        message: "Error retrieving conversation \(conversationSid)",
+                        message: "Error retrieving conversation \(conversationSid): \(errorMessage)",
                         details: nil))
             }
         })

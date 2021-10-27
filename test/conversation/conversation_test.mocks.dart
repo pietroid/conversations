@@ -151,6 +151,15 @@ class MockConversationApi extends _i1.Mock implements _i2.ConversationApi {
                   Future<_i2.MessageCount>.value(_FakeMessageCount_2()))
           as _i3.Future<_i2.MessageCount>);
   @override
+  _i3.Future<List<_i2.MessageData?>> getMessagesAfter(
+          String? arg_conversationSid, int? arg_index, int? arg_count) =>
+      (super.noSuchMethod(
+          Invocation.method(
+              #getMessagesAfter, [arg_conversationSid, arg_index, arg_count]),
+          returnValue:
+              Future<List<_i2.MessageData?>>.value(<_i2.MessageData?>[])) as _i3
+          .Future<List<_i2.MessageData?>>);
+  @override
   _i3.Future<List<_i2.MessageData?>> getMessagesBefore(
           String? arg_conversationSid, int? arg_index, int? arg_count) =>
       (super.noSuchMethod(

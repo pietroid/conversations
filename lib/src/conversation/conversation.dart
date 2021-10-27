@@ -382,6 +382,31 @@ class Conversation {
     }
   }
 
+  /// Fetch at most count messages including and subsequent to the specified index.
+  Future<List<Message>> getMessagesAfter({
+    required int index,
+    required int count,
+  }) async {
+    if (!hasMessages) {
+      return [];
+    }
+    try {
+      final result = await TwilioConversations()
+          .conversationApi
+          .getMessagesAfter(sid, index, count);
+
+      final messages = result
+          .whereNotNull()
+          .map<Message>((i) =>
+          Message.fromMap(Map<String, dynamic>.from(i.encode() as Map)))
+          .toList();
+
+      return messages;
+    } on PlatformException catch (err) {
+      throw TwilioConversations.convertException(err);
+    }
+  }
+
   /// Fetch at most count messages including and prior to the specified index.
   Future<List<Message>> getMessagesBefore({
     required int index,
@@ -406,8 +431,6 @@ class Conversation {
       throw TwilioConversations.convertException(err);
     }
   }
-
-  //TODO: implement getMessagesAfter
 
   Future<List<Message>> getLastMessages(int count) async {
     if (!hasMessages) {
