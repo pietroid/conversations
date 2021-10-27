@@ -398,7 +398,7 @@ class Conversation {
       final messages = result
           .whereNotNull()
           .map<Message>((i) =>
-          Message.fromMap(Map<String, dynamic>.from(i.encode() as Map)))
+              Message.fromMap(Map<String, dynamic>.from(i.encode() as Map)))
           .toList();
 
       return messages;
@@ -448,8 +448,27 @@ class Conversation {
     return messages;
   }
 
-  Future<Message?> getMessageByIndex(int messageIndex) async {
-    //TODO: implement getMessageByIndex
+  Future<Message> getMessageByIndex(int messageIndex) async {
+    if (!hasMessages) {
+      throw PlatformException(
+        code: 'NOT_FOUND',
+        message: 'Conversation does not have any messages.',
+      );
+    }
+
+    final result = await TwilioConversations()
+        .conversationApi
+        .getMessageByIndex(sid, messageIndex);
+
+    if (result.sid == null) {
+      throw PlatformException(
+        code: 'NOT_FOUND',
+        message: 'No message found with index: $messageIndex',
+      );
+    }
+
+    final message = Message.fromPigeon(result);
+    return message;
   }
   //#endregion
 

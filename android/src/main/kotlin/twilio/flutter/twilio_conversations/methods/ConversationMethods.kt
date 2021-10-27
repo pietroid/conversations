@@ -591,7 +591,7 @@ class ConversationMethods : Api.ConversationApi {
         messageIndex: Long,
         result: Api.Result<Boolean>
     ) {
-        debug("removeMessage => conversationSid: $conversationSid messageSid: $messageIndex")
+        debug("removeMessage => conversationSid: $conversationSid messageIndex: $messageIndex")
         val client = TwilioConversationsPlugin.client
             ?: return result.error(RuntimeException("Client is not initialized"))
 
@@ -689,6 +689,47 @@ class ConversationMethods : Api.ConversationApi {
             override fun onError(errorInfo: ErrorInfo) {
                 debug("getMessagesBefore => onError: $errorInfo")
 
+                result.error(RuntimeException(errorInfo.message))
+            }
+        })
+    }
+
+    override fun getMessageByIndex(
+        conversationSid: String,
+        messageIndex: Long,
+        result: Api.Result<Api.MessageData>
+    ) {
+        debug("getMessageByIndex => conversationSid: $conversationSid messageIndex: $messageIndex")
+        val client = TwilioConversationsPlugin.client
+            ?: return result.error(RuntimeException("Client is not initialized"))
+
+        client.getConversation(conversationSid, object : CallbackListener<Conversation> {
+            override fun onSuccess(conversation: Conversation) {
+                conversation.getMessageByIndex(messageIndex, object : CallbackListener<Message> {
+                    override fun onSuccess(message: Message) {
+                        // Android SDK seems to think it's fine to return a different message
+                        // if one with the given `messageIndex` does not exist. iOS throws
+                        // an exception as one might expect.
+                        // Therefore, we do some validation here on the Android side and throw
+                        // an exception in order to achieve behaviour that is consistent across platforms.
+                        if (message.messageIndex == messageIndex) {
+                            debug("getMessageByIndex => onSuccess")
+                            result.success(Mapper.messageToPigeon(message))
+                        } else {
+                            debug("getMessageByIndex => onError: No message found with messageIndex: $messageIndex")
+                            result.error(RuntimeException("No message found with messageIndex: $messageIndex"))
+                        }
+                    }
+
+                    override fun onError(errorInfo: ErrorInfo) {
+                        debug("getMessageByIndex => onError: $errorInfo")
+                        result.error(RuntimeException(errorInfo.message))
+                    }
+                })
+            }
+
+            override fun onError(errorInfo: ErrorInfo) {
+                debug("getMessageByIndex => onError: $errorInfo")
                 result.error(RuntimeException(errorInfo.message))
             }
         })

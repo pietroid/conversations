@@ -203,6 +203,9 @@ abstract class ConversationApi {
       String conversationSid, int index, int count);
 
   @async
+  MessageData getMessageByIndex(String conversationSid, int messageIndex);
+
+  @async
   List<MessageData> getLastMessages(String conversationSid, int count);
 
   @async

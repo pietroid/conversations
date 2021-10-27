@@ -849,18 +849,21 @@ void TWCONConversationClientApiSetup(id<FlutterBinaryMessenger> binaryMessenger,
       return [TWCONMessageData fromMap:[self readValue]];
     
     case 141:     
-      return [TWCONMessageMediaData fromMap:[self readValue]];
+      return [TWCONMessageData fromMap:[self readValue]];
     
     case 142:     
-      return [TWCONMessageOptionsData fromMap:[self readValue]];
+      return [TWCONMessageMediaData fromMap:[self readValue]];
     
     case 143:     
-      return [TWCONParticipantData fromMap:[self readValue]];
+      return [TWCONMessageOptionsData fromMap:[self readValue]];
     
     case 144:     
       return [TWCONParticipantData fromMap:[self readValue]];
     
     case 145:     
+      return [TWCONParticipantData fromMap:[self readValue]];
+    
+    case 146:     
       return [TWCONParticipantData fromMap:[self readValue]];
     
     default:    
@@ -927,15 +930,15 @@ void TWCONConversationClientApiSetup(id<FlutterBinaryMessenger> binaryMessenger,
     [self writeByte:140];
     [self writeValue:[value toMap]];
   } else 
-  if ([value isKindOfClass:[TWCONMessageMediaData class]]) {
+  if ([value isKindOfClass:[TWCONMessageData class]]) {
     [self writeByte:141];
     [self writeValue:[value toMap]];
   } else 
-  if ([value isKindOfClass:[TWCONMessageOptionsData class]]) {
+  if ([value isKindOfClass:[TWCONMessageMediaData class]]) {
     [self writeByte:142];
     [self writeValue:[value toMap]];
   } else 
-  if ([value isKindOfClass:[TWCONParticipantData class]]) {
+  if ([value isKindOfClass:[TWCONMessageOptionsData class]]) {
     [self writeByte:143];
     [self writeValue:[value toMap]];
   } else 
@@ -945,6 +948,10 @@ void TWCONConversationClientApiSetup(id<FlutterBinaryMessenger> binaryMessenger,
   } else 
   if ([value isKindOfClass:[TWCONParticipantData class]]) {
     [self writeByte:145];
+    [self writeValue:[value toMap]];
+  } else 
+  if ([value isKindOfClass:[TWCONParticipantData class]]) {
+    [self writeByte:146];
     [self writeValue:[value toMap]];
   } else 
 {
@@ -1360,6 +1367,27 @@ void TWCONConversationApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObj
         NSNumber *arg_index = args[1];
         NSNumber *arg_count = args[2];
         [api getMessagesBeforeConversationSid:arg_conversationSid index:arg_index count:arg_count completion:^(NSArray<TWCONMessageData *> *_Nullable output, FlutterError *_Nullable error) {
+          callback(wrapResult(output, error));
+        }];
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [FlutterBasicMessageChannel
+        messageChannelWithName:@"dev.flutter.pigeon.ConversationApi.getMessageByIndex"
+        binaryMessenger:binaryMessenger
+        codec:TWCONConversationApiGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(getMessageByIndexConversationSid:messageIndex:completion:)], @"TWCONConversationApi api (%@) doesn't respond to @selector(getMessageByIndexConversationSid:messageIndex:completion:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        NSString *arg_conversationSid = args[0];
+        NSNumber *arg_messageIndex = args[1];
+        [api getMessageByIndexConversationSid:arg_conversationSid messageIndex:arg_messageIndex completion:^(TWCONMessageData *_Nullable output, FlutterError *_Nullable error) {
           callback(wrapResult(output, error));
         }];
       }];

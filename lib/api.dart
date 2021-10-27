@@ -769,15 +769,15 @@ class _ConversationApiCodec extends StandardMessageCodec {
       buffer.putUint8(140);
       writeValue(buffer, value.encode());
     } else 
-    if (value is MessageMediaData) {
+    if (value is MessageData) {
       buffer.putUint8(141);
       writeValue(buffer, value.encode());
     } else 
-    if (value is MessageOptionsData) {
+    if (value is MessageMediaData) {
       buffer.putUint8(142);
       writeValue(buffer, value.encode());
     } else 
-    if (value is ParticipantData) {
+    if (value is MessageOptionsData) {
       buffer.putUint8(143);
       writeValue(buffer, value.encode());
     } else 
@@ -787,6 +787,10 @@ class _ConversationApiCodec extends StandardMessageCodec {
     } else 
     if (value is ParticipantData) {
       buffer.putUint8(145);
+      writeValue(buffer, value.encode());
+    } else 
+    if (value is ParticipantData) {
+      buffer.putUint8(146);
       writeValue(buffer, value.encode());
     } else 
 {
@@ -836,18 +840,21 @@ class _ConversationApiCodec extends StandardMessageCodec {
         return MessageData.decode(readValue(buffer)!);
       
       case 141:       
-        return MessageMediaData.decode(readValue(buffer)!);
+        return MessageData.decode(readValue(buffer)!);
       
       case 142:       
-        return MessageOptionsData.decode(readValue(buffer)!);
+        return MessageMediaData.decode(readValue(buffer)!);
       
       case 143:       
-        return ParticipantData.decode(readValue(buffer)!);
+        return MessageOptionsData.decode(readValue(buffer)!);
       
       case 144:       
         return ParticipantData.decode(readValue(buffer)!);
       
       case 145:       
+        return ParticipantData.decode(readValue(buffer)!);
+      
+      case 146:       
         return ParticipantData.decode(readValue(buffer)!);
       
       default:      
@@ -1301,6 +1308,29 @@ class ConversationApi {
       );
     } else {
       return (replyMap['result'] as List<Object?>?)!.cast<MessageData?>();
+    }
+  }
+
+  Future<MessageData> getMessageByIndex(String arg_conversationSid, int arg_messageIndex) async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.ConversationApi.getMessageByIndex', codec, binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap =
+        await channel.send(<Object>[arg_conversationSid, arg_messageIndex]) as Map<Object?, Object?>?;
+    if (replyMap == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+        details: null,
+      );
+    } else if (replyMap['error'] != null) {
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      throw PlatformException(
+        code: (error['code'] as String?)!,
+        message: error['message'] as String?,
+        details: error['details'],
+      );
+    } else {
+      return (replyMap['result'] as MessageData?)!;
     }
   }
 
