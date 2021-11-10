@@ -242,5 +242,29 @@ void main() {
     expect(response is List<Message>, true);
   });
 
+  test('Calls the API to setFriendlyName', () async {
+    ConversationTestStubs.stubSetFriendlyName(conversationApi);
+    final conversationSid = Uuid().v4();
+    final conversation = Conversation(conversationSid);
+    final friendlyName = 'friendlyNameMock';
 
+    await conversation.setFriendlyName(friendlyName);
+
+    final invocation = ConversationTestStubs.invocation;
+    expect(invocation?.positionalArguments[0], conversationSid);
+    expect(invocation?.positionalArguments[1], friendlyName);
+  });
+
+  test('Calls the API to setUniqueName', () async {
+    ConversationTestStubs.stubSetUniqueName(conversationApi);
+    final conversationSid = Uuid().v4();
+    final conversation = Conversation(conversationSid);
+    final uniqueName = 'uniqueNameMock';
+
+    await conversation.setUniqueName(uniqueName);
+
+    final invocation = ConversationTestStubs.invocation;
+    expect(invocation?.positionalArguments[0], conversationSid);
+    expect(invocation?.positionalArguments[1], uniqueName);
+  });
 }

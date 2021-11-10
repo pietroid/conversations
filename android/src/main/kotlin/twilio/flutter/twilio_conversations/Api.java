@@ -1235,7 +1235,8 @@ public class Api {
     void getMessageByIndex(String conversationSid, Long messageIndex, Result<MessageData> result);
     void getLastMessages(String conversationSid, Long count, Result<List<MessageData>> result);
     void removeMessage(String conversationSid, Long messageIndex, Result<Boolean> result);
-    void setFriendlyName(String conversationSid, String friendlyName, Result<String> result);
+    void setFriendlyName(String conversationSid, String friendlyName, Result<Void> result);
+    void setUniqueName(String conversationSid, String uniqueName, Result<Void> result);
 
     /** The codec used by ConversationApi. */
     static MessageCodec<Object> getCodec() {
@@ -2068,9 +2069,9 @@ public class Api {
               if (friendlyNameArg == null) {
                 throw new NullPointerException("friendlyNameArg unexpectedly null.");
               }
-              Result<String> resultCallback = new Result<String>() {
-                public void success(String result) {
-                  wrapped.put("result", result);
+              Result<Void> resultCallback = new Result<Void>() {
+                public void success(Void result) {
+                  wrapped.put("result", null);
                   reply.reply(wrapped);
                 }
                 public void error(Throwable error) {
@@ -2080,6 +2081,44 @@ public class Api {
               };
 
               api.setFriendlyName(conversationSidArg, friendlyNameArg, resultCallback);
+            }
+            catch (Error | RuntimeException exception) {
+              wrapped.put("error", wrapError(exception));
+              reply.reply(wrapped);
+            }
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.ConversationApi.setUniqueName", getCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            Map<String, Object> wrapped = new HashMap<>();
+            try {
+              ArrayList<Object> args = (ArrayList<Object>)message;
+              String conversationSidArg = (String)args.get(0);
+              if (conversationSidArg == null) {
+                throw new NullPointerException("conversationSidArg unexpectedly null.");
+              }
+              String uniqueNameArg = (String)args.get(1);
+              if (uniqueNameArg == null) {
+                throw new NullPointerException("uniqueNameArg unexpectedly null.");
+              }
+              Result<Void> resultCallback = new Result<Void>() {
+                public void success(Void result) {
+                  wrapped.put("result", null);
+                  reply.reply(wrapped);
+                }
+                public void error(Throwable error) {
+                  wrapped.put("error", wrapError(error));
+                  reply.reply(wrapped);
+                }
+              };
+
+              api.setUniqueName(conversationSidArg, uniqueNameArg, resultCallback);
             }
             catch (Error | RuntimeException exception) {
               wrapped.put("error", wrapError(exception));

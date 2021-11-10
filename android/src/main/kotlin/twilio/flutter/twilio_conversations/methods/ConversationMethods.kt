@@ -778,7 +778,7 @@ class ConversationMethods : Api.ConversationApi {
     override fun setFriendlyName(
         conversationSid: String,
         friendlyName: String,
-        result: Api.Result<String>
+        result: Api.Result<Void>
     ) {
         debug("setFriendlyName => conversationSid: $conversationSid")
         val client = TwilioConversationsPlugin.client
@@ -790,7 +790,7 @@ class ConversationMethods : Api.ConversationApi {
                     conversation.setFriendlyName(friendlyName, object : StatusListener {
                         override fun onSuccess() {
                             debug("setFriendlyName => onSuccess")
-                            result.success(conversation.friendlyName)
+                            result.success(null)
                         }
 
                         override fun onError(errorInfo: ErrorInfo) {
@@ -802,6 +802,41 @@ class ConversationMethods : Api.ConversationApi {
 
                 override fun onError(errorInfo: ErrorInfo) {
                     debug("setFriendlyName => onError: $errorInfo")
+                    result.error(RuntimeException(errorInfo.message))
+                }
+            })
+        } catch (err: IllegalArgumentException) {
+            return result.error(err)
+        }
+    }
+
+    override fun setUniqueName(
+        conversationSid: String,
+        uniqueName: String,
+        result: Api.Result<Void>
+    ) {
+        debug("setUniqueName => conversationSid: $conversationSid")
+        val client = TwilioConversationsPlugin.client
+            ?: return result.error(RuntimeException("Client is not initialized"))
+
+        try {
+            client.getConversation(conversationSid, object : CallbackListener<Conversation> {
+                override fun onSuccess(conversation: Conversation) {
+                    conversation.setUniqueName(uniqueName, object : StatusListener {
+                        override fun onSuccess() {
+                            debug("setUniqueName => onSuccess")
+                            result.success(null)
+                        }
+
+                        override fun onError(errorInfo: ErrorInfo) {
+                            debug("setUniqueName => onError: $errorInfo")
+                            result.error(RuntimeException(errorInfo.message))
+                        }
+                    })
+                }
+
+                override fun onError(errorInfo: ErrorInfo) {
+                    debug("setUniqueName => onError: $errorInfo")
                     result.error(RuntimeException(errorInfo.message))
                 }
             })

@@ -1450,8 +1450,29 @@ void TWCONConversationApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObj
         NSArray *args = message;
         NSString *arg_conversationSid = args[0];
         NSString *arg_friendlyName = args[1];
-        [api setFriendlyNameConversationSid:arg_conversationSid friendlyName:arg_friendlyName completion:^(NSString *_Nullable output, FlutterError *_Nullable error) {
-          callback(wrapResult(output, error));
+        [api setFriendlyNameConversationSid:arg_conversationSid friendlyName:arg_friendlyName completion:^(FlutterError *_Nullable error) {
+          callback(wrapResult(nil, error));
+        }];
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [FlutterBasicMessageChannel
+        messageChannelWithName:@"dev.flutter.pigeon.ConversationApi.setUniqueName"
+        binaryMessenger:binaryMessenger
+        codec:TWCONConversationApiGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(setUniqueNameConversationSid:uniqueName:completion:)], @"TWCONConversationApi api (%@) doesn't respond to @selector(setUniqueNameConversationSid:uniqueName:completion:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        NSString *arg_conversationSid = args[0];
+        NSString *arg_uniqueName = args[1];
+        [api setUniqueNameConversationSid:arg_conversationSid uniqueName:arg_uniqueName completion:^(FlutterError *_Nullable error) {
+          callback(wrapResult(nil, error));
         }];
       }];
     }

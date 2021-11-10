@@ -103,6 +103,11 @@ class MessagesNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> setUniqueName(String name) async {
+    await conversation.setUniqueName(name);
+    notifyListeners();
+  }
+
   Future<void> destroy() async {
     return conversation.destroy();
   }

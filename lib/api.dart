@@ -1380,7 +1380,7 @@ class ConversationApi {
     }
   }
 
-  Future<String> setFriendlyName(String arg_conversationSid, String arg_friendlyName) async {
+  Future<void> setFriendlyName(String arg_conversationSid, String arg_friendlyName) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.ConversationApi.setFriendlyName', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
@@ -1399,7 +1399,30 @@ class ConversationApi {
         details: error['details'],
       );
     } else {
-      return (replyMap['result'] as String?)!;
+      return;
+    }
+  }
+
+  Future<void> setUniqueName(String arg_conversationSid, String arg_uniqueName) async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.ConversationApi.setUniqueName', codec, binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap =
+        await channel.send(<Object>[arg_conversationSid, arg_uniqueName]) as Map<Object?, Object?>?;
+    if (replyMap == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+        details: null,
+      );
+    } else if (replyMap['error'] != null) {
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      throw PlatformException(
+        code: (error['code'] as String?)!,
+        message: error['message'] as String?,
+        details: error['details'],
+      );
+    } else {
+      return;
     }
   }
 }

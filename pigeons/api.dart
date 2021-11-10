@@ -212,7 +212,10 @@ abstract class ConversationApi {
   bool removeMessage(String conversationSid, int messageIndex);
 
   @async
-  String setFriendlyName(String conversationSid, String friendlyName);
+  void setFriendlyName(String conversationSid, String friendlyName);
+
+  @async
+  void setUniqueName(String conversationSid, String uniqueName);
 }
 
 @HostApi()

@@ -179,7 +179,8 @@ NSObject<FlutterMessageCodec> *TWCONConversationApiGetCodec(void);
 - (void)getMessageByIndexConversationSid:(nullable NSString *)conversationSid messageIndex:(nullable NSNumber *)messageIndex completion:(void(^)(TWCONMessageData *_Nullable, FlutterError *_Nullable))completion;
 - (void)getLastMessagesConversationSid:(nullable NSString *)conversationSid count:(nullable NSNumber *)count completion:(void(^)(NSArray<TWCONMessageData *> *_Nullable, FlutterError *_Nullable))completion;
 - (void)removeMessageConversationSid:(nullable NSString *)conversationSid messageIndex:(nullable NSNumber *)messageIndex completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion;
-- (void)setFriendlyNameConversationSid:(nullable NSString *)conversationSid friendlyName:(nullable NSString *)friendlyName completion:(void(^)(NSString *_Nullable, FlutterError *_Nullable))completion;
+- (void)setFriendlyNameConversationSid:(nullable NSString *)conversationSid friendlyName:(nullable NSString *)friendlyName completion:(void(^)(FlutterError *_Nullable))completion;
+- (void)setUniqueNameConversationSid:(nullable NSString *)conversationSid uniqueName:(nullable NSString *)uniqueName completion:(void(^)(FlutterError *_Nullable))completion;
 @end
 
 extern void TWCONConversationApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<TWCONConversationApi> *_Nullable api);

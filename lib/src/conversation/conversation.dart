@@ -473,16 +473,26 @@ class Conversation {
   //#endregion
 
   //#region Setters
-  Future<String> setFriendlyName(String friendlyName) async {
-    final result = await TwilioConversations()
-        .conversationApi
-        .setFriendlyName(sid, friendlyName);
-
-    this.friendlyName = result.toString();
-    return friendlyName;
+  Future<void> setFriendlyName(String friendlyName) async {
+    try {
+      await TwilioConversations()
+          .conversationApi
+          .setFriendlyName(sid, friendlyName);
+    } on PlatformException catch (err) {
+      throw TwilioConversations.convertException(err);
+    }
   }
 
-  //TODO: implement setUniqueName
+  Future<void> setUniqueName(String uniqueName) async {
+    try {
+      await TwilioConversations()
+          .conversationApi
+          .setUniqueName(sid, uniqueName);
+    } on PlatformException catch (err) {
+      throw TwilioConversations.convertException(err);
+    }
+  }
+
   //TODO: implement setAttributes
   //TODO: implement setNotificationLevel
   //#endregion

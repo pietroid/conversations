@@ -38,7 +38,8 @@ class _MessagesPageState extends State<MessagesPage> {
             child: Scaffold(
               appBar: AppBar(
                 title: InkWell(
-                    onLongPress: _updateName,
+                    onLongPress: _updateFriendlyName,
+                    onDoubleTap: _updateUniqueName,
                     child: Text(widget.conversation.friendlyName ?? '')),
                 actions: [
                   _buildManageParticipants(),
@@ -436,16 +437,29 @@ class _MessagesPageState extends State<MessagesPage> {
         });
   }
 
-  Future _updateName() async {
-    final newConversationName = await _showUpdateNameDialog();
+  Future _updateFriendlyName() async {
+    final newConversationName = await _showUpdateNameDialog(
+      'Friendly Name',
+      messagesNotifier.conversation.friendlyName,
+    );
     if (newConversationName != null) {
       return messagesNotifier.setFriendlyName(newConversationName);
     }
   }
 
-  Future<String?> _showUpdateNameDialog() async {
-    final controller =
-        TextEditingController(text: messagesNotifier.conversation.friendlyName);
+  Future _updateUniqueName() async {
+    final newConversationName = await _showUpdateNameDialog(
+      'Unique Name',
+      messagesNotifier.conversation.uniqueName,
+    );
+    if (newConversationName != null) {
+      return messagesNotifier.setUniqueName(newConversationName);
+    }
+  }
+
+  Future<String?> _showUpdateNameDialog(
+      String label, String? currentName) async {
+    final controller = TextEditingController(text: currentName);
     final name = await showDialog(
         context: context,
         builder: (context) {
@@ -462,18 +476,10 @@ class _MessagesPageState extends State<MessagesPage> {
                     children: [
                       Expanded(
                         child: TextField(
-                          decoration: InputDecoration(label: Text('Name')),
+                          decoration: InputDecoration(label: Text(label)),
                           controller: controller,
                         ),
                       ),
-                      IconButton(
-                        onPressed: () async {
-                          await messagesNotifier
-                              .addUserByIdentity(controller.text);
-                          controller.text = '';
-                        },
-                        icon: Icon(Icons.add),
-                      )
                     ],
                   ),
                 ],

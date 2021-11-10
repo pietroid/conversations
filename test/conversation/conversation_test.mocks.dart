@@ -192,12 +192,21 @@ class MockConversationApi extends _i1.Mock implements _i2.ConversationApi {
               #removeMessage, [arg_conversationSid, arg_messageIndex]),
           returnValue: Future<bool>.value(false)) as _i3.Future<bool>);
   @override
-  _i3.Future<String> setFriendlyName(
+  _i3.Future<void> setFriendlyName(
           String? arg_conversationSid, String? arg_friendlyName) =>
       (super.noSuchMethod(
           Invocation.method(
               #setFriendlyName, [arg_conversationSid, arg_friendlyName]),
-          returnValue: Future<String>.value('')) as _i3.Future<String>);
+          returnValue: Future<void>.value(),
+          returnValueForMissingStub: Future<void>.value()) as _i3.Future<void>);
+  @override
+  _i3.Future<void> setUniqueName(
+          String? arg_conversationSid, String? arg_uniqueName) =>
+      (super.noSuchMethod(
+          Invocation.method(
+              #setUniqueName, [arg_conversationSid, arg_uniqueName]),
+          returnValue: Future<void>.value(),
+          returnValueForMissingStub: Future<void>.value()) as _i3.Future<void>);
   @override
   String toString() => super.toString();
 }

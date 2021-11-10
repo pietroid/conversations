@@ -105,6 +105,20 @@ class ConversationTestStubs {
     });
   }
 
+  static void stubSetFriendlyName(MockConversationApi conversationApi) {
+    when(conversationApi.setFriendlyName(any, any)).thenAnswer((realInvocation) async {
+      invocation = realInvocation;
+      return;
+    });
+  }
+
+  static void stubSetUniqueName(MockConversationApi conversationApi) {
+    when(conversationApi.setUniqueName(any, any)).thenAnswer((realInvocation) async {
+      invocation = realInvocation;
+      return;
+    });
+  }
+
   static Participant createMockParticipant(
       String conversationSid, String participantSid) {
     final participant = Participant(

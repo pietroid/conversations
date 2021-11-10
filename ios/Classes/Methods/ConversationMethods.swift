@@ -1420,11 +1420,10 @@ class ConversationMethods: NSObject, TWCONConversationApi {
     func setFriendlyNameConversationSid(
         _ conversationSid: String?,
         friendlyName: String?,
-        completion: @escaping (String?, FlutterError?) -> Void) {
+        completion: @escaping (FlutterError?) -> Void) {
         debug("setFriendlyName => conversationSid: \(String(describing: conversationSid))")
         guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
             return completion(
-                nil,
                 FlutterError(
                     code: "ERROR",
                     message: "Client has not been initialized.",
@@ -1433,7 +1432,6 @@ class ConversationMethods: NSObject, TWCONConversationApi {
 
         guard let conversationSid = conversationSid else {
             return completion(
-                nil,
                 FlutterError(
                     code: "MISSING_PARAMS",
                     message: "Missing 'conversationSid' parameter",
@@ -1442,7 +1440,6 @@ class ConversationMethods: NSObject, TWCONConversationApi {
 
         guard let friendlyName = friendlyName else {
             return completion(
-                nil,
                 FlutterError(
                     code: "MISSING_PARAMS",
                     message: "Missing 'friendlyName' parameter",
@@ -1457,12 +1454,11 @@ class ConversationMethods: NSObject, TWCONConversationApi {
                 conversation.setFriendlyName(friendlyName) { (result: TCHResult) in
                     if result.isSuccessful {
                         self.debug("setFriendlyName => onSuccess")
-                        completion(conversation.friendlyName, nil)
+                        completion(nil)
                     } else {
                         let errorMessage = String(describing: result.error)
                         self.debug("setFriendlyName => onError: \(errorMessage)")
                         completion(
-                            nil,
                             FlutterError(
                                 code: "ERROR",
                                 message: "setFriendlyName => Error setting friendly name "
@@ -1474,7 +1470,6 @@ class ConversationMethods: NSObject, TWCONConversationApi {
                 let errorMessage = String(describing: result.error)
                 self.debug("setFriendlyName => onError: \(errorMessage)")
                 completion(
-                    nil,
                     FlutterError(
                         code: "ERROR",
                         message: "setFriendlyName => Error retrieving conversation \(conversationSid): \(errorMessage)",
@@ -1483,6 +1478,64 @@ class ConversationMethods: NSObject, TWCONConversationApi {
         })
     }
 
+    func setUniqueNameConversationSid(_ conversationSid: String?, uniqueName: String?, completion: @escaping (FlutterError?) -> Void) {
+        debug("setUniqueName => conversationSid: \(String(describing: conversationSid))")
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(
+                FlutterError(
+                    code: "ERROR",
+                    message: "Client has not been initialized.",
+                    details: nil))
+        }
+
+        guard let conversationSid = conversationSid else {
+            return completion(
+                FlutterError(
+                    code: "MISSING_PARAMS",
+                    message: "Missing 'conversationSid' parameter",
+                    details: nil))
+        }
+
+        guard let uniqueName = uniqueName else {
+            return completion(
+                FlutterError(
+                    code: "MISSING_PARAMS",
+                    message: "Missing 'uniqueName' parameter",
+                    details: nil))
+        }
+
+        client.conversation(
+            withSidOrUniqueName: conversationSid,
+            completion: { (result: TCHResult, conversation: TCHConversation?) in
+            if result.isSuccessful, let conversation = conversation {
+                self.debug("setUniqueName => onSuccess")
+                conversation.setUniqueName(uniqueName) { (result: TCHResult) in
+                    if result.isSuccessful {
+                        self.debug("setUniqueName => onSuccess")
+                        completion(nil)
+                    } else {
+                        let errorMessage = String(describing: result.error)
+                        self.debug("setUniqueName => onError: \(errorMessage)")
+                        completion(
+                            FlutterError(
+                                code: "ERROR",
+                                message: "setUniqueName => Error setting unique name "
+                                    + "for conversation \(conversationSid): \(errorMessage)",
+                                details: nil))
+                    }
+                }
+            } else {
+                let errorMessage = String(describing: result.error)
+                self.debug("setFriendlyName => onError: \(errorMessage)")
+                completion(
+                    FlutterError(
+                        code: "ERROR",
+                        message: "setUniqueName => Error retrieving conversation \(conversationSid): \(errorMessage)",
+                        details: nil))
+            }
+        })
+    }
+    
     private func debug(_ msg: String) {
         SwiftTwilioConversationsPlugin.debug("\(TAG)::\(msg)")
     }
