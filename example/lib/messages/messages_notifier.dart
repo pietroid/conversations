@@ -108,6 +108,65 @@ class MessagesNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> getAttributes() async {
+    final currentAttributes = conversation.attributes;
+    if (currentAttributes != null) {
+      switch (currentAttributes.type) {
+        case AttributesType.NULL:
+          print('getAttributes => NULL: ${currentAttributes.data}');
+          break;
+        case AttributesType.ARRAY:
+          print('getAttributes => Array: ${currentAttributes.getJSONArray()}');
+          break;
+        case AttributesType.OBJECT:
+          print(
+              'getAttributes => Object: ${currentAttributes.getJSONObject()}');
+          break;
+        case AttributesType.NUMBER:
+          print('getAttributes => Number: ${currentAttributes.getNumber()}');
+          break;
+        case AttributesType.STRING:
+          print('getAttributes => String: ${currentAttributes.getString()}');
+          break;
+      }
+    }
+  }
+
+  Future<void> swapAttributes(AttributesType type) async {
+    switch (type) {
+      case AttributesType.NULL:
+        await conversation.setAttributes(Attributes(type, null));
+        break;
+      case AttributesType.STRING:
+        await conversation.setAttributes(Attributes(type, 'i am a string'));
+        break;
+      case AttributesType.NUMBER:
+        await conversation.setAttributes(Attributes(type, 173.95.toString()));
+        break;
+      case AttributesType.ARRAY:
+        await conversation.setAttributes(Attributes(
+            type,
+            jsonEncode([
+              'test',
+              17,
+              false,
+              95,
+              {'key1': null, 'key17': 43.95, 'key5': []},
+            ])));
+        break;
+      case AttributesType.OBJECT:
+        await conversation.setAttributes(Attributes(
+            type,
+            jsonEncode({
+              'key1': 73,
+              'key2': null,
+              'key3': [17, 1, -5, null],
+              'key5': 'a string',
+            })));
+        break;
+    }
+  }
+
   Future<void> destroy() async {
     return conversation.destroy();
   }

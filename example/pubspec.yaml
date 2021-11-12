@@ -21,6 +21,7 @@ dependencies:
     path: ../
 
   cupertino_icons: ^1.0.0
+  enum_to_string: ^2.0.1
   provider: ^6.0.0
   http: ^0.13.3
   intl: ^0.17.0

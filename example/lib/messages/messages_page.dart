@@ -1,3 +1,4 @@
+import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
@@ -42,8 +43,7 @@ class _MessagesPageState extends State<MessagesPage> {
                     onDoubleTap: _updateUniqueName,
                     child: Text(widget.conversation.friendlyName ?? '')),
                 actions: [
-                  _buildManageParticipants(),
-                  _buildDestroyConversation(),
+                  _buildOverflowButton(),
                 ],
               ),
               body: Center(
@@ -56,20 +56,37 @@ class _MessagesPageState extends State<MessagesPage> {
     );
   }
 
-  Widget _buildManageParticipants() {
-    return IconButton(
-      icon: Icon(Icons.person),
-      onPressed: _showManageParticipantsDialog,
-    );
-  }
-
-  Widget _buildDestroyConversation() {
-    return IconButton(
-      icon: Icon(Icons.delete),
-      onPressed: () async {
-        await messagesNotifier.destroy();
-        Navigator.of(context).pop();
+  Widget _buildOverflowButton() {
+    return PopupMenuButton(
+      icon: Icon(Icons.menu),
+      onSelected: (result) {
+        switch (result) {
+          case MessagesPageMenuOptions.participants:
+            _showManageParticipantsDialog();
+            break;
+          case MessagesPageMenuOptions.destroyConversation:
+            _destroyConversation();
+            break;
+          case MessagesPageMenuOptions.swapAttributes:
+            _showSwapAttributesDialog();
+            break;
+        }
       },
+      itemBuilder: (BuildContext context) =>
+          <PopupMenuEntry<MessagesPageMenuOptions>>[
+        PopupMenuItem(
+          value: MessagesPageMenuOptions.participants,
+          child: Text('Participants'),
+        ),
+        PopupMenuItem(
+          value: MessagesPageMenuOptions.destroyConversation,
+          child: Text('Destroy Conversation'),
+        ),
+        PopupMenuItem(
+          value: MessagesPageMenuOptions.swapAttributes,
+          child: Text('Swap Attributes'),
+        ),
+      ],
     );
   }
 
@@ -437,6 +454,57 @@ class _MessagesPageState extends State<MessagesPage> {
         });
   }
 
+  Future _showSwapAttributesDialog() async {
+    final result = await showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Set Attributes Type'),
+            content: ChangeNotifierProvider<MessagesNotifier>.value(
+              value: messagesNotifier,
+              child: Consumer<MessagesNotifier>(builder:
+                  (BuildContext context, messagesNotifier, Widget? child) {
+                final currentAttributesType =
+                    messagesNotifier.conversation.attributes?.type;
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    ...AttributesType.values.map<Widget>((e) =>
+                        RadioListTile<AttributesType>(
+                            title: Text(EnumToString.convertToString(e)),
+                            value: e,
+                            groupValue: currentAttributesType,
+                            onChanged: (AttributesType? value) =>
+                                Navigator.of(context).pop(e))),
+                  ],
+                );
+              }),
+            ),
+            actions: <Widget>[
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('CLOSE'),
+              ),
+              ElevatedButton(
+                onPressed: messagesNotifier.getAttributes,
+                child: Text('GET ATTRIBUTES'),
+              ),
+            ],
+          );
+        });
+    if (result != null) {
+      messagesNotifier.swapAttributes(result);
+    }
+  }
+
+  Future _destroyConversation() async {
+    await messagesNotifier.destroy();
+    Navigator.of(context).pop();
+  }
+
   Future _updateFriendlyName() async {
     final newConversationName = await _showUpdateNameDialog(
       'Friendly Name',
@@ -550,4 +618,10 @@ class _MessagesPageState extends State<MessagesPage> {
       }
     }
   }
+}
+
+enum MessagesPageMenuOptions {
+  participants,
+  destroyConversation,
+  swapAttributes,
 }

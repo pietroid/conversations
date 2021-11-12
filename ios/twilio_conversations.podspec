@@ -17,6 +17,7 @@ A new flutter plugin project.
 
   s.dependency 'Flutter'
   s.dependency 'TwilioConversationsClient', '~> 1.3'
+  s.dependency 'SwiftyJSON', '~> 5.0.1'
 
   s.platform = :ios, '11.0'
 

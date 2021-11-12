@@ -473,6 +473,19 @@ class Conversation {
   //#endregion
 
   //#region Setters
+  Future<void> setAttributes(Attributes attributes) async {
+    try {
+      final attributesData = AttributesData()
+        ..type = EnumToString.convertToString(attributes.type)
+        ..data = attributes.data;
+      await TwilioConversations()
+          .conversationApi
+          .setAttributes(sid, attributesData);
+    } on PlatformException catch (err) {
+      throw TwilioConversations.convertException(err);
+    }
+  }
+
   Future<void> setFriendlyName(String friendlyName) async {
     try {
       await TwilioConversations()

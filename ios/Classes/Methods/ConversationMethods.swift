@@ -1416,6 +1416,85 @@ class ConversationMethods: NSObject, TWCONConversationApi {
         })
     }
 
+    /// setAttributes
+    func setAttributesConversationSid(_ conversationSid: String?, attributes: TWCONAttributesData?, completion: @escaping (FlutterError?) -> Void) {
+        debug("setAttributes => conversationSid: \(String(describing: conversationSid))")
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(
+                FlutterError(
+                    code: "ERROR",
+                    message: "Client has not been initialized.",
+                    details: nil))
+        }
+
+        guard let conversationSid = conversationSid else {
+            return completion(
+                FlutterError(
+                    code: "MISSING_PARAMS",
+                    message: "Missing 'conversationSid' parameter",
+                    details: nil))
+        }
+
+        guard let attributesData = attributes else {
+            return completion(
+                FlutterError(
+                    code: "MISSING_PARAMS",
+                    message: "Missing 'attributes' parameter",
+                    details: nil))
+        }
+
+        var conversationAttributes: TCHJsonAttributes? = nil
+        do {
+            conversationAttributes = try Mapper.pigeonToAttributes(attributesData)
+        } catch LocalizedConversionError.invalidData {
+            return completion(
+                FlutterError(
+                    code: "CONVERSION_ERROR",
+                    message: "Could not convert \(attributes?.data) to valid TCHJsonAttributes",
+                    details: nil)
+            )
+        } catch {
+            return completion(
+                FlutterError(
+                    code: "TYPE_ERROR",
+                    message: "\(attributes?.type) is not a valid type for TCHJsonAttributes.",
+                    details: nil)
+            )
+        }
+        
+
+        client.conversation(
+            withSidOrUniqueName: conversationSid,
+            completion: { (result: TCHResult, conversation: TCHConversation?) in
+            if result.isSuccessful, let conversation = conversation {
+                self.debug("setAttributes => onSuccess")
+                conversation.setAttributes(conversationAttributes) { (result: TCHResult) in
+                    if result.isSuccessful {
+                        self.debug("setAttributes => onSuccess")
+                        completion(nil)
+                    } else {
+                        let errorMessage = String(describing: result.error)
+                        self.debug("setAttributes => onError: \(errorMessage)")
+                        completion(
+                            FlutterError(
+                                code: "ERROR",
+                                message: "setAttributes => Error setting attributes "
+                                    + "for conversation \(conversationSid): \(errorMessage)",
+                                details: nil))
+                    }
+                }
+            } else {
+                let errorMessage = String(describing: result.error)
+                self.debug("setAttributes => onError: \(errorMessage)")
+                completion(
+                    FlutterError(
+                        code: "ERROR",
+                        message: "setAttributes => Error retrieving conversation \(conversationSid): \(errorMessage)",
+                        details: nil))
+            }
+        })
+    }
+
     /// setFriendlyName
     func setFriendlyNameConversationSid(
         _ conversationSid: String?,
@@ -1478,6 +1557,7 @@ class ConversationMethods: NSObject, TWCONConversationApi {
         })
     }
 
+    /// setUniqueName
     func setUniqueNameConversationSid(_ conversationSid: String?, uniqueName: String?, completion: @escaping (FlutterError?) -> Void) {
         debug("setUniqueName => conversationSid: \(String(describing: conversationSid))")
         guard let client = SwiftTwilioConversationsPlugin.instance?.client else {

@@ -1,4 +1,5 @@
 import Flutter
+import SwiftyJSON
 import TwilioConversationsClient
 
 // swiftlint:disable type_body_length
@@ -123,27 +124,70 @@ public class Mapper {
         result.type = "NULL"
         result.data = nil
 
-        if let attr = attributes as TCHJsonAttributes? {
-            if attr.isNumber {
-                result.type = "NUMBER"
-                result.data = attr.number?.stringValue
-            } else if attr.isArray {
-                guard let jsonData = try? JSONSerialization.data(withJSONObject: attr.array as Any) else {
-                    return result
+            if let attr = attributes as TCHJsonAttributes? {
+                if attr.isNumber {
+                    result.type = "NUMBER"
+                    result.data = attr.number?.stringValue
+                } else if attr.isArray {
+                    let jsonData = JSON(attr.array)
+                    result.type = "ARRAY"
+                    if #available(iOS 13.0, *) {
+                        result.data = jsonData.rawString(options: .withoutEscapingSlashes)
+                    } else {
+                        // Fallback on earlier versions
+                        result.data = jsonData.rawString()
+                    }
+                } else if attr.isString {
+                    result.type = "STRING"
+                    result.data = attr.string
+                } else if attr.isDictionary {
+                    let jsonData = JSON(attr.dictionary as Any)
+                    result.type = "OBJECT"
+                    if #available(iOS 13.0, *) {
+                        result.data = jsonData.rawString(options: .withoutEscapingSlashes)
+                    } else {
+                        // Fallback on earlier versions
+                        result.data = jsonData.rawString()
+                    }
                 }
-                result.type = "ARRAY"
-                result.data = String(data: jsonData, encoding: String.Encoding.utf8)
-            } else if attr.isString {
-                result.type = "STRING"
-                result.data = attr.string
-            } else if attr.isDictionary {
-                guard let jsonData = try? JSONSerialization.data(withJSONObject: attr.dictionary as Any) else {
-                    return result
-                }
-                result.type = "OBJECT"
-                result.data = String(data: jsonData, encoding: String.Encoding.utf8)
             }
+        debug("attributesToPigeon => \(result.data)")
+        return result
+    }
+    
+    public static func pigeonToAttributes(_ attributesData: TWCONAttributesData) throws -> TCHJsonAttributes? {
+        var result: TCHJsonAttributes? = nil
+        do {
+            switch attributesData.type {
+                case "NULL":
+                    result = nil
+                case "NUMBER":
+                    let number = NumberFormatter().number(from: attributesData.data!)
+                    result = TCHJsonAttributes(number: number!)
+                case "ARRAY":
+                    guard let objectData = attributesData.data!.data(using: .utf8),
+                          let array = try JSON(data: objectData).arrayObject else {
+                        throw LocalizedConversionError.invalidData
+                    }
+
+                    result = TCHJsonAttributes(array: array)
+                case "STRING":
+                    result = TCHJsonAttributes(string: attributesData.data!)
+                case "OBJECT":
+                    guard let objectData = attributesData.data!.data(using: .utf8),
+                          let object = try JSON(data: objectData).dictionaryObject else {
+                        throw LocalizedConversionError.invalidData
+                    }
+
+                    result = TCHJsonAttributes(dictionary: object)
+                default:
+                    throw LocalizedConversionError.invalidType
+            }
+        } catch let error {
+            debug("pigeonToAttributes => ERROR \(error)")
+            return nil
         }
+        debug("pigeonToAttributes => \(result)")
         return result
     }
 
@@ -359,4 +403,9 @@ public class Mapper {
     private static func debug(_ msg: String) {
         SwiftTwilioConversationsPlugin.debug("\(TAG)::\(msg)")
     }
+}
+
+enum LocalizedConversionError: LocalizedError {
+    case invalidType
+    case invalidData
 }

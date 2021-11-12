@@ -586,6 +586,39 @@ class ConversationMethods : Api.ConversationApi {
         })
     }
 
+    override fun setAttributes(
+        conversationSid: String,
+        attributes: Api.AttributesData,
+        result: Api.Result<Void>
+    ) {
+        debug("setAttributes => conversationSid: $conversationSid")
+        val client = TwilioConversationsPlugin.client
+            ?: return result.error(RuntimeException("Client is not initialized"))
+        val conversationAttributes = Mapper.pigeonToAttributes(attributes)
+            ?: return result.error(RuntimeException("Could not convert $attributes to valid Attributes"))
+
+        client.getConversation(conversationSid, object : CallbackListener<Conversation> {
+            override fun onSuccess(conversation: Conversation) {
+                conversation.setAttributes(conversationAttributes, object: StatusListener {
+                    override fun onSuccess() {
+                        debug("setAttributes => onSuccess")
+                        result.success(null)
+                    }
+
+                    override fun onError(errorInfo: ErrorInfo) {
+                        debug("setAttributes => onError: $errorInfo")
+                        result.error(RuntimeException(errorInfo.message))
+                    }
+                })
+            }
+
+            override fun onError(errorInfo: ErrorInfo) {
+                debug("setAttributes => onError: $errorInfo")
+                result.error(RuntimeException(errorInfo.message))
+            }
+        })
+    }
+
     override fun removeMessage(
         conversationSid: String,
         messageIndex: Long,

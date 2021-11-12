@@ -9,7 +9,6 @@ enum AttributesType {
   ARRAY,
   STRING,
   NUMBER,
-  BOOLEAN,
   NULL,
 }
 
@@ -31,8 +30,6 @@ class Attributes {
   Attributes(this._type, this._json)
       : assert((_type == AttributesType.NULL) ||
             (_type != AttributesType.NULL && _json != null));
-  // : assert((_type == AttributesType.NULL && _json == null) ||
-  //       (_type != AttributesType.NULL && _json != null));
 
   factory Attributes.fromMap(Map<String, dynamic> map) {
     final type = EnumToString.fromString(AttributesType.values, map['type']) ??
@@ -46,16 +43,16 @@ class Attributes {
     if (type != AttributesType.OBJECT || json == null) {
       return null;
     } else {
-      return jsonDecode(json);
+      return Map<String, dynamic>.from(jsonDecode(json));
     }
   }
 
-  List<Map<String, dynamic>>? getJSONArray() {
+  List<dynamic>? getJSONArray() {
     final json = _json;
     if (type != AttributesType.ARRAY || json == null) {
       return null;
     } else {
-      return List<Map<String, dynamic>>.from(jsonDecode(json));
+      return List<dynamic>.from(jsonDecode(json));
     }
   }
 
@@ -73,14 +70,6 @@ class Attributes {
       return null;
     } else {
       return num.tryParse(json);
-    }
-  }
-
-  bool? getBoolean() {
-    if (type != AttributesType.BOOLEAN) {
-      return null;
-    } else {
-      return _json == 'true';
     }
   }
 }

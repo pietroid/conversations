@@ -32,13 +32,11 @@ object Mapper {
         return result
     }
 
-    fun pigeonToAttributes(pigeon: Api.AttributesData): Attributes {
-        var result = Attributes()
+    fun pigeonToAttributes(pigeon: Api.AttributesData): Attributes? {
+        var result: Attributes? = null
         when (pigeon.type) {
             "NULL" ->
                 result = Attributes()
-            "BOOLEAN" ->
-                result = Attributes(pigeon.data.toBoolean())
             "NUMBER" -> {
                 val number: Number =
                     if (pigeon.data.contains('.')) pigeon.data.toFloat()

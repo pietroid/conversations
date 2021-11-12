@@ -212,6 +212,9 @@ abstract class ConversationApi {
   bool removeMessage(String conversationSid, int messageIndex);
 
   @async
+  void setAttributes(String conversationSid, AttributesData attributes);
+
+  @async
   void setFriendlyName(String conversationSid, String friendlyName);
 
   @async

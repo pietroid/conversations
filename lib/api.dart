@@ -721,11 +721,11 @@ class _ConversationApiCodec extends StandardMessageCodec {
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
     } else 
-    if (value is AttributesData) {
+    if (value is MessageCount) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
     } else 
-    if (value is AttributesData) {
+    if (value is MessageCount) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
     } else 
@@ -745,11 +745,11 @@ class _ConversationApiCodec extends StandardMessageCodec {
       buffer.putUint8(134);
       writeValue(buffer, value.encode());
     } else 
-    if (value is MessageCount) {
+    if (value is MessageData) {
       buffer.putUint8(135);
       writeValue(buffer, value.encode());
     } else 
-    if (value is MessageCount) {
+    if (value is MessageData) {
       buffer.putUint8(136);
       writeValue(buffer, value.encode());
     } else 
@@ -765,32 +765,24 @@ class _ConversationApiCodec extends StandardMessageCodec {
       buffer.putUint8(139);
       writeValue(buffer, value.encode());
     } else 
-    if (value is MessageData) {
+    if (value is MessageMediaData) {
       buffer.putUint8(140);
       writeValue(buffer, value.encode());
     } else 
-    if (value is MessageData) {
+    if (value is MessageOptionsData) {
       buffer.putUint8(141);
       writeValue(buffer, value.encode());
     } else 
-    if (value is MessageMediaData) {
+    if (value is ParticipantData) {
       buffer.putUint8(142);
       writeValue(buffer, value.encode());
     } else 
-    if (value is MessageOptionsData) {
+    if (value is ParticipantData) {
       buffer.putUint8(143);
       writeValue(buffer, value.encode());
     } else 
     if (value is ParticipantData) {
       buffer.putUint8(144);
-      writeValue(buffer, value.encode());
-    } else 
-    if (value is ParticipantData) {
-      buffer.putUint8(145);
-      writeValue(buffer, value.encode());
-    } else 
-    if (value is ParticipantData) {
-      buffer.putUint8(146);
       writeValue(buffer, value.encode());
     } else 
 {
@@ -804,10 +796,10 @@ class _ConversationApiCodec extends StandardMessageCodec {
         return AttributesData.decode(readValue(buffer)!);
       
       case 129:       
-        return AttributesData.decode(readValue(buffer)!);
+        return MessageCount.decode(readValue(buffer)!);
       
       case 130:       
-        return AttributesData.decode(readValue(buffer)!);
+        return MessageCount.decode(readValue(buffer)!);
       
       case 131:       
         return MessageCount.decode(readValue(buffer)!);
@@ -822,10 +814,10 @@ class _ConversationApiCodec extends StandardMessageCodec {
         return MessageCount.decode(readValue(buffer)!);
       
       case 135:       
-        return MessageCount.decode(readValue(buffer)!);
+        return MessageData.decode(readValue(buffer)!);
       
       case 136:       
-        return MessageCount.decode(readValue(buffer)!);
+        return MessageData.decode(readValue(buffer)!);
       
       case 137:       
         return MessageData.decode(readValue(buffer)!);
@@ -837,24 +829,18 @@ class _ConversationApiCodec extends StandardMessageCodec {
         return MessageData.decode(readValue(buffer)!);
       
       case 140:       
-        return MessageData.decode(readValue(buffer)!);
-      
-      case 141:       
-        return MessageData.decode(readValue(buffer)!);
-      
-      case 142:       
         return MessageMediaData.decode(readValue(buffer)!);
       
-      case 143:       
+      case 141:       
         return MessageOptionsData.decode(readValue(buffer)!);
       
+      case 142:       
+        return ParticipantData.decode(readValue(buffer)!);
+      
+      case 143:       
+        return ParticipantData.decode(readValue(buffer)!);
+      
       case 144:       
-        return ParticipantData.decode(readValue(buffer)!);
-      
-      case 145:       
-        return ParticipantData.decode(readValue(buffer)!);
-      
-      case 146:       
         return ParticipantData.decode(readValue(buffer)!);
       
       default:      
@@ -1377,6 +1363,29 @@ class ConversationApi {
       );
     } else {
       return (replyMap['result'] as bool?)!;
+    }
+  }
+
+  Future<void> setAttributes(String arg_conversationSid, AttributesData arg_attributes) async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.ConversationApi.setAttributes', codec, binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap =
+        await channel.send(<Object>[arg_conversationSid, arg_attributes]) as Map<Object?, Object?>?;
+    if (replyMap == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+        details: null,
+      );
+    } else if (replyMap['error'] != null) {
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      throw PlatformException(
+        code: (error['code'] as String?)!,
+        message: error['message'] as String?,
+        details: error['details'],
+      );
+    } else {
+      return;
     }
   }
 
