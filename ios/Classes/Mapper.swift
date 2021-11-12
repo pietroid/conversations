@@ -190,6 +190,17 @@ public class Mapper {
         debug("pigeonToAttributes => \(result)")
         return result
     }
+    
+    public static func stringToNotificationLevel(_ level: String) -> TCHConversationNotificationLevel? {
+        switch (level) {
+            case "DEFAULT":
+                return TCHConversationNotificationLevel.default
+            case "MUTED":
+                return TCHConversationNotificationLevel.muted
+            default:
+                return nil
+        }
+    }
 
     public static func errorToPigeon(_ error: TCHError) -> TWCONErrorInfoData {
         let errorInfoData = TWCONErrorInfoData()

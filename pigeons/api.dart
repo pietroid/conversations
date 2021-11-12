@@ -218,6 +218,9 @@ abstract class ConversationApi {
   void setFriendlyName(String conversationSid, String friendlyName);
 
   @async
+  void setNotificationLevel(String conversationSid, String notificationLevel);
+
+  @async
   void setUniqueName(String conversationSid, String uniqueName);
 }
 

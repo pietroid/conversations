@@ -1223,6 +1223,7 @@ public class Api {
     void removeMessage(String conversationSid, Long messageIndex, Result<Boolean> result);
     void setAttributes(String conversationSid, AttributesData attributes, Result<Void> result);
     void setFriendlyName(String conversationSid, String friendlyName, Result<Void> result);
+    void setNotificationLevel(String conversationSid, String notificationLevel, Result<Void> result);
     void setUniqueName(String conversationSid, String uniqueName, Result<Void> result);
 
     /** The codec used by ConversationApi. */
@@ -2106,6 +2107,44 @@ public class Api {
               };
 
               api.setFriendlyName(conversationSidArg, friendlyNameArg, resultCallback);
+            }
+            catch (Error | RuntimeException exception) {
+              wrapped.put("error", wrapError(exception));
+              reply.reply(wrapped);
+            }
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.ConversationApi.setNotificationLevel", getCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            Map<String, Object> wrapped = new HashMap<>();
+            try {
+              ArrayList<Object> args = (ArrayList<Object>)message;
+              String conversationSidArg = (String)args.get(0);
+              if (conversationSidArg == null) {
+                throw new NullPointerException("conversationSidArg unexpectedly null.");
+              }
+              String notificationLevelArg = (String)args.get(1);
+              if (notificationLevelArg == null) {
+                throw new NullPointerException("notificationLevelArg unexpectedly null.");
+              }
+              Result<Void> resultCallback = new Result<Void>() {
+                public void success(Void result) {
+                  wrapped.put("result", null);
+                  reply.reply(wrapped);
+                }
+                public void error(Throwable error) {
+                  wrapped.put("error", wrapError(error));
+                  reply.reply(wrapped);
+                }
+              };
+
+              api.setNotificationLevel(conversationSidArg, notificationLevelArg, resultCallback);
             }
             catch (Error | RuntimeException exception) {
               wrapped.put("error", wrapError(exception));

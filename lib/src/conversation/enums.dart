@@ -61,3 +61,8 @@ enum ConversationUpdateReason {
   /// [Conversation] unique name changed.
   UNIQUE_NAME,
 }
+
+enum NotificationLevel {
+  DEFAULT,
+  MUTED,
+}

@@ -208,6 +208,14 @@ class MockConversationApi extends _i1.Mock implements _i2.ConversationApi {
           returnValue: Future<void>.value(),
           returnValueForMissingStub: Future<void>.value()) as _i3.Future<void>);
   @override
+  _i3.Future<void> setNotificationLevel(
+          String? arg_conversationSid, String? arg_notificationLevel) =>
+      (super.noSuchMethod(
+          Invocation.method(#setNotificationLevel,
+              [arg_conversationSid, arg_notificationLevel]),
+          returnValue: Future<void>.value(),
+          returnValueForMissingStub: Future<void>.value()) as _i3.Future<void>);
+  @override
   _i3.Future<void> setUniqueName(
           String? arg_conversationSid, String? arg_uniqueName) =>
       (super.noSuchMethod(

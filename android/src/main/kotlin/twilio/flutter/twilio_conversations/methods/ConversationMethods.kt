@@ -843,6 +843,44 @@ class ConversationMethods : Api.ConversationApi {
         }
     }
 
+    override fun setNotificationLevel(
+        conversationSid: String,
+        notificationLevel: String,
+        result: Api.Result<Void>
+    ) {
+        debug("setNotificationLevel => conversationSid: $conversationSid")
+        val client = TwilioConversationsPlugin.client
+            ?: return result.error(RuntimeException("Client is not initialized"))
+
+        val level = Mapper.stringToNotificationLevel(notificationLevel)
+            ?: return result.error(RuntimeException("Unknown notification level $notificationLevel."))
+
+        try {
+            client.getConversation(conversationSid, object : CallbackListener<Conversation> {
+                override fun onSuccess(conversation: Conversation) {
+                    conversation.setNotificationLevel(level, object : StatusListener {
+                        override fun onSuccess() {
+                            debug("setNotificationLevel => onSuccess")
+                            result.success(null)
+                        }
+
+                        override fun onError(errorInfo: ErrorInfo) {
+                            debug("setNotificationLevel => onError: $errorInfo")
+                            result.error(RuntimeException(errorInfo.message))
+                        }
+                    })
+                }
+
+                override fun onError(errorInfo: ErrorInfo) {
+                    debug("setNotificationLevel => onError: $errorInfo")
+                    result.error(RuntimeException(errorInfo.message))
+                }
+            })
+        } catch (err: IllegalArgumentException) {
+            return result.error(err)
+        }
+    }
+
     override fun setUniqueName(
         conversationSid: String,
         uniqueName: String,

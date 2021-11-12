@@ -1557,6 +1557,65 @@ class ConversationMethods: NSObject, TWCONConversationApi {
         })
     }
 
+    /// setNotificationLevel
+    func setNotificationLevelConversationSid(_ conversationSid: String?, notificationLevel: String?, completion: @escaping (FlutterError?) -> Void) {
+        debug("setNotificationLevel => conversationSid: \(String(describing: conversationSid)) notificationLevel: \(String(describing: notificationLevel))")
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(
+                FlutterError(
+                    code: "ERROR",
+                    message: "Client has not been initialized.",
+                    details: nil))
+        }
+
+        guard let conversationSid = conversationSid else {
+            return completion(
+                FlutterError(
+                    code: "MISSING_PARAMS",
+                    message: "Missing 'conversationSid' parameter",
+                    details: nil))
+        }
+
+        guard let notificationLevel = notificationLevel,
+              let level = Mapper.stringToNotificationLevel(notificationLevel) else {
+            return completion(
+                FlutterError(
+                    code: "MISSING_PARAMS",
+                    message: "Missing 'notificationLevel' parameter",
+                    details: nil))
+        }
+
+        client.conversation(
+            withSidOrUniqueName: conversationSid,
+            completion: { (result: TCHResult, conversation: TCHConversation?) in
+            if result.isSuccessful, let conversation = conversation {
+                conversation.setNotificationLevel(level) { (result: TCHResult) in
+                    if result.isSuccessful {
+                        self.debug("setNotificationLevel => onSuccess")
+                        completion(nil)
+                    } else {
+                        let errorMessage = String(describing: result.error)
+                        self.debug("setNotificationLevel => onError: \(errorMessage)")
+                        completion(
+                            FlutterError(
+                                code: "ERROR",
+                                message: "setNotificationLevel => Error setting notification level "
+                                    + "for conversation \(conversationSid): \(errorMessage)",
+                                details: nil))
+                    }
+                }
+            } else {
+                let errorMessage = String(describing: result.error)
+                self.debug("setNotificationLevel => onError: \(errorMessage)")
+                completion(
+                    FlutterError(
+                        code: "ERROR",
+                        message: "setNotificationLevel => Error retrieving conversation \(conversationSid): \(errorMessage)",
+                        details: nil))
+            }
+        })
+    }
+
     /// setUniqueName
     func setUniqueNameConversationSid(_ conversationSid: String?, uniqueName: String?, completion: @escaping (FlutterError?) -> Void) {
         debug("setUniqueName => conversationSid: \(String(describing: conversationSid))")

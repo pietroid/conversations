@@ -177,6 +177,17 @@ object Mapper {
         return errorData
     }
 
+    fun stringToNotificationLevel(level: String): Conversation.NotificationLevel? {
+        var result: Conversation.NotificationLevel? = null
+        when (level) {
+            "DEFAULT" ->
+                result = Conversation.NotificationLevel.DEFAULT
+            "MUTED" ->
+                result = Conversation.NotificationLevel.MUTED
+        }
+        return result
+    }
+
     fun debug(message: String) {
         TwilioConversationsPlugin.debug("$TAG::$message")
     }

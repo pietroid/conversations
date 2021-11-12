@@ -1469,6 +1469,27 @@ void TWCONConversationApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObj
   {
     FlutterBasicMessageChannel *channel =
       [FlutterBasicMessageChannel
+        messageChannelWithName:@"dev.flutter.pigeon.ConversationApi.setNotificationLevel"
+        binaryMessenger:binaryMessenger
+        codec:TWCONConversationApiGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(setNotificationLevelConversationSid:notificationLevel:completion:)], @"TWCONConversationApi api (%@) doesn't respond to @selector(setNotificationLevelConversationSid:notificationLevel:completion:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        NSString *arg_conversationSid = args[0];
+        NSString *arg_notificationLevel = args[1];
+        [api setNotificationLevelConversationSid:arg_conversationSid notificationLevel:arg_notificationLevel completion:^(FlutterError *_Nullable error) {
+          callback(wrapResult(nil, error));
+        }];
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [FlutterBasicMessageChannel
         messageChannelWithName:@"dev.flutter.pigeon.ConversationApi.setUniqueName"
         binaryMessenger:binaryMessenger
         codec:TWCONConversationApiGetCodec()];

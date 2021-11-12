@@ -496,6 +496,16 @@ class Conversation {
     }
   }
 
+  Future<void> setNotificationLevel(NotificationLevel level) async {
+    try {
+      await TwilioConversations()
+          .conversationApi
+          .setNotificationLevel(sid, EnumToString.convertToString(level));
+    } on PlatformException catch (err) {
+      throw TwilioConversations.convertException(err);
+    }
+  }
+
   Future<void> setUniqueName(String uniqueName) async {
     try {
       await TwilioConversations()
