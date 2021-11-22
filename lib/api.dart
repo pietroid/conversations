@@ -1251,6 +1251,29 @@ class ConversationApi {
     }
   }
 
+  Future<int> getParticipantsCount(String arg_conversationSid) async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.ConversationApi.getParticipantsCount', codec, binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap =
+        await channel.send(<Object>[arg_conversationSid]) as Map<Object?, Object?>?;
+    if (replyMap == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+        details: null,
+      );
+    } else if (replyMap['error'] != null) {
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      throw PlatformException(
+        code: (error['code'] as String?)!,
+        message: error['message'] as String?,
+        details: error['details'],
+      );
+    } else {
+      return (replyMap['result'] as int?)!;
+    }
+  }
+
   Future<List<MessageData?>> getMessagesAfter(String arg_conversationSid, int arg_index, int arg_count) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.ConversationApi.getMessagesAfter', codec, binaryMessenger: _binaryMessenger);

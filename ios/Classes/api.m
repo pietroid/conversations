@@ -1320,6 +1320,26 @@ void TWCONConversationApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObj
   {
     FlutterBasicMessageChannel *channel =
       [FlutterBasicMessageChannel
+        messageChannelWithName:@"dev.flutter.pigeon.ConversationApi.getParticipantsCount"
+        binaryMessenger:binaryMessenger
+        codec:TWCONConversationApiGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(getParticipantsCountConversationSid:completion:)], @"TWCONConversationApi api (%@) doesn't respond to @selector(getParticipantsCountConversationSid:completion:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        NSString *arg_conversationSid = args[0];
+        [api getParticipantsCountConversationSid:arg_conversationSid completion:^(NSNumber *_Nullable output, FlutterError *_Nullable error) {
+          callback(wrapResult(output, error));
+        }];
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [FlutterBasicMessageChannel
         messageChannelWithName:@"dev.flutter.pigeon.ConversationApi.getMessagesAfter"
         binaryMessenger:binaryMessenger
         codec:TWCONConversationApiGetCodec()];

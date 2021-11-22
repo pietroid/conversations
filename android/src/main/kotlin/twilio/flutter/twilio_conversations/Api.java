@@ -1216,6 +1216,7 @@ public class Api {
     void setLastReadMessageIndex(String conversationSid, Long lastReadMessageIndex, Result<MessageCount> result);
     void setAllMessagesRead(String conversationSid, Result<MessageCount> result);
     void setAllMessagesUnread(String conversationSid, Result<MessageCount> result);
+    void getParticipantsCount(String conversationSid, Result<Long> result);
     void getMessagesAfter(String conversationSid, Long index, Long count, Result<List<MessageData>> result);
     void getMessagesBefore(String conversationSid, Long index, Long count, Result<List<MessageData>> result);
     void getMessageByIndex(String conversationSid, Long messageIndex, Result<MessageData> result);
@@ -1833,6 +1834,40 @@ public class Api {
               };
 
               api.setAllMessagesUnread(conversationSidArg, resultCallback);
+            }
+            catch (Error | RuntimeException exception) {
+              wrapped.put("error", wrapError(exception));
+              reply.reply(wrapped);
+            }
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.ConversationApi.getParticipantsCount", getCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            Map<String, Object> wrapped = new HashMap<>();
+            try {
+              ArrayList<Object> args = (ArrayList<Object>)message;
+              String conversationSidArg = (String)args.get(0);
+              if (conversationSidArg == null) {
+                throw new NullPointerException("conversationSidArg unexpectedly null.");
+              }
+              Result<Long> resultCallback = new Result<Long>() {
+                public void success(Long result) {
+                  wrapped.put("result", result);
+                  reply.reply(wrapped);
+                }
+                public void error(Throwable error) {
+                  wrapped.put("error", wrapError(error));
+                  reply.reply(wrapped);
+                }
+              };
+
+              api.getParticipantsCount(conversationSidArg, resultCallback);
             }
             catch (Error | RuntimeException exception) {
               wrapped.put("error", wrapError(exception));

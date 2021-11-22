@@ -23,6 +23,7 @@ class MessagesNotifier extends ChangeNotifier {
   ConversationClient client;
   List<Message> messages = [];
   List<Participant>? participants;
+  var participantCount = 0;
   var startingIndex = 0;
   var currentlyTyping = <String>{};
   final subscriptions = <StreamSubscription>[];
@@ -80,6 +81,7 @@ class MessagesNotifier extends ChangeNotifier {
 
   Future<void> getParticipants() async {
     participants = await conversation.getParticipantsList();
+    participantCount = await conversation.getParticipantsCount();
     if (participants?.isNotEmpty ?? false) {
       final user = await participants?.first.getUser();
       print('MessagesNotifier::getParticipants => gotUser: $user');

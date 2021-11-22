@@ -195,6 +195,9 @@ abstract class ConversationApi {
   MessageCount setAllMessagesUnread(String conversationSid);
 
   @async
+  int getParticipantsCount(String conversationSid);
+
+  @async
   List<MessageData> getMessagesAfter(
       String conversationSid, int index, int count);
 

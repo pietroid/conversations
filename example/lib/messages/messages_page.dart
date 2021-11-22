@@ -387,6 +387,8 @@ class _MessagesPageState extends State<MessagesPage> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
+                          Text(
+                              "Participants: ${messagesNotifier.participantCount}"),
                           Expanded(
                             child: ListView.builder(
                               itemCount: participants.length,

@@ -253,7 +253,17 @@ class Conversation {
     return result.count;
   }
 
-  //TODO: implement getParticipantsCount
+  /// From the official (Android) docs:
+  /// Fetch the number of participants on this conversation.
+  /// Available even if the conversation is not yet synchronized.
+  /// This method is semi-realtime. This means that this data will be eventually correct, but will also possibly be incorrect for a few seconds. The Conversations system does not provide real time events for counter values changes.
+  /// So this is quite useful for any UI badges, but is not recommended to build any core application logic based on these counters being accurate in real time. This function performs an async call to service to obtain up-to-date message count.
+  /// The retrieved value is then cached for 5 seconds so there is no reason to call this function more often than once in 5 seconds.
+  Future<int> getParticipantsCount() async {
+    final result =
+        await TwilioConversations().conversationApi.getParticipantsCount(sid);
+    return result;
+  }
   //#endregion
 
   //#region Actions

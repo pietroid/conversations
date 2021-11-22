@@ -1041,6 +1041,63 @@ class ConversationMethods: NSObject, TWCONConversationApi {
             }
         })
     }
+    
+    /// getParticipantsCount
+    func getParticipantsCountConversationSid(_ conversationSid: String?, completion: @escaping (NSNumber?, FlutterError?) -> Void) {
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(
+                nil,
+                FlutterError(
+                    code: "ERROR",
+                    message: "Client has not been initialized.",
+                    details: nil))
+        }
+
+        guard let conversationSid = conversationSid else {
+            return completion(
+                nil,
+                FlutterError(
+                    code: "MISSING_PARAMS",
+                    message: "Missing 'conversationSid' parameter",
+                    details: nil))
+        }
+
+        debug("getParticipantsCount => conversationSid: \(conversationSid)")
+
+        client.conversation(
+            withSidOrUniqueName: conversationSid,
+            completion: { (result: TCHResult, conversation: TCHConversation?) in
+            if result.isSuccessful, let conversation = conversation {
+                conversation.getParticipantsCount(completion: { (result: TCHResult, count: UInt) in
+                    if result.isSuccessful {
+                        self.debug("getParticipantsCount => onSuccess")
+                        let result = NSNumber(value: count)
+                        completion(result, nil)
+                    } else {
+                        let errorMessage = String(describing: result.error)
+                        self.debug("getParticipantsCount => onError: \(errorMessage)")
+                        completion(
+                            nil,
+                            FlutterError(
+                                code: "ERROR",
+                                message: "getParticipantsCount => Error getting message count "
+                                    + "for conversation \(conversationSid): \(errorMessage)",
+                                details: nil))
+                    }
+                })
+            } else {
+                let errorMessage = String(describing: result.error)
+                self.debug("getParticipantsCount => onError: \(errorMessage)")
+                completion(
+                    nil,
+                    FlutterError(
+                        code: "ERROR",
+                        message: "getParticipantsCount => Error getting conversation "
+                            + "\(conversationSid): \(errorMessage)",
+                        details: nil))
+            }
+        })
+    }
 
     /// removeMessage
     func removeMessageConversationSid(

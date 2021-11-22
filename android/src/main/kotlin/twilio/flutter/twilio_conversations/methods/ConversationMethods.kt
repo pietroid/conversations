@@ -586,6 +586,38 @@ class ConversationMethods : Api.ConversationApi {
         })
     }
 
+    override fun getParticipantsCount(conversationSid: String, result: Api.Result<Long>) {
+        debug("getParticipantsCount => conversationSid: $conversationSid")
+        val client = TwilioConversationsPlugin.client
+            ?: return result.error(RuntimeException("Client is not initialized"))
+
+        try {
+            client.getConversation(conversationSid, object : CallbackListener<Conversation> {
+                override fun onSuccess(conversation: Conversation) {
+                    debug("getParticipantsCount => onSuccess")
+                    conversation.getParticipantsCount(object : CallbackListener<Long> {
+                        override fun onSuccess(messageCount: Long) {
+                            debug("getParticipantsCount => onSuccess: $messageCount")
+                            result.success(messageCount)
+                        }
+
+                        override fun onError(errorInfo: ErrorInfo) {
+                            debug("getParticipantsCount => onError: $errorInfo")
+                            result.error(RuntimeException(errorInfo.message))
+                        }
+                    })
+                }
+
+                override fun onError(errorInfo: ErrorInfo) {
+                    debug("getParticipantsCount => onError: $errorInfo")
+                    result.error(RuntimeException(errorInfo.message))
+                }
+            })
+        } catch (err: IllegalArgumentException) {
+            return result.error(err)
+        }
+    }
+
     override fun setAttributes(
         conversationSid: String,
         attributes: Api.AttributesData,
