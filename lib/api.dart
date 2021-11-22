@@ -41,8 +41,7 @@ class PropertiesData {
 
   static PropertiesData decode(Object message) {
     final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
-    return PropertiesData()
-      ..region = pigeonMap['region'] as String?;
+    return PropertiesData()..region = pigeonMap['region'] as String?;
   }
 }
 
@@ -127,8 +126,7 @@ class TokenData {
 
   static TokenData decode(Object message) {
     final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
-    return TokenData()
-      ..token = pigeonMap['token'] as String?;
+    return TokenData()..token = pigeonMap['token'] as String?;
   }
 }
 
@@ -344,8 +342,7 @@ class MessageCount {
 
   static MessageCount decode(Object message) {
     final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
-    return MessageCount()
-      ..count = pigeonMap['count'] as int?;
+    return MessageCount()..count = pigeonMap['count'] as int?;
   }
 }
 
@@ -355,7 +352,8 @@ class ConversationUpdatedData {
 
   Object encode() {
     final Map<Object?, Object?> pigeonMap = <Object?, Object?>{};
-    pigeonMap['conversation'] = conversation == null ? null : conversation!.encode();
+    pigeonMap['conversation'] =
+        conversation == null ? null : conversation!.encode();
     pigeonMap['reason'] = reason;
     return pigeonMap;
   }
@@ -399,27 +397,25 @@ class _PluginApiCodec extends StandardMessageCodec {
     if (value is ConversationClientData) {
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is PropertiesData) {
+    } else if (value is PropertiesData) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
-    } else 
-{
+    } else {
       super.writeValue(buffer, value);
     }
   }
+
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 128:       
+      case 128:
         return ConversationClientData.decode(readValue(buffer)!);
-      
-      case 129:       
+
+      case 129:
         return PropertiesData.decode(readValue(buffer)!);
-      
-      default:      
+
+      default:
         return super.readValueOfType(type, buffer);
-      
     }
   }
 }
@@ -428,7 +424,8 @@ class PluginApi {
   /// Constructor for [PluginApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  PluginApi({BinaryMessenger? binaryMessenger}) : _binaryMessenger = binaryMessenger;
+  PluginApi({BinaryMessenger? binaryMessenger})
+      : _binaryMessenger = binaryMessenger;
 
   final BinaryMessenger? _binaryMessenger;
 
@@ -436,9 +433,11 @@ class PluginApi {
 
   Future<void> debug(bool arg_enableNative, bool arg_enableSdk) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.PluginApi.debug', codec, binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.PluginApi.debug', codec,
+        binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_enableNative, arg_enableSdk]) as Map<Object?, Object?>?;
+        await channel.send(<Object>[arg_enableNative, arg_enableSdk])
+            as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -446,7 +445,8 @@ class PluginApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -457,11 +457,13 @@ class PluginApi {
     }
   }
 
-  Future<ConversationClientData> create(String arg_jwtToken, PropertiesData arg_properties) async {
+  Future<ConversationClientData> create(
+      String arg_jwtToken, PropertiesData arg_properties) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.PluginApi.create', codec, binaryMessenger: _binaryMessenger);
-    final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_jwtToken, arg_properties]) as Map<Object?, Object?>?;
+        'dev.flutter.pigeon.PluginApi.create', codec,
+        binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap = await channel
+        .send(<Object>[arg_jwtToken, arg_properties]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -469,7 +471,8 @@ class PluginApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -488,55 +491,49 @@ class _ConversationClientApiCodec extends StandardMessageCodec {
     if (value is AttributesData) {
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is ConversationData) {
+    } else if (value is ConversationData) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is ConversationData) {
+    } else if (value is ConversationData) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is ConversationData) {
+    } else if (value is ConversationData) {
       buffer.putUint8(131);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is TokenData) {
+    } else if (value is TokenData) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is TokenData) {
+    } else if (value is TokenData) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
-    } else 
-{
+    } else {
       super.writeValue(buffer, value);
     }
   }
+
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 128:       
+      case 128:
         return AttributesData.decode(readValue(buffer)!);
-      
-      case 129:       
+
+      case 129:
         return ConversationData.decode(readValue(buffer)!);
-      
-      case 130:       
+
+      case 130:
         return ConversationData.decode(readValue(buffer)!);
-      
-      case 131:       
+
+      case 131:
         return ConversationData.decode(readValue(buffer)!);
-      
-      case 132:       
+
+      case 132:
         return TokenData.decode(readValue(buffer)!);
-      
-      case 133:       
+
+      case 133:
         return TokenData.decode(readValue(buffer)!);
-      
-      default:      
+
+      default:
         return super.readValueOfType(type, buffer);
-      
     }
   }
 }
@@ -545,7 +542,8 @@ class ConversationClientApi {
   /// Constructor for [ConversationClientApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  ConversationClientApi({BinaryMessenger? binaryMessenger}) : _binaryMessenger = binaryMessenger;
+  ConversationClientApi({BinaryMessenger? binaryMessenger})
+      : _binaryMessenger = binaryMessenger;
 
   final BinaryMessenger? _binaryMessenger;
 
@@ -553,7 +551,8 @@ class ConversationClientApi {
 
   Future<void> updateToken(String arg_token) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationClientApi.updateToken', codec, binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.ConversationClientApi.updateToken', codec,
+        binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
         await channel.send(<Object>[arg_token]) as Map<Object?, Object?>?;
     if (replyMap == null) {
@@ -563,7 +562,8 @@ class ConversationClientApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -576,7 +576,8 @@ class ConversationClientApi {
 
   Future<void> shutdown() async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationClientApi.shutdown', codec, binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.ConversationClientApi.shutdown', codec,
+        binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
         await channel.send(null) as Map<Object?, Object?>?;
     if (replyMap == null) {
@@ -586,7 +587,8 @@ class ConversationClientApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -599,9 +601,10 @@ class ConversationClientApi {
 
   Future<ConversationData> createConversation(String arg_friendlyName) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationClientApi.createConversation', codec, binaryMessenger: _binaryMessenger);
-    final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_friendlyName]) as Map<Object?, Object?>?;
+        'dev.flutter.pigeon.ConversationClientApi.createConversation', codec,
+        binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap = await channel
+        .send(<Object>[arg_friendlyName]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -609,7 +612,8 @@ class ConversationClientApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -622,7 +626,8 @@ class ConversationClientApi {
 
   Future<List<ConversationData?>> getMyConversations() async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationClientApi.getMyConversations', codec, binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.ConversationClientApi.getMyConversations', codec,
+        binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
         await channel.send(null) as Map<Object?, Object?>?;
     if (replyMap == null) {
@@ -632,7 +637,8 @@ class ConversationClientApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -643,11 +649,14 @@ class ConversationClientApi {
     }
   }
 
-  Future<ConversationData> getConversation(String arg_conversationSidOrUniqueName) async {
+  Future<ConversationData> getConversation(
+      String arg_conversationSidOrUniqueName) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationClientApi.getConversation', codec, binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.ConversationClientApi.getConversation', codec,
+        binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSidOrUniqueName]) as Map<Object?, Object?>?;
+        await channel.send(<Object>[arg_conversationSidOrUniqueName])
+            as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -655,7 +664,8 @@ class ConversationClientApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -668,7 +678,9 @@ class ConversationClientApi {
 
   Future<void> registerForNotification(TokenData arg_tokenData) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationClientApi.registerForNotification', codec, binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.ConversationClientApi.registerForNotification',
+        codec,
+        binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
         await channel.send(<Object>[arg_tokenData]) as Map<Object?, Object?>?;
     if (replyMap == null) {
@@ -678,7 +690,8 @@ class ConversationClientApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -691,7 +704,9 @@ class ConversationClientApi {
 
   Future<void> unregisterForNotification(TokenData arg_tokenData) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationClientApi.unregisterForNotification', codec, binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.ConversationClientApi.unregisterForNotification',
+        codec,
+        binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
         await channel.send(<Object>[arg_tokenData]) as Map<Object?, Object?>?;
     if (replyMap == null) {
@@ -701,7 +716,8 @@ class ConversationClientApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -720,132 +736,115 @@ class _ConversationApiCodec extends StandardMessageCodec {
     if (value is AttributesData) {
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is MessageCount) {
+    } else if (value is MessageCount) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is MessageCount) {
+    } else if (value is MessageCount) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is MessageCount) {
+    } else if (value is MessageCount) {
       buffer.putUint8(131);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is MessageCount) {
+    } else if (value is MessageCount) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is MessageCount) {
+    } else if (value is MessageCount) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is MessageCount) {
+    } else if (value is MessageCount) {
       buffer.putUint8(134);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is MessageData) {
+    } else if (value is MessageData) {
       buffer.putUint8(135);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is MessageData) {
+    } else if (value is MessageData) {
       buffer.putUint8(136);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is MessageData) {
+    } else if (value is MessageData) {
       buffer.putUint8(137);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is MessageData) {
+    } else if (value is MessageData) {
       buffer.putUint8(138);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is MessageData) {
+    } else if (value is MessageData) {
       buffer.putUint8(139);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is MessageMediaData) {
+    } else if (value is MessageMediaData) {
       buffer.putUint8(140);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is MessageOptionsData) {
+    } else if (value is MessageOptionsData) {
       buffer.putUint8(141);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is ParticipantData) {
+    } else if (value is ParticipantData) {
       buffer.putUint8(142);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is ParticipantData) {
+    } else if (value is ParticipantData) {
       buffer.putUint8(143);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is ParticipantData) {
+    } else if (value is ParticipantData) {
       buffer.putUint8(144);
       writeValue(buffer, value.encode());
-    } else 
-{
+    } else {
       super.writeValue(buffer, value);
     }
   }
+
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 128:       
+      case 128:
         return AttributesData.decode(readValue(buffer)!);
-      
-      case 129:       
+
+      case 129:
         return MessageCount.decode(readValue(buffer)!);
-      
-      case 130:       
+
+      case 130:
         return MessageCount.decode(readValue(buffer)!);
-      
-      case 131:       
+
+      case 131:
         return MessageCount.decode(readValue(buffer)!);
-      
-      case 132:       
+
+      case 132:
         return MessageCount.decode(readValue(buffer)!);
-      
-      case 133:       
+
+      case 133:
         return MessageCount.decode(readValue(buffer)!);
-      
-      case 134:       
+
+      case 134:
         return MessageCount.decode(readValue(buffer)!);
-      
-      case 135:       
+
+      case 135:
         return MessageData.decode(readValue(buffer)!);
-      
-      case 136:       
+
+      case 136:
         return MessageData.decode(readValue(buffer)!);
-      
-      case 137:       
+
+      case 137:
         return MessageData.decode(readValue(buffer)!);
-      
-      case 138:       
+
+      case 138:
         return MessageData.decode(readValue(buffer)!);
-      
-      case 139:       
+
+      case 139:
         return MessageData.decode(readValue(buffer)!);
-      
-      case 140:       
+
+      case 140:
         return MessageMediaData.decode(readValue(buffer)!);
-      
-      case 141:       
+
+      case 141:
         return MessageOptionsData.decode(readValue(buffer)!);
-      
-      case 142:       
+
+      case 142:
         return ParticipantData.decode(readValue(buffer)!);
-      
-      case 143:       
+
+      case 143:
         return ParticipantData.decode(readValue(buffer)!);
-      
-      case 144:       
+
+      case 144:
         return ParticipantData.decode(readValue(buffer)!);
-      
-      default:      
+
+      default:
         return super.readValueOfType(type, buffer);
-      
     }
   }
 }
@@ -854,7 +853,8 @@ class ConversationApi {
   /// Constructor for [ConversationApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  ConversationApi({BinaryMessenger? binaryMessenger}) : _binaryMessenger = binaryMessenger;
+  ConversationApi({BinaryMessenger? binaryMessenger})
+      : _binaryMessenger = binaryMessenger;
 
   final BinaryMessenger? _binaryMessenger;
 
@@ -862,9 +862,10 @@ class ConversationApi {
 
   Future<bool> join(String arg_conversationSid) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationApi.join', codec, binaryMessenger: _binaryMessenger);
-    final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid]) as Map<Object?, Object?>?;
+        'dev.flutter.pigeon.ConversationApi.join', codec,
+        binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap = await channel
+        .send(<Object>[arg_conversationSid]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -872,7 +873,8 @@ class ConversationApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -885,9 +887,10 @@ class ConversationApi {
 
   Future<bool> leave(String arg_conversationSid) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationApi.leave', codec, binaryMessenger: _binaryMessenger);
-    final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid]) as Map<Object?, Object?>?;
+        'dev.flutter.pigeon.ConversationApi.leave', codec,
+        binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap = await channel
+        .send(<Object>[arg_conversationSid]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -895,7 +898,8 @@ class ConversationApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -908,9 +912,10 @@ class ConversationApi {
 
   Future<void> destroy(String arg_conversationSid) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationApi.destroy', codec, binaryMessenger: _binaryMessenger);
-    final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid]) as Map<Object?, Object?>?;
+        'dev.flutter.pigeon.ConversationApi.destroy', codec,
+        binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap = await channel
+        .send(<Object>[arg_conversationSid]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -918,7 +923,8 @@ class ConversationApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -931,9 +937,10 @@ class ConversationApi {
 
   Future<void> typing(String arg_conversationSid) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationApi.typing', codec, binaryMessenger: _binaryMessenger);
-    final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid]) as Map<Object?, Object?>?;
+        'dev.flutter.pigeon.ConversationApi.typing', codec,
+        binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap = await channel
+        .send(<Object>[arg_conversationSid]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -941,7 +948,8 @@ class ConversationApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -952,11 +960,14 @@ class ConversationApi {
     }
   }
 
-  Future<MessageData> sendMessage(String arg_conversationSid, MessageOptionsData arg_options) async {
+  Future<MessageData> sendMessage(
+      String arg_conversationSid, MessageOptionsData arg_options) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationApi.sendMessage', codec, binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.ConversationApi.sendMessage', codec,
+        binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid, arg_options]) as Map<Object?, Object?>?;
+        await channel.send(<Object>[arg_conversationSid, arg_options])
+            as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -964,7 +975,8 @@ class ConversationApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -975,11 +987,14 @@ class ConversationApi {
     }
   }
 
-  Future<bool> addParticipantByIdentity(String arg_conversationSid, String arg_identity) async {
+  Future<bool> addParticipantByIdentity(
+      String arg_conversationSid, String arg_identity) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationApi.addParticipantByIdentity', codec, binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.ConversationApi.addParticipantByIdentity', codec,
+        binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid, arg_identity]) as Map<Object?, Object?>?;
+        await channel.send(<Object>[arg_conversationSid, arg_identity])
+            as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -987,7 +1002,8 @@ class ConversationApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -998,11 +1014,14 @@ class ConversationApi {
     }
   }
 
-  Future<bool> removeParticipant(String arg_conversationSid, String arg_participantSid) async {
+  Future<bool> removeParticipant(
+      String arg_conversationSid, String arg_participantSid) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationApi.removeParticipant', codec, binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.ConversationApi.removeParticipant', codec,
+        binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid, arg_participantSid]) as Map<Object?, Object?>?;
+        await channel.send(<Object>[arg_conversationSid, arg_participantSid])
+            as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -1010,7 +1029,8 @@ class ConversationApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -1021,11 +1041,14 @@ class ConversationApi {
     }
   }
 
-  Future<bool> removeParticipantByIdentity(String arg_conversationSid, String arg_identity) async {
+  Future<bool> removeParticipantByIdentity(
+      String arg_conversationSid, String arg_identity) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationApi.removeParticipantByIdentity', codec, binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.ConversationApi.removeParticipantByIdentity', codec,
+        binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid, arg_identity]) as Map<Object?, Object?>?;
+        await channel.send(<Object>[arg_conversationSid, arg_identity])
+            as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -1033,7 +1056,8 @@ class ConversationApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -1044,11 +1068,14 @@ class ConversationApi {
     }
   }
 
-  Future<ParticipantData> getParticipantByIdentity(String arg_conversationSid, String arg_identity) async {
+  Future<ParticipantData> getParticipantByIdentity(
+      String arg_conversationSid, String arg_identity) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationApi.getParticipantByIdentity', codec, binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.ConversationApi.getParticipantByIdentity', codec,
+        binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid, arg_identity]) as Map<Object?, Object?>?;
+        await channel.send(<Object>[arg_conversationSid, arg_identity])
+            as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -1056,7 +1083,8 @@ class ConversationApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -1067,11 +1095,14 @@ class ConversationApi {
     }
   }
 
-  Future<ParticipantData> getParticipantBySid(String arg_conversationSid, String arg_participantSid) async {
+  Future<ParticipantData> getParticipantBySid(
+      String arg_conversationSid, String arg_participantSid) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationApi.getParticipantBySid', codec, binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.ConversationApi.getParticipantBySid', codec,
+        binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid, arg_participantSid]) as Map<Object?, Object?>?;
+        await channel.send(<Object>[arg_conversationSid, arg_participantSid])
+            as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -1079,7 +1110,8 @@ class ConversationApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -1090,11 +1122,13 @@ class ConversationApi {
     }
   }
 
-  Future<List<ParticipantData?>> getParticipantsList(String arg_conversationSid) async {
+  Future<List<ParticipantData?>> getParticipantsList(
+      String arg_conversationSid) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationApi.getParticipantsList', codec, binaryMessenger: _binaryMessenger);
-    final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid]) as Map<Object?, Object?>?;
+        'dev.flutter.pigeon.ConversationApi.getParticipantsList', codec,
+        binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap = await channel
+        .send(<Object>[arg_conversationSid]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -1102,7 +1136,8 @@ class ConversationApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -1115,9 +1150,10 @@ class ConversationApi {
 
   Future<MessageCount> getMessagesCount(String arg_conversationSid) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationApi.getMessagesCount', codec, binaryMessenger: _binaryMessenger);
-    final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid]) as Map<Object?, Object?>?;
+        'dev.flutter.pigeon.ConversationApi.getMessagesCount', codec,
+        binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap = await channel
+        .send(<Object>[arg_conversationSid]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -1125,7 +1161,8 @@ class ConversationApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -1136,11 +1173,13 @@ class ConversationApi {
     }
   }
 
-  Future<MessageCount> getUnreadMessagesCount(String arg_conversationSid) async {
+  Future<MessageCount> getUnreadMessagesCount(
+      String arg_conversationSid) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationApi.getUnreadMessagesCount', codec, binaryMessenger: _binaryMessenger);
-    final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid]) as Map<Object?, Object?>?;
+        'dev.flutter.pigeon.ConversationApi.getUnreadMessagesCount', codec,
+        binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap = await channel
+        .send(<Object>[arg_conversationSid]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -1148,7 +1187,8 @@ class ConversationApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -1159,11 +1199,14 @@ class ConversationApi {
     }
   }
 
-  Future<MessageCount> advanceLastReadMessageIndex(String arg_conversationSid, int arg_lastReadMessageIndex) async {
+  Future<MessageCount> advanceLastReadMessageIndex(
+      String arg_conversationSid, int arg_lastReadMessageIndex) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationApi.advanceLastReadMessageIndex', codec, binaryMessenger: _binaryMessenger);
-    final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid, arg_lastReadMessageIndex]) as Map<Object?, Object?>?;
+        'dev.flutter.pigeon.ConversationApi.advanceLastReadMessageIndex', codec,
+        binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap = await channel
+            .send(<Object>[arg_conversationSid, arg_lastReadMessageIndex])
+        as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -1171,7 +1214,8 @@ class ConversationApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -1182,11 +1226,14 @@ class ConversationApi {
     }
   }
 
-  Future<MessageCount> setLastReadMessageIndex(String arg_conversationSid, int arg_lastReadMessageIndex) async {
+  Future<MessageCount> setLastReadMessageIndex(
+      String arg_conversationSid, int arg_lastReadMessageIndex) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationApi.setLastReadMessageIndex', codec, binaryMessenger: _binaryMessenger);
-    final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid, arg_lastReadMessageIndex]) as Map<Object?, Object?>?;
+        'dev.flutter.pigeon.ConversationApi.setLastReadMessageIndex', codec,
+        binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap = await channel
+            .send(<Object>[arg_conversationSid, arg_lastReadMessageIndex])
+        as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -1194,7 +1241,8 @@ class ConversationApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -1207,9 +1255,10 @@ class ConversationApi {
 
   Future<MessageCount> setAllMessagesRead(String arg_conversationSid) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationApi.setAllMessagesRead', codec, binaryMessenger: _binaryMessenger);
-    final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid]) as Map<Object?, Object?>?;
+        'dev.flutter.pigeon.ConversationApi.setAllMessagesRead', codec,
+        binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap = await channel
+        .send(<Object>[arg_conversationSid]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -1217,7 +1266,8 @@ class ConversationApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -1230,9 +1280,10 @@ class ConversationApi {
 
   Future<MessageCount> setAllMessagesUnread(String arg_conversationSid) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationApi.setAllMessagesUnread', codec, binaryMessenger: _binaryMessenger);
-    final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid]) as Map<Object?, Object?>?;
+        'dev.flutter.pigeon.ConversationApi.setAllMessagesUnread', codec,
+        binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap = await channel
+        .send(<Object>[arg_conversationSid]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -1240,7 +1291,8 @@ class ConversationApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -1253,9 +1305,10 @@ class ConversationApi {
 
   Future<int> getParticipantsCount(String arg_conversationSid) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationApi.getParticipantsCount', codec, binaryMessenger: _binaryMessenger);
-    final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid]) as Map<Object?, Object?>?;
+        'dev.flutter.pigeon.ConversationApi.getParticipantsCount', codec,
+        binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap = await channel
+        .send(<Object>[arg_conversationSid]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -1263,7 +1316,8 @@ class ConversationApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -1274,11 +1328,14 @@ class ConversationApi {
     }
   }
 
-  Future<List<MessageData?>> getMessagesAfter(String arg_conversationSid, int arg_index, int arg_count) async {
+  Future<List<MessageData?>> getMessagesAfter(
+      String arg_conversationSid, int arg_index, int arg_count) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationApi.getMessagesAfter', codec, binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.ConversationApi.getMessagesAfter', codec,
+        binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid, arg_index, arg_count]) as Map<Object?, Object?>?;
+        await channel.send(<Object>[arg_conversationSid, arg_index, arg_count])
+            as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -1286,7 +1343,8 @@ class ConversationApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -1297,11 +1355,14 @@ class ConversationApi {
     }
   }
 
-  Future<List<MessageData?>> getMessagesBefore(String arg_conversationSid, int arg_index, int arg_count) async {
+  Future<List<MessageData?>> getMessagesBefore(
+      String arg_conversationSid, int arg_index, int arg_count) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationApi.getMessagesBefore', codec, binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.ConversationApi.getMessagesBefore', codec,
+        binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid, arg_index, arg_count]) as Map<Object?, Object?>?;
+        await channel.send(<Object>[arg_conversationSid, arg_index, arg_count])
+            as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -1309,7 +1370,8 @@ class ConversationApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -1320,11 +1382,14 @@ class ConversationApi {
     }
   }
 
-  Future<MessageData> getMessageByIndex(String arg_conversationSid, int arg_messageIndex) async {
+  Future<MessageData> getMessageByIndex(
+      String arg_conversationSid, int arg_messageIndex) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationApi.getMessageByIndex', codec, binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.ConversationApi.getMessageByIndex', codec,
+        binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid, arg_messageIndex]) as Map<Object?, Object?>?;
+        await channel.send(<Object>[arg_conversationSid, arg_messageIndex])
+            as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -1332,7 +1397,8 @@ class ConversationApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -1343,11 +1409,14 @@ class ConversationApi {
     }
   }
 
-  Future<List<MessageData?>> getLastMessages(String arg_conversationSid, int arg_count) async {
+  Future<List<MessageData?>> getLastMessages(
+      String arg_conversationSid, int arg_count) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationApi.getLastMessages', codec, binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.ConversationApi.getLastMessages', codec,
+        binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid, arg_count]) as Map<Object?, Object?>?;
+        await channel.send(<Object>[arg_conversationSid, arg_count])
+            as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -1355,7 +1424,8 @@ class ConversationApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -1366,11 +1436,14 @@ class ConversationApi {
     }
   }
 
-  Future<bool> removeMessage(String arg_conversationSid, int arg_messageIndex) async {
+  Future<bool> removeMessage(
+      String arg_conversationSid, int arg_messageIndex) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationApi.removeMessage', codec, binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.ConversationApi.removeMessage', codec,
+        binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid, arg_messageIndex]) as Map<Object?, Object?>?;
+        await channel.send(<Object>[arg_conversationSid, arg_messageIndex])
+            as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -1378,7 +1451,8 @@ class ConversationApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -1389,11 +1463,14 @@ class ConversationApi {
     }
   }
 
-  Future<void> setAttributes(String arg_conversationSid, AttributesData arg_attributes) async {
+  Future<void> setAttributes(
+      String arg_conversationSid, AttributesData arg_attributes) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationApi.setAttributes', codec, binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.ConversationApi.setAttributes', codec,
+        binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid, arg_attributes]) as Map<Object?, Object?>?;
+        await channel.send(<Object>[arg_conversationSid, arg_attributes])
+            as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -1401,7 +1478,8 @@ class ConversationApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -1412,11 +1490,14 @@ class ConversationApi {
     }
   }
 
-  Future<void> setFriendlyName(String arg_conversationSid, String arg_friendlyName) async {
+  Future<void> setFriendlyName(
+      String arg_conversationSid, String arg_friendlyName) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationApi.setFriendlyName', codec, binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.ConversationApi.setFriendlyName', codec,
+        binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid, arg_friendlyName]) as Map<Object?, Object?>?;
+        await channel.send(<Object>[arg_conversationSid, arg_friendlyName])
+            as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -1424,7 +1505,8 @@ class ConversationApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -1435,11 +1517,14 @@ class ConversationApi {
     }
   }
 
-  Future<void> setNotificationLevel(String arg_conversationSid, String arg_notificationLevel) async {
+  Future<void> setNotificationLevel(
+      String arg_conversationSid, String arg_notificationLevel) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationApi.setNotificationLevel', codec, binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.ConversationApi.setNotificationLevel', codec,
+        binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid, arg_notificationLevel]) as Map<Object?, Object?>?;
+        await channel.send(<Object>[arg_conversationSid, arg_notificationLevel])
+            as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -1447,7 +1532,8 @@ class ConversationApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -1458,11 +1544,14 @@ class ConversationApi {
     }
   }
 
-  Future<void> setUniqueName(String arg_conversationSid, String arg_uniqueName) async {
+  Future<void> setUniqueName(
+      String arg_conversationSid, String arg_uniqueName) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ConversationApi.setUniqueName', codec, binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.ConversationApi.setUniqueName', codec,
+        binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid, arg_uniqueName]) as Map<Object?, Object?>?;
+        await channel.send(<Object>[arg_conversationSid, arg_uniqueName])
+            as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -1470,7 +1559,8 @@ class ConversationApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -1489,27 +1579,25 @@ class _ParticipantApiCodec extends StandardMessageCodec {
     if (value is AttributesData) {
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is UserData) {
+    } else if (value is UserData) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
-    } else 
-{
+    } else {
       super.writeValue(buffer, value);
     }
   }
+
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 128:       
+      case 128:
         return AttributesData.decode(readValue(buffer)!);
-      
-      case 129:       
+
+      case 129:
         return UserData.decode(readValue(buffer)!);
-      
-      default:      
+
+      default:
         return super.readValueOfType(type, buffer);
-      
     }
   }
 }
@@ -1518,17 +1606,21 @@ class ParticipantApi {
   /// Constructor for [ParticipantApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  ParticipantApi({BinaryMessenger? binaryMessenger}) : _binaryMessenger = binaryMessenger;
+  ParticipantApi({BinaryMessenger? binaryMessenger})
+      : _binaryMessenger = binaryMessenger;
 
   final BinaryMessenger? _binaryMessenger;
 
   static const MessageCodec<Object?> codec = _ParticipantApiCodec();
 
-  Future<UserData> getUser(String arg_conversationSid, String arg_participantSid) async {
+  Future<UserData> getUser(
+      String arg_conversationSid, String arg_participantSid) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ParticipantApi.getUser', codec, binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.ParticipantApi.getUser', codec,
+        binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid, arg_participantSid]) as Map<Object?, Object?>?;
+        await channel.send(<Object>[arg_conversationSid, arg_participantSid])
+            as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -1536,7 +1628,8 @@ class ParticipantApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -1547,11 +1640,14 @@ class ParticipantApi {
     }
   }
 
-  Future<void> setAttributes(String arg_conversationSid, String arg_participantSid, AttributesData arg_attributes) async {
+  Future<void> setAttributes(String arg_conversationSid,
+      String arg_participantSid, AttributesData arg_attributes) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ParticipantApi.setAttributes', codec, binaryMessenger: _binaryMessenger);
-    final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid, arg_participantSid, arg_attributes]) as Map<Object?, Object?>?;
+        'dev.flutter.pigeon.ParticipantApi.setAttributes', codec,
+        binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap = await channel.send(
+            <Object>[arg_conversationSid, arg_participantSid, arg_attributes])
+        as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -1559,7 +1655,8 @@ class ParticipantApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -1579,17 +1676,21 @@ class MessageApi {
   /// Constructor for [MessageApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  MessageApi({BinaryMessenger? binaryMessenger}) : _binaryMessenger = binaryMessenger;
+  MessageApi({BinaryMessenger? binaryMessenger})
+      : _binaryMessenger = binaryMessenger;
 
   final BinaryMessenger? _binaryMessenger;
 
   static const MessageCodec<Object?> codec = _MessageApiCodec();
 
-  Future<String> getMediaContentTemporaryUrl(String arg_conversationSid, int arg_messageIndex) async {
+  Future<String> getMediaContentTemporaryUrl(
+      String arg_conversationSid, int arg_messageIndex) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.MessageApi.getMediaContentTemporaryUrl', codec, binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.MessageApi.getMediaContentTemporaryUrl', codec,
+        binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object>[arg_conversationSid, arg_messageIndex]) as Map<Object?, Object?>?;
+        await channel.send(<Object>[arg_conversationSid, arg_messageIndex])
+            as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -1597,7 +1698,8 @@ class MessageApi {
         details: null,
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -1616,207 +1718,182 @@ class _FlutterConversationClientApiCodec extends StandardMessageCodec {
     if (value is AttributesData) {
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is AttributesData) {
+    } else if (value is AttributesData) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is AttributesData) {
+    } else if (value is AttributesData) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is AttributesData) {
+    } else if (value is AttributesData) {
       buffer.putUint8(131);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is ConversationData) {
+    } else if (value is ConversationData) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is ConversationData) {
+    } else if (value is ConversationData) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is ConversationData) {
+    } else if (value is ConversationData) {
       buffer.putUint8(134);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is ConversationData) {
+    } else if (value is ConversationData) {
       buffer.putUint8(135);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is ConversationData) {
+    } else if (value is ConversationData) {
       buffer.putUint8(136);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is ConversationData) {
+    } else if (value is ConversationData) {
       buffer.putUint8(137);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is ConversationUpdatedData) {
+    } else if (value is ConversationUpdatedData) {
       buffer.putUint8(138);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is ErrorInfoData) {
+    } else if (value is ErrorInfoData) {
       buffer.putUint8(139);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is ErrorInfoData) {
+    } else if (value is ErrorInfoData) {
       buffer.putUint8(140);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is ErrorInfoData) {
+    } else if (value is ErrorInfoData) {
       buffer.putUint8(141);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is ErrorInfoData) {
+    } else if (value is ErrorInfoData) {
       buffer.putUint8(142);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is MessageData) {
+    } else if (value is MessageData) {
       buffer.putUint8(143);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is MessageData) {
+    } else if (value is MessageData) {
       buffer.putUint8(144);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is MessageData) {
+    } else if (value is MessageData) {
       buffer.putUint8(145);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is MessageMediaData) {
+    } else if (value is MessageMediaData) {
       buffer.putUint8(146);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is ParticipantData) {
+    } else if (value is ParticipantData) {
       buffer.putUint8(147);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is ParticipantData) {
+    } else if (value is ParticipantData) {
       buffer.putUint8(148);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is ParticipantData) {
+    } else if (value is ParticipantData) {
       buffer.putUint8(149);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is ParticipantData) {
+    } else if (value is ParticipantData) {
       buffer.putUint8(150);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is ParticipantData) {
+    } else if (value is ParticipantData) {
       buffer.putUint8(151);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is UserData) {
+    } else if (value is UserData) {
       buffer.putUint8(152);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is UserData) {
+    } else if (value is UserData) {
       buffer.putUint8(153);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is UserData) {
+    } else if (value is UserData) {
       buffer.putUint8(154);
       writeValue(buffer, value.encode());
-    } else 
-{
+    } else {
       super.writeValue(buffer, value);
     }
   }
+
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 128:       
+      case 128:
         return AttributesData.decode(readValue(buffer)!);
-      
-      case 129:       
+
+      case 129:
         return AttributesData.decode(readValue(buffer)!);
-      
-      case 130:       
+
+      case 130:
         return AttributesData.decode(readValue(buffer)!);
-      
-      case 131:       
+
+      case 131:
         return AttributesData.decode(readValue(buffer)!);
-      
-      case 132:       
+
+      case 132:
         return ConversationData.decode(readValue(buffer)!);
-      
-      case 133:       
+
+      case 133:
         return ConversationData.decode(readValue(buffer)!);
-      
-      case 134:       
+
+      case 134:
         return ConversationData.decode(readValue(buffer)!);
-      
-      case 135:       
+
+      case 135:
         return ConversationData.decode(readValue(buffer)!);
-      
-      case 136:       
+
+      case 136:
         return ConversationData.decode(readValue(buffer)!);
-      
-      case 137:       
+
+      case 137:
         return ConversationData.decode(readValue(buffer)!);
-      
-      case 138:       
+
+      case 138:
         return ConversationUpdatedData.decode(readValue(buffer)!);
-      
-      case 139:       
+
+      case 139:
         return ErrorInfoData.decode(readValue(buffer)!);
-      
-      case 140:       
+
+      case 140:
         return ErrorInfoData.decode(readValue(buffer)!);
-      
-      case 141:       
+
+      case 141:
         return ErrorInfoData.decode(readValue(buffer)!);
-      
-      case 142:       
+
+      case 142:
         return ErrorInfoData.decode(readValue(buffer)!);
-      
-      case 143:       
+
+      case 143:
         return MessageData.decode(readValue(buffer)!);
-      
-      case 144:       
+
+      case 144:
         return MessageData.decode(readValue(buffer)!);
-      
-      case 145:       
+
+      case 145:
         return MessageData.decode(readValue(buffer)!);
-      
-      case 146:       
+
+      case 146:
         return MessageMediaData.decode(readValue(buffer)!);
-      
-      case 147:       
+
+      case 147:
         return ParticipantData.decode(readValue(buffer)!);
-      
-      case 148:       
+
+      case 148:
         return ParticipantData.decode(readValue(buffer)!);
-      
-      case 149:       
+
+      case 149:
         return ParticipantData.decode(readValue(buffer)!);
-      
-      case 150:       
+
+      case 150:
         return ParticipantData.decode(readValue(buffer)!);
-      
-      case 151:       
+
+      case 151:
         return ParticipantData.decode(readValue(buffer)!);
-      
-      case 152:       
+
+      case 152:
         return UserData.decode(readValue(buffer)!);
-      
-      case 153:       
+
+      case 153:
         return UserData.decode(readValue(buffer)!);
-      
-      case 154:       
+
+      case 154:
         return UserData.decode(readValue(buffer)!);
-      
-      default:      
+
+      default:
         return super.readValueOfType(type, buffer);
-      
     }
   }
 }
+
 abstract class FlutterConversationClientApi {
-  static const MessageCodec<Object?> codec = _FlutterConversationClientApiCodec();
+  static const MessageCodec<Object?> codec =
+      _FlutterConversationClientApiCodec();
 
   void error(ErrorInfoData errorInfoData);
   void conversationAdded(ConversationData conversationData);
@@ -1840,14 +1917,21 @@ abstract class FlutterConversationClientApi {
   void deregistered();
   void deregistrationFailed(ErrorInfoData errorInfoData);
   void messageAdded(String conversationSid, MessageData messageData);
-  void messageUpdated(String conversationSid, MessageData messageData, String reason);
+  void messageUpdated(
+      String conversationSid, MessageData messageData, String reason);
   void messageDeleted(String conversationSid, MessageData messageData);
-  void participantAdded(String conversationSid, ParticipantData participantData);
-  void participantUpdated(String conversationSid, ParticipantData participantData, String reason);
-  void participantDeleted(String conversationSid, ParticipantData participantData);
-  void typingStarted(String conversationSid, ConversationData conversationData, ParticipantData participantData);
-  void typingEnded(String conversationSid, ConversationData conversationData, ParticipantData participantData);
-  void synchronizationChanged(String conversationSid, ConversationData conversationData);
+  void participantAdded(
+      String conversationSid, ParticipantData participantData);
+  void participantUpdated(
+      String conversationSid, ParticipantData participantData, String reason);
+  void participantDeleted(
+      String conversationSid, ParticipantData participantData);
+  void typingStarted(String conversationSid, ConversationData conversationData,
+      ParticipantData participantData);
+  void typingEnded(String conversationSid, ConversationData conversationData,
+      ParticipantData participantData);
+  void synchronizationChanged(
+      String conversationSid, ConversationData conversationData);
   static void setup(FlutterConversationClientApi? api) {
     {
       const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
@@ -1856,10 +1940,12 @@ abstract class FlutterConversationClientApi {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.error was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.error was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final ErrorInfoData? arg_errorInfoData = args[0] as ErrorInfoData?;
-          assert(arg_errorInfoData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.error was null, expected non-null ErrorInfoData.');
+          assert(arg_errorInfoData != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.error was null, expected non-null ErrorInfoData.');
           api.error(arg_errorInfoData!);
           return;
         });
@@ -1867,15 +1953,19 @@ abstract class FlutterConversationClientApi {
     }
     {
       const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FlutterConversationClientApi.conversationAdded', codec);
+          'dev.flutter.pigeon.FlutterConversationClientApi.conversationAdded',
+          codec);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.conversationAdded was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.conversationAdded was null.');
           final List<Object?> args = (message as List<Object?>?)!;
-          final ConversationData? arg_conversationData = args[0] as ConversationData?;
-          assert(arg_conversationData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.conversationAdded was null, expected non-null ConversationData.');
+          final ConversationData? arg_conversationData =
+              args[0] as ConversationData?;
+          assert(arg_conversationData != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.conversationAdded was null, expected non-null ConversationData.');
           api.conversationAdded(arg_conversationData!);
           return;
         });
@@ -1883,15 +1973,19 @@ abstract class FlutterConversationClientApi {
     }
     {
       const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FlutterConversationClientApi.conversationUpdated', codec);
+          'dev.flutter.pigeon.FlutterConversationClientApi.conversationUpdated',
+          codec);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.conversationUpdated was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.conversationUpdated was null.');
           final List<Object?> args = (message as List<Object?>?)!;
-          final ConversationUpdatedData? arg_event = args[0] as ConversationUpdatedData?;
-          assert(arg_event != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.conversationUpdated was null, expected non-null ConversationUpdatedData.');
+          final ConversationUpdatedData? arg_event =
+              args[0] as ConversationUpdatedData?;
+          assert(arg_event != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.conversationUpdated was null, expected non-null ConversationUpdatedData.');
           api.conversationUpdated(arg_event!);
           return;
         });
@@ -1899,15 +1993,19 @@ abstract class FlutterConversationClientApi {
     }
     {
       const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FlutterConversationClientApi.conversationDeleted', codec);
+          'dev.flutter.pigeon.FlutterConversationClientApi.conversationDeleted',
+          codec);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.conversationDeleted was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.conversationDeleted was null.');
           final List<Object?> args = (message as List<Object?>?)!;
-          final ConversationData? arg_conversationData = args[0] as ConversationData?;
-          assert(arg_conversationData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.conversationDeleted was null, expected non-null ConversationData.');
+          final ConversationData? arg_conversationData =
+              args[0] as ConversationData?;
+          assert(arg_conversationData != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.conversationDeleted was null, expected non-null ConversationData.');
           api.conversationDeleted(arg_conversationData!);
           return;
         });
@@ -1915,15 +2013,18 @@ abstract class FlutterConversationClientApi {
     }
     {
       const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FlutterConversationClientApi.clientSynchronization', codec);
+          'dev.flutter.pigeon.FlutterConversationClientApi.clientSynchronization',
+          codec);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.clientSynchronization was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.clientSynchronization was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_synchronizationStatus = args[0] as String?;
-          assert(arg_synchronizationStatus != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.clientSynchronization was null, expected non-null String.');
+          assert(arg_synchronizationStatus != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.clientSynchronization was null, expected non-null String.');
           api.clientSynchronization(arg_synchronizationStatus!);
           return;
         });
@@ -1931,15 +2032,19 @@ abstract class FlutterConversationClientApi {
     }
     {
       const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FlutterConversationClientApi.conversationSynchronizationChange', codec);
+          'dev.flutter.pigeon.FlutterConversationClientApi.conversationSynchronizationChange',
+          codec);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.conversationSynchronizationChange was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.conversationSynchronizationChange was null.');
           final List<Object?> args = (message as List<Object?>?)!;
-          final ConversationData? arg_conversationData = args[0] as ConversationData?;
-          assert(arg_conversationData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.conversationSynchronizationChange was null, expected non-null ConversationData.');
+          final ConversationData? arg_conversationData =
+              args[0] as ConversationData?;
+          assert(arg_conversationData != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.conversationSynchronizationChange was null, expected non-null ConversationData.');
           api.conversationSynchronizationChange(arg_conversationData!);
           return;
         });
@@ -1947,15 +2052,18 @@ abstract class FlutterConversationClientApi {
     }
     {
       const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FlutterConversationClientApi.connectionStateChange', codec);
+          'dev.flutter.pigeon.FlutterConversationClientApi.connectionStateChange',
+          codec);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.connectionStateChange was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.connectionStateChange was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_connectionState = args[0] as String?;
-          assert(arg_connectionState != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.connectionStateChange was null, expected non-null String.');
+          assert(arg_connectionState != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.connectionStateChange was null, expected non-null String.');
           api.connectionStateChange(arg_connectionState!);
           return;
         });
@@ -1963,7 +2071,8 @@ abstract class FlutterConversationClientApi {
     }
     {
       const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FlutterConversationClientApi.tokenAboutToExpire', codec);
+          'dev.flutter.pigeon.FlutterConversationClientApi.tokenAboutToExpire',
+          codec);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
@@ -1976,7 +2085,8 @@ abstract class FlutterConversationClientApi {
     }
     {
       const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FlutterConversationClientApi.tokenExpired', codec);
+          'dev.flutter.pigeon.FlutterConversationClientApi.tokenExpired',
+          codec);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
@@ -1989,15 +2099,18 @@ abstract class FlutterConversationClientApi {
     }
     {
       const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FlutterConversationClientApi.userSubscribed', codec);
+          'dev.flutter.pigeon.FlutterConversationClientApi.userSubscribed',
+          codec);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.userSubscribed was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.userSubscribed was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final UserData? arg_userData = args[0] as UserData?;
-          assert(arg_userData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.userSubscribed was null, expected non-null UserData.');
+          assert(arg_userData != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.userSubscribed was null, expected non-null UserData.');
           api.userSubscribed(arg_userData!);
           return;
         });
@@ -2005,15 +2118,18 @@ abstract class FlutterConversationClientApi {
     }
     {
       const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FlutterConversationClientApi.userUnsubscribed', codec);
+          'dev.flutter.pigeon.FlutterConversationClientApi.userUnsubscribed',
+          codec);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.userUnsubscribed was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.userUnsubscribed was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final UserData? arg_userData = args[0] as UserData?;
-          assert(arg_userData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.userUnsubscribed was null, expected non-null UserData.');
+          assert(arg_userData != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.userUnsubscribed was null, expected non-null UserData.');
           api.userUnsubscribed(arg_userData!);
           return;
         });
@@ -2026,12 +2142,15 @@ abstract class FlutterConversationClientApi {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.userUpdated was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.userUpdated was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final UserData? arg_userData = args[0] as UserData?;
-          assert(arg_userData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.userUpdated was null, expected non-null UserData.');
+          assert(arg_userData != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.userUpdated was null, expected non-null UserData.');
           final String? arg_reason = args[1] as String?;
-          assert(arg_reason != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.userUpdated was null, expected non-null String.');
+          assert(arg_reason != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.userUpdated was null, expected non-null String.');
           api.userUpdated(arg_userData!, arg_reason!);
           return;
         });
@@ -2039,15 +2158,18 @@ abstract class FlutterConversationClientApi {
     }
     {
       const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FlutterConversationClientApi.addedToConversationNotification', codec);
+          'dev.flutter.pigeon.FlutterConversationClientApi.addedToConversationNotification',
+          codec);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.addedToConversationNotification was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.addedToConversationNotification was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_conversationSid = args[0] as String?;
-          assert(arg_conversationSid != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.addedToConversationNotification was null, expected non-null String.');
+          assert(arg_conversationSid != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.addedToConversationNotification was null, expected non-null String.');
           api.addedToConversationNotification(arg_conversationSid!);
           return;
         });
@@ -2055,17 +2177,21 @@ abstract class FlutterConversationClientApi {
     }
     {
       const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FlutterConversationClientApi.newMessageNotification', codec);
+          'dev.flutter.pigeon.FlutterConversationClientApi.newMessageNotification',
+          codec);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.newMessageNotification was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.newMessageNotification was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_conversationSid = args[0] as String?;
-          assert(arg_conversationSid != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.newMessageNotification was null, expected non-null String.');
+          assert(arg_conversationSid != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.newMessageNotification was null, expected non-null String.');
           final int? arg_messageIndex = args[1] as int?;
-          assert(arg_messageIndex != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.newMessageNotification was null, expected non-null int.');
+          assert(arg_messageIndex != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.newMessageNotification was null, expected non-null int.');
           api.newMessageNotification(arg_conversationSid!, arg_messageIndex!);
           return;
         });
@@ -2073,7 +2199,8 @@ abstract class FlutterConversationClientApi {
     }
     {
       const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FlutterConversationClientApi.notificationSubscribed', codec);
+          'dev.flutter.pigeon.FlutterConversationClientApi.notificationSubscribed',
+          codec);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
@@ -2086,15 +2213,18 @@ abstract class FlutterConversationClientApi {
     }
     {
       const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FlutterConversationClientApi.notificationFailed', codec);
+          'dev.flutter.pigeon.FlutterConversationClientApi.notificationFailed',
+          codec);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.notificationFailed was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.notificationFailed was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final ErrorInfoData? arg_errorInfoData = args[0] as ErrorInfoData?;
-          assert(arg_errorInfoData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.notificationFailed was null, expected non-null ErrorInfoData.');
+          assert(arg_errorInfoData != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.notificationFailed was null, expected non-null ErrorInfoData.');
           api.notificationFailed(arg_errorInfoData!);
           return;
         });
@@ -2102,15 +2232,18 @@ abstract class FlutterConversationClientApi {
     }
     {
       const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FlutterConversationClientApi.removedFromConversationNotification', codec);
+          'dev.flutter.pigeon.FlutterConversationClientApi.removedFromConversationNotification',
+          codec);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.removedFromConversationNotification was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.removedFromConversationNotification was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_conversationSid = args[0] as String?;
-          assert(arg_conversationSid != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.removedFromConversationNotification was null, expected non-null String.');
+          assert(arg_conversationSid != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.removedFromConversationNotification was null, expected non-null String.');
           api.removedFromConversationNotification(arg_conversationSid!);
           return;
         });
@@ -2131,15 +2264,18 @@ abstract class FlutterConversationClientApi {
     }
     {
       const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FlutterConversationClientApi.registrationFailed', codec);
+          'dev.flutter.pigeon.FlutterConversationClientApi.registrationFailed',
+          codec);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.registrationFailed was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.registrationFailed was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final ErrorInfoData? arg_errorInfoData = args[0] as ErrorInfoData?;
-          assert(arg_errorInfoData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.registrationFailed was null, expected non-null ErrorInfoData.');
+          assert(arg_errorInfoData != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.registrationFailed was null, expected non-null ErrorInfoData.');
           api.registrationFailed(arg_errorInfoData!);
           return;
         });
@@ -2147,7 +2283,8 @@ abstract class FlutterConversationClientApi {
     }
     {
       const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FlutterConversationClientApi.deregistered', codec);
+          'dev.flutter.pigeon.FlutterConversationClientApi.deregistered',
+          codec);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
@@ -2160,15 +2297,18 @@ abstract class FlutterConversationClientApi {
     }
     {
       const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FlutterConversationClientApi.deregistrationFailed', codec);
+          'dev.flutter.pigeon.FlutterConversationClientApi.deregistrationFailed',
+          codec);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.deregistrationFailed was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.deregistrationFailed was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final ErrorInfoData? arg_errorInfoData = args[0] as ErrorInfoData?;
-          assert(arg_errorInfoData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.deregistrationFailed was null, expected non-null ErrorInfoData.');
+          assert(arg_errorInfoData != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.deregistrationFailed was null, expected non-null ErrorInfoData.');
           api.deregistrationFailed(arg_errorInfoData!);
           return;
         });
@@ -2176,17 +2316,21 @@ abstract class FlutterConversationClientApi {
     }
     {
       const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FlutterConversationClientApi.messageAdded', codec);
+          'dev.flutter.pigeon.FlutterConversationClientApi.messageAdded',
+          codec);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageAdded was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageAdded was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_conversationSid = args[0] as String?;
-          assert(arg_conversationSid != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageAdded was null, expected non-null String.');
+          assert(arg_conversationSid != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageAdded was null, expected non-null String.');
           final MessageData? arg_messageData = args[1] as MessageData?;
-          assert(arg_messageData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageAdded was null, expected non-null MessageData.');
+          assert(arg_messageData != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageAdded was null, expected non-null MessageData.');
           api.messageAdded(arg_conversationSid!, arg_messageData!);
           return;
         });
@@ -2194,37 +2338,47 @@ abstract class FlutterConversationClientApi {
     }
     {
       const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FlutterConversationClientApi.messageUpdated', codec);
+          'dev.flutter.pigeon.FlutterConversationClientApi.messageUpdated',
+          codec);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageUpdated was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageUpdated was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_conversationSid = args[0] as String?;
-          assert(arg_conversationSid != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageUpdated was null, expected non-null String.');
+          assert(arg_conversationSid != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageUpdated was null, expected non-null String.');
           final MessageData? arg_messageData = args[1] as MessageData?;
-          assert(arg_messageData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageUpdated was null, expected non-null MessageData.');
+          assert(arg_messageData != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageUpdated was null, expected non-null MessageData.');
           final String? arg_reason = args[2] as String?;
-          assert(arg_reason != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageUpdated was null, expected non-null String.');
-          api.messageUpdated(arg_conversationSid!, arg_messageData!, arg_reason!);
+          assert(arg_reason != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageUpdated was null, expected non-null String.');
+          api.messageUpdated(
+              arg_conversationSid!, arg_messageData!, arg_reason!);
           return;
         });
       }
     }
     {
       const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FlutterConversationClientApi.messageDeleted', codec);
+          'dev.flutter.pigeon.FlutterConversationClientApi.messageDeleted',
+          codec);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageDeleted was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageDeleted was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_conversationSid = args[0] as String?;
-          assert(arg_conversationSid != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageDeleted was null, expected non-null String.');
+          assert(arg_conversationSid != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageDeleted was null, expected non-null String.');
           final MessageData? arg_messageData = args[1] as MessageData?;
-          assert(arg_messageData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageDeleted was null, expected non-null MessageData.');
+          assert(arg_messageData != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.messageDeleted was null, expected non-null MessageData.');
           api.messageDeleted(arg_conversationSid!, arg_messageData!);
           return;
         });
@@ -2232,17 +2386,22 @@ abstract class FlutterConversationClientApi {
     }
     {
       const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FlutterConversationClientApi.participantAdded', codec);
+          'dev.flutter.pigeon.FlutterConversationClientApi.participantAdded',
+          codec);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantAdded was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantAdded was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_conversationSid = args[0] as String?;
-          assert(arg_conversationSid != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantAdded was null, expected non-null String.');
-          final ParticipantData? arg_participantData = args[1] as ParticipantData?;
-          assert(arg_participantData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantAdded was null, expected non-null ParticipantData.');
+          assert(arg_conversationSid != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantAdded was null, expected non-null String.');
+          final ParticipantData? arg_participantData =
+              args[1] as ParticipantData?;
+          assert(arg_participantData != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantAdded was null, expected non-null ParticipantData.');
           api.participantAdded(arg_conversationSid!, arg_participantData!);
           return;
         });
@@ -2250,37 +2409,49 @@ abstract class FlutterConversationClientApi {
     }
     {
       const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FlutterConversationClientApi.participantUpdated', codec);
+          'dev.flutter.pigeon.FlutterConversationClientApi.participantUpdated',
+          codec);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantUpdated was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantUpdated was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_conversationSid = args[0] as String?;
-          assert(arg_conversationSid != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantUpdated was null, expected non-null String.');
-          final ParticipantData? arg_participantData = args[1] as ParticipantData?;
-          assert(arg_participantData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantUpdated was null, expected non-null ParticipantData.');
+          assert(arg_conversationSid != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantUpdated was null, expected non-null String.');
+          final ParticipantData? arg_participantData =
+              args[1] as ParticipantData?;
+          assert(arg_participantData != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantUpdated was null, expected non-null ParticipantData.');
           final String? arg_reason = args[2] as String?;
-          assert(arg_reason != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantUpdated was null, expected non-null String.');
-          api.participantUpdated(arg_conversationSid!, arg_participantData!, arg_reason!);
+          assert(arg_reason != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantUpdated was null, expected non-null String.');
+          api.participantUpdated(
+              arg_conversationSid!, arg_participantData!, arg_reason!);
           return;
         });
       }
     }
     {
       const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FlutterConversationClientApi.participantDeleted', codec);
+          'dev.flutter.pigeon.FlutterConversationClientApi.participantDeleted',
+          codec);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantDeleted was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantDeleted was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_conversationSid = args[0] as String?;
-          assert(arg_conversationSid != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantDeleted was null, expected non-null String.');
-          final ParticipantData? arg_participantData = args[1] as ParticipantData?;
-          assert(arg_participantData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantDeleted was null, expected non-null ParticipantData.');
+          assert(arg_conversationSid != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantDeleted was null, expected non-null String.');
+          final ParticipantData? arg_participantData =
+              args[1] as ParticipantData?;
+          assert(arg_participantData != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.participantDeleted was null, expected non-null ParticipantData.');
           api.participantDeleted(arg_conversationSid!, arg_participantData!);
           return;
         });
@@ -2288,20 +2459,28 @@ abstract class FlutterConversationClientApi {
     }
     {
       const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FlutterConversationClientApi.typingStarted', codec);
+          'dev.flutter.pigeon.FlutterConversationClientApi.typingStarted',
+          codec);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.typingStarted was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.typingStarted was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_conversationSid = args[0] as String?;
-          assert(arg_conversationSid != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.typingStarted was null, expected non-null String.');
-          final ConversationData? arg_conversationData = args[1] as ConversationData?;
-          assert(arg_conversationData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.typingStarted was null, expected non-null ConversationData.');
-          final ParticipantData? arg_participantData = args[2] as ParticipantData?;
-          assert(arg_participantData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.typingStarted was null, expected non-null ParticipantData.');
-          api.typingStarted(arg_conversationSid!, arg_conversationData!, arg_participantData!);
+          assert(arg_conversationSid != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.typingStarted was null, expected non-null String.');
+          final ConversationData? arg_conversationData =
+              args[1] as ConversationData?;
+          assert(arg_conversationData != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.typingStarted was null, expected non-null ConversationData.');
+          final ParticipantData? arg_participantData =
+              args[2] as ParticipantData?;
+          assert(arg_participantData != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.typingStarted was null, expected non-null ParticipantData.');
+          api.typingStarted(arg_conversationSid!, arg_conversationData!,
+              arg_participantData!);
           return;
         });
       }
@@ -2313,33 +2492,46 @@ abstract class FlutterConversationClientApi {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.typingEnded was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.typingEnded was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_conversationSid = args[0] as String?;
-          assert(arg_conversationSid != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.typingEnded was null, expected non-null String.');
-          final ConversationData? arg_conversationData = args[1] as ConversationData?;
-          assert(arg_conversationData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.typingEnded was null, expected non-null ConversationData.');
-          final ParticipantData? arg_participantData = args[2] as ParticipantData?;
-          assert(arg_participantData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.typingEnded was null, expected non-null ParticipantData.');
-          api.typingEnded(arg_conversationSid!, arg_conversationData!, arg_participantData!);
+          assert(arg_conversationSid != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.typingEnded was null, expected non-null String.');
+          final ConversationData? arg_conversationData =
+              args[1] as ConversationData?;
+          assert(arg_conversationData != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.typingEnded was null, expected non-null ConversationData.');
+          final ParticipantData? arg_participantData =
+              args[2] as ParticipantData?;
+          assert(arg_participantData != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.typingEnded was null, expected non-null ParticipantData.');
+          api.typingEnded(arg_conversationSid!, arg_conversationData!,
+              arg_participantData!);
           return;
         });
       }
     }
     {
       const BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FlutterConversationClientApi.synchronizationChanged', codec);
+          'dev.flutter.pigeon.FlutterConversationClientApi.synchronizationChanged',
+          codec);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.synchronizationChanged was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.synchronizationChanged was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_conversationSid = args[0] as String?;
-          assert(arg_conversationSid != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.synchronizationChanged was null, expected non-null String.');
-          final ConversationData? arg_conversationData = args[1] as ConversationData?;
-          assert(arg_conversationData != null, 'Argument for dev.flutter.pigeon.FlutterConversationClientApi.synchronizationChanged was null, expected non-null ConversationData.');
-          api.synchronizationChanged(arg_conversationSid!, arg_conversationData!);
+          assert(arg_conversationSid != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.synchronizationChanged was null, expected non-null String.');
+          final ConversationData? arg_conversationData =
+              args[1] as ConversationData?;
+          assert(arg_conversationData != null,
+              'Argument for dev.flutter.pigeon.FlutterConversationClientApi.synchronizationChanged was null, expected non-null ConversationData.');
+          api.synchronizationChanged(
+              arg_conversationSid!, arg_conversationData!);
           return;
         });
       }
@@ -2350,6 +2542,7 @@ abstract class FlutterConversationClientApi {
 class _FlutterLoggingApiCodec extends StandardMessageCodec {
   const _FlutterLoggingApiCodec();
 }
+
 abstract class FlutterLoggingApi {
   static const MessageCodec<Object?> codec = _FlutterLoggingApiCodec();
 
@@ -2362,10 +2555,12 @@ abstract class FlutterLoggingApi {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.FlutterLoggingApi.logFromHost was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.FlutterLoggingApi.logFromHost was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_msg = args[0] as String?;
-          assert(arg_msg != null, 'Argument for dev.flutter.pigeon.FlutterLoggingApi.logFromHost was null, expected non-null String.');
+          assert(arg_msg != null,
+              'Argument for dev.flutter.pigeon.FlutterLoggingApi.logFromHost was null, expected non-null String.');
           api.logFromHost(arg_msg!);
           return;
         });

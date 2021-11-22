@@ -1,7 +1,5 @@
 import 'package:mockito/mockito.dart';
-import 'package:twilio_conversations/api.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
-import 'package:uuid/uuid.dart';
 
 import 'participant_test.mocks.dart';
 

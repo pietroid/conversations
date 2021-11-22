@@ -22,3 +22,4 @@ analyzer:
   exclude:
     - test/twilio_conversations_test.mocks.dart
     - test/conversation/conversation_test.mocks.dart
+    - test/participant/participant_test.mocks.dart
