@@ -267,4 +267,18 @@ void main() {
     expect(invocation?.positionalArguments[0], conversationSid);
     expect(invocation?.positionalArguments[1], uniqueName);
   });
+
+  test('Calls the API to getParticipantsCount', () async {
+    final expectedCount = 17;
+    ConversationTestStubs.stubGetParticipantsCount(
+        conversationApi, expectedCount);
+    final conversationSid = Uuid().v4();
+    final conversation = Conversation(conversationSid);
+
+    final result = await conversation.getParticipantsCount();
+
+    final invocation = ConversationTestStubs.invocation;
+    expect(result, expectedCount);
+    expect(invocation?.positionalArguments[0], conversationSid);
+  });
 }

@@ -106,16 +106,27 @@ class ConversationTestStubs {
   }
 
   static void stubSetFriendlyName(MockConversationApi conversationApi) {
-    when(conversationApi.setFriendlyName(any, any)).thenAnswer((realInvocation) async {
+    when(conversationApi.setFriendlyName(any, any))
+        .thenAnswer((realInvocation) async {
       invocation = realInvocation;
       return;
     });
   }
 
   static void stubSetUniqueName(MockConversationApi conversationApi) {
-    when(conversationApi.setUniqueName(any, any)).thenAnswer((realInvocation) async {
+    when(conversationApi.setUniqueName(any, any))
+        .thenAnswer((realInvocation) async {
       invocation = realInvocation;
       return;
+    });
+  }
+
+  static void stubGetParticipantsCount(
+      MockConversationApi conversationApi, int expectedCount) {
+    when(conversationApi.getParticipantsCount(any))
+        .thenAnswer((realInvocation) async {
+      invocation = realInvocation;
+      return expectedCount;
     });
   }
 
