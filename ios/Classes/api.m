@@ -1611,6 +1611,28 @@ void TWCONParticipantApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObje
       [channel setMessageHandler:nil];
     }
   }
+  {
+    FlutterBasicMessageChannel *channel =
+      [FlutterBasicMessageChannel
+        messageChannelWithName:@"dev.flutter.pigeon.ParticipantApi.setAttributes"
+        binaryMessenger:binaryMessenger
+        codec:TWCONParticipantApiGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(setAttributesConversationSid:participantSid:attributes:completion:)], @"TWCONParticipantApi api (%@) doesn't respond to @selector(setAttributesConversationSid:participantSid:attributes:completion:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        NSString *arg_conversationSid = args[0];
+        NSString *arg_participantSid = args[1];
+        TWCONAttributesData *arg_attributes = args[2];
+        [api setAttributesConversationSid:arg_conversationSid participantSid:arg_participantSid attributes:arg_attributes completion:^(FlutterError *_Nullable error) {
+          callback(wrapResult(nil, error));
+        }];
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
 }
 @interface TWCONMessageApiCodecReader : FlutterStandardReader
 @end

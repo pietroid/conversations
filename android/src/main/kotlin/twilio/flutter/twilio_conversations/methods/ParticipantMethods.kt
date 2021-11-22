@@ -3,6 +3,7 @@ package twilio.flutter.twilio_conversations.methods
 import com.twilio.conversations.CallbackListener
 import com.twilio.conversations.Conversation
 import com.twilio.conversations.ErrorInfo
+import com.twilio.conversations.StatusListener
 import twilio.flutter.twilio_conversations.Api
 import twilio.flutter.twilio_conversations.Mapper
 import twilio.flutter.twilio_conversations.TwilioConversationsPlugin
@@ -21,9 +22,8 @@ class ParticipantMethods : Api.ParticipantApi {
 
         client.getConversation(conversationSid, object : CallbackListener<Conversation> {
             override fun onSuccess(conversation: Conversation) {
-                val participant = conversation.participantsList.firstOrNull {
-                    it.sid == participantSid
-                } ?: return result.error(RuntimeException("No participant found with SID: $participantSid"))
+                val participant = conversation.getParticipantBySid(participantSid)
+                    ?: return result.error(RuntimeException("No participant found with SID: $participantSid"))
 
                 participant.getAndSubscribeUser {
                     debug("getUser => onSuccess")
@@ -33,6 +33,42 @@ class ParticipantMethods : Api.ParticipantApi {
 
             override fun onError(errorInfo: ErrorInfo) {
                 debug("getUser => onError: $errorInfo")
+                result.error(RuntimeException(errorInfo.message))
+            }
+        })
+    }
+
+    override fun setAttributes(
+        conversationSid: String,
+        participantSid: String,
+        attributes: Api.AttributesData,
+        result: Api.Result<Void>
+    ) {
+        debug("setAttributes => conversationSid: $conversationSid")
+        val client = TwilioConversationsPlugin.client
+            ?: return result.error(RuntimeException("Client is not initialized"))
+        val participantAttributes = Mapper.pigeonToAttributes(attributes)
+            ?: return result.error(RuntimeException("Could not convert $attributes to valid Attributes"))
+
+        client.getConversation(conversationSid, object : CallbackListener<Conversation> {
+            override fun onSuccess(conversation: Conversation) {
+                val participant = conversation.getParticipantBySid(participantSid)
+                    ?: return result.error(RuntimeException("No participant found with SID: $participantSid"))
+                participant.setAttributes(participantAttributes, object: StatusListener {
+                    override fun onSuccess() {
+                        debug("setAttributes => onSuccess")
+                        result.success(null)
+                    }
+
+                    override fun onError(errorInfo: ErrorInfo) {
+                        debug("setAttributes => onError: $errorInfo")
+                        result.error(RuntimeException(errorInfo.message))
+                    }
+                })
+            }
+
+            override fun onError(errorInfo: ErrorInfo) {
+                debug("setAttributes => onError: $errorInfo")
                 result.error(RuntimeException(errorInfo.message))
             }
         })

@@ -231,6 +231,9 @@ abstract class ConversationApi {
 abstract class ParticipantApi {
   @async
   UserData getUser(String conversationSid, String participantSid);
+
+  @async
+  void setAttributes(String conversationSid, String participantSid, AttributesData attributes);
 }
 
 @HostApi()

@@ -131,6 +131,7 @@ object Mapper {
         result.dateUpdated = participant.dateUpdated
         result.identity = participant.identity
         result.type = participant.type.toString()
+        result.attributes = attributesToPigeon(participant.attributes)
         return result
     }
 

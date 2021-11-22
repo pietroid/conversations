@@ -70,6 +70,9 @@ class _MessagesPageState extends State<MessagesPage> {
           case MessagesPageMenuOptions.swapAttributes:
             _showSwapAttributesDialog();
             break;
+          case MessagesPageMenuOptions.myAttributes:
+            _showMyAttributesDialog();
+            break;
         }
       },
       itemBuilder: (BuildContext context) =>
@@ -84,7 +87,11 @@ class _MessagesPageState extends State<MessagesPage> {
         ),
         PopupMenuItem(
           value: MessagesPageMenuOptions.swapAttributes,
-          child: Text('Swap Attributes'),
+          child: Text('Conversation Attributes'),
+        ),
+        PopupMenuItem(
+          value: MessagesPageMenuOptions.myAttributes,
+          child: Text('My Attributes'),
         ),
       ],
     );
@@ -502,6 +509,52 @@ class _MessagesPageState extends State<MessagesPage> {
     }
   }
 
+  Future _showMyAttributesDialog() async {
+    final currentAttributes = await messagesNotifier.getMyAttributes();
+    final currentAttributesType = currentAttributes?.type;
+    final result = await showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Set My Attributes Type'),
+            content: ChangeNotifierProvider<MessagesNotifier>.value(
+              value: messagesNotifier,
+              child: Consumer<MessagesNotifier>(builder:
+                  (BuildContext context, messagesNotifier, Widget? child) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    ...AttributesType.values.map<Widget>((e) =>
+                        RadioListTile<AttributesType>(
+                            title: Text(EnumToString.convertToString(e)),
+                            value: e,
+                            groupValue: currentAttributesType,
+                            onChanged: (AttributesType? value) =>
+                                Navigator.of(context).pop(e))),
+                  ],
+                );
+              }),
+            ),
+            actions: <Widget>[
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('CLOSE'),
+              ),
+              ElevatedButton(
+                onPressed: messagesNotifier.getMyAttributes,
+                child: Text('GET ATTRIBUTES'),
+              ),
+            ],
+          );
+        });
+    if (result != null) {
+      messagesNotifier.swapMyAttributes(result);
+    }
+  }
+
   Future _destroyConversation() async {
     await messagesNotifier.destroy();
     Navigator.of(context).pop();
@@ -626,4 +679,5 @@ enum MessagesPageMenuOptions {
   participants,
   destroyConversation,
   swapAttributes,
+  myAttributes,
 }

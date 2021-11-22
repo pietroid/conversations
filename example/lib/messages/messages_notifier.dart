@@ -134,6 +134,34 @@ class MessagesNotifier extends ChangeNotifier {
     }
   }
 
+  Future<Attributes?> getMyAttributes() async {
+    final currentAttributes =
+        (await conversation.getParticipantByIdentity(client.myIdentity!))
+            ?.attributes;
+    if (currentAttributes != null) {
+      switch (currentAttributes.type) {
+        case AttributesType.NULL:
+          print('getMyAttributes => NULL: ${currentAttributes.data}');
+          break;
+        case AttributesType.ARRAY:
+          print(
+              'getMyAttributes => Array: ${currentAttributes.getJSONArray()}');
+          break;
+        case AttributesType.OBJECT:
+          print(
+              'getMyAttributes => Object: ${currentAttributes.getJSONObject()}');
+          break;
+        case AttributesType.NUMBER:
+          print('getMyAttributes => Number: ${currentAttributes.getNumber()}');
+          break;
+        case AttributesType.STRING:
+          print('getMyAttributes => String: ${currentAttributes.getString()}');
+          break;
+      }
+      return currentAttributes;
+    }
+  }
+
   Future<void> swapAttributes(AttributesType type) async {
     switch (type) {
       case AttributesType.NULL:
@@ -158,6 +186,49 @@ class MessagesNotifier extends ChangeNotifier {
         break;
       case AttributesType.OBJECT:
         await conversation.setAttributes(Attributes(
+            type,
+            jsonEncode({
+              'key1': 73,
+              'key2': null,
+              'key3': [17, 1, -5, null],
+              'key5': 'a string',
+            })));
+        break;
+    }
+  }
+
+  Future<void> swapMyAttributes(AttributesType type) async {
+    final myParticipant =
+        await conversation.getParticipantByIdentity(client.myIdentity!);
+    if (myParticipant == null) {
+      print(
+          'swapMyAttributes => Could not locate my Participant with identity: ${client.myIdentity}');
+      return;
+    }
+
+    switch (type) {
+      case AttributesType.NULL:
+        await myParticipant.setAttributes(Attributes(type, null));
+        break;
+      case AttributesType.STRING:
+        await myParticipant.setAttributes(Attributes(type, 'i am a string'));
+        break;
+      case AttributesType.NUMBER:
+        await myParticipant.setAttributes(Attributes(type, 173.95.toString()));
+        break;
+      case AttributesType.ARRAY:
+        await myParticipant.setAttributes(Attributes(
+            type,
+            jsonEncode([
+              'test',
+              17,
+              false,
+              95,
+              {'key1': null, 'key17': 43.95, 'key5': []},
+            ])));
+        break;
+      case AttributesType.OBJECT:
+        await myParticipant.setAttributes(Attributes(
             type,
             jsonEncode({
               'key1': 73,
