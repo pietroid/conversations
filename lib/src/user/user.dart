@@ -1,3 +1,5 @@
+import 'package:flutter/services.dart';
+import 'package:twilio_conversations/api.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
 
 class User {
@@ -64,6 +66,19 @@ class User {
     return user;
   }
 
-  //TODO: implement setFriendlyName
+  factory User.fromPigeon(UserData userData) {
+    return User.fromMap(Map<String, dynamic>.from(userData.encode() as Map));
+  }
+
+  Future<void> setFriendlyName(String friendlyName) async {
+    try {
+      await TwilioConversations()
+          .userApi
+          .setFriendlyName(identity, friendlyName);
+    } on PlatformException catch (err) {
+      throw TwilioConversations.convertException(err);
+    }
+  }
+
   //TODO: implement setAttributes
 }

@@ -252,6 +252,16 @@ class ConversationClient extends FlutterConversationClientApi {
     return conversations[result.sid];
   }
 
+  Future<User?> getMyUser() async {
+    try {
+      final userData =
+          await TwilioConversations().conversationsClientApi.getMyUser();
+      return User.fromPigeon(userData);
+    } on PlatformException catch (err) {
+      throw TwilioConversations.convertException(err);
+    }
+  }
+
   Future<List<Conversation>> getMyConversations() async {
     final result =
         await TwilioConversations().conversationsClientApi.getMyConversations();

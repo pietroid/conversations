@@ -489,7 +489,7 @@ class _ConversationClientApiCodec extends StandardMessageCodec {
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
     } else 
-    if (value is ConversationData) {
+    if (value is AttributesData) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
     } else 
@@ -501,12 +501,20 @@ class _ConversationClientApiCodec extends StandardMessageCodec {
       buffer.putUint8(131);
       writeValue(buffer, value.encode());
     } else 
-    if (value is TokenData) {
+    if (value is ConversationData) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
     } else 
     if (value is TokenData) {
       buffer.putUint8(133);
+      writeValue(buffer, value.encode());
+    } else 
+    if (value is TokenData) {
+      buffer.putUint8(134);
+      writeValue(buffer, value.encode());
+    } else 
+    if (value is UserData) {
+      buffer.putUint8(135);
       writeValue(buffer, value.encode());
     } else 
 {
@@ -520,7 +528,7 @@ class _ConversationClientApiCodec extends StandardMessageCodec {
         return AttributesData.decode(readValue(buffer)!);
       
       case 129:       
-        return ConversationData.decode(readValue(buffer)!);
+        return AttributesData.decode(readValue(buffer)!);
       
       case 130:       
         return ConversationData.decode(readValue(buffer)!);
@@ -529,10 +537,16 @@ class _ConversationClientApiCodec extends StandardMessageCodec {
         return ConversationData.decode(readValue(buffer)!);
       
       case 132:       
-        return TokenData.decode(readValue(buffer)!);
+        return ConversationData.decode(readValue(buffer)!);
       
       case 133:       
         return TokenData.decode(readValue(buffer)!);
+      
+      case 134:       
+        return TokenData.decode(readValue(buffer)!);
+      
+      case 135:       
+        return UserData.decode(readValue(buffer)!);
       
       default:      
         return super.readValueOfType(type, buffer);
@@ -663,6 +677,29 @@ class ConversationClientApi {
       );
     } else {
       return (replyMap['result'] as ConversationData?)!;
+    }
+  }
+
+  Future<UserData> getMyUser() async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.ConversationClientApi.getMyUser', codec, binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap =
+        await channel.send(null) as Map<Object?, Object?>?;
+    if (replyMap == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+        details: null,
+      );
+    } else if (replyMap['error'] != null) {
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      throw PlatformException(
+        code: (error['code'] as String?)!,
+        message: error['message'] as String?,
+        details: error['details'],
+      );
+    } else {
+      return (replyMap['result'] as UserData?)!;
     }
   }
 
@@ -1628,6 +1665,44 @@ class MessageApi {
       );
     } else {
       return (replyMap['result'] as String?)!;
+    }
+  }
+}
+
+class _UserApiCodec extends StandardMessageCodec {
+  const _UserApiCodec();
+}
+
+class UserApi {
+  /// Constructor for [UserApi].  The [binaryMessenger] named argument is
+  /// available for dependency injection.  If it is left null, the default
+  /// BinaryMessenger will be used which routes to the host platform.
+  UserApi({BinaryMessenger? binaryMessenger}) : _binaryMessenger = binaryMessenger;
+
+  final BinaryMessenger? _binaryMessenger;
+
+  static const MessageCodec<Object?> codec = _UserApiCodec();
+
+  Future<void> setFriendlyName(String arg_identity, String arg_friendlyName) async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.UserApi.setFriendlyName', codec, binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap =
+        await channel.send(<Object>[arg_identity, arg_friendlyName]) as Map<Object?, Object?>?;
+    if (replyMap == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+        details: null,
+      );
+    } else if (replyMap['error'] != null) {
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      throw PlatformException(
+        code: (error['code'] as String?)!,
+        message: error['message'] as String?,
+        details: error['details'],
+      );
+    } else {
+      return;
     }
   }
 }

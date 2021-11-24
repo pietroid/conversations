@@ -112,6 +112,14 @@ class ConversationClientMethods : Api.ConversationClientApi {
         })
     }
 
+    override fun getMyUser(result: Api.Result<Api.UserData>) {
+        val client = TwilioConversationsPlugin.client
+            ?: return result.error(RuntimeException("Client is not initialized"))
+
+        val myUser = client.myUser
+        return result.success(Mapper.userToPigeon(myUser))
+    }
+
     override fun registerForNotification(tokenData: Api.TokenData, result: Api.Result<Void>) {
         val token: String = tokenData.token
             ?: return result.error(RuntimeException("The parameter 'token' was not provided"))

@@ -37,9 +37,7 @@ class _ConversationsPageState extends State<ConversationsPage> {
               appBar: AppBar(
                 title: Text('Conversations'),
                 actions: [
-                  _buildCreateConversation(),
-                  _buildRegisterForNotifications(),
-                  _buildUnregisterForNotifications(),
+                  _buildOverflowButton(),
                 ],
               ),
               body: Center(
@@ -52,37 +50,114 @@ class _ConversationsPageState extends State<ConversationsPage> {
     );
   }
 
-  Widget _buildCreateConversation() {
-    return IconButton(
-      icon: Icon(Icons.add),
-      onPressed: () async {
-        var conversationName = await _getFriendlyNameForCreateConversation();
-        if (conversationName != null) {
-          final conversation = await widget.conversationsNotifier
-              .createConversation(friendlyName: conversationName);
-          print(
-              'Successfully created conversation: ${conversation?.friendlyName}');
-        } else {
-          print('Create conversation cancelled');
+  Widget _buildOverflowButton() {
+    return PopupMenuButton(
+      icon: Icon(Icons.menu),
+      onSelected: (result) {
+        switch (result) {
+          case ConversationsPageMenuOptions.setFriendlyName:
+            _showSetFriendlyName();
+            break;
+          case ConversationsPageMenuOptions.createConversation:
+            _showCreateConversation();
+            break;
+          case ConversationsPageMenuOptions.registerForNotifications:
+            _registerForNotifications();
+            break;
+          case ConversationsPageMenuOptions.unregisterForNotifications:
+            _unregisterForNotifications();
+            break;
         }
       },
+      itemBuilder: (BuildContext context) =>
+          <PopupMenuEntry<ConversationsPageMenuOptions>>[
+        PopupMenuItem(
+          value: ConversationsPageMenuOptions.setFriendlyName,
+          child: Text('Set My Friendly Name'),
+        ),
+        PopupMenuItem(
+          value: ConversationsPageMenuOptions.createConversation,
+          child: Text('Participants'),
+        ),
+        PopupMenuItem(
+          value: ConversationsPageMenuOptions.registerForNotifications,
+          child: Text('Register For Notifications'),
+        ),
+        PopupMenuItem(
+          value: ConversationsPageMenuOptions.unregisterForNotifications,
+          child: Text('Unregister For Notifications'),
+        ),
+      ],
     );
   }
 
-  Widget _buildRegisterForNotifications() {
-    return IconButton(
-      icon: Icon(Icons.cloud),
-      onPressed: () async {
-        await widget.conversationsNotifier.registerForNotification();
-      },
-    );
+  Future _showSetFriendlyName() async {
+    var friendlyName = await _getFriendlyNameForUser();
+    if (friendlyName != null) {
+      await widget.conversationsNotifier.setFriendlyName(friendlyName);
+    }
   }
 
-  Widget _buildUnregisterForNotifications() {
-    return IconButton(
-      icon: Icon(Icons.cloud_off),
-      onPressed: () async {
-        await widget.conversationsNotifier.unregisterForNotification();
+  Future _showCreateConversation() async {
+    var conversationName = await _getFriendlyNameForCreateConversation();
+    if (conversationName != null) {
+      final conversation = await widget.conversationsNotifier
+          .createConversation(friendlyName: conversationName);
+      print('Successfully created conversation: ${conversation?.friendlyName}');
+    } else {
+      print('Create conversation cancelled');
+    }
+  }
+
+  Future _registerForNotifications() async {
+    await widget.conversationsNotifier.registerForNotification();
+  }
+
+  Future _unregisterForNotifications() async {
+    await widget.conversationsNotifier.unregisterForNotification();
+  }
+
+  Future<String?> _getFriendlyNameForUser() async {
+    final controller = TextEditingController();
+
+    return showDialog<String?>(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          insetPadding: EdgeInsets.all(20),
+          child: Container(
+            padding: EdgeInsets.all(6),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                TextField(
+                  decoration: InputDecoration(
+                      label: Text(
+                          'My Friendly Name: ${widget.conversationsNotifier.friendlyName}')),
+                  controller: controller,
+                ),
+                Row(
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text('Cancel'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop(controller.text);
+                      },
+                      child: Text('Set Friendly Name'),
+                    )
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
       },
     );
   }
@@ -261,4 +336,11 @@ enum ConversationOptions {
   close,
   markRead,
   markUnread,
+}
+
+enum ConversationsPageMenuOptions {
+  setFriendlyName,
+  createConversation,
+  registerForNotifications,
+  unregisterForNotifications,
 }

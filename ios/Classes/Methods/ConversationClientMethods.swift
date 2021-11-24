@@ -4,11 +4,20 @@ import TwilioConversationsClient
 class ConversationClientMethods: NSObject, TWCONConversationClientApi {
     let TAG = "ConversationClientMethods"
 
+    /// getConversation
     func getConversationConversationSidOrUniqueName(
         _ conversationSidOrUniqueName: String?,
         completion: @escaping (TWCONConversationData?, FlutterError?) -> Void) {
         self.debug("getConversation => conversationSidOrUniqueName: \(String(describing: conversationSidOrUniqueName))")
-
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(
+                nil,
+                FlutterError(
+                    code: "ERROR",
+                    message: "Client has not been initialized.",
+                    details: nil))
+        }
+        
         guard let conversationSidOrUniqueName = conversationSidOrUniqueName else {
             return completion(
                 nil,
@@ -18,7 +27,7 @@ class ConversationClientMethods: NSObject, TWCONConversationClientApi {
                     details: nil))
         }
 
-        SwiftTwilioConversationsPlugin.instance?.client?.conversation(
+        client.conversation(
             withSidOrUniqueName: conversationSidOrUniqueName,
             completion: { (result: TCHResult, conversation: TCHConversation?) in
             if result.isSuccessful, let conversation = conversation {
@@ -36,65 +45,101 @@ class ConversationClientMethods: NSObject, TWCONConversationClientApi {
         })
     }
 
+    /// getMyConversations
     func getMyConversations(completion: @escaping ([TWCONConversationData]?, FlutterError?) -> Void) {
         self.debug("getMyConversations")
-        let myConversations =  SwiftTwilioConversationsPlugin.instance?.client?.myConversations()
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(
+                nil,
+                FlutterError(
+                    code: "ERROR",
+                    message: "Client has not been initialized.",
+                    details: nil))
+        }
+        
+        let myConversations =  client.myConversations()
         let result = Mapper.conversationsList(myConversations)
         completion(result, nil)
     }
 
+    /// getMyUser
+    func getMyUser(completion: @escaping (TWCONUserData?, FlutterError?) -> Void) {
+        self.debug("getMyUser")
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(
+                nil,
+                FlutterError(
+                    code: "ERROR",
+                    message: "Client has not been initialized.",
+                    details: nil))
+        }
+
+        let myUser = client.user
+        return completion(Mapper.userToPigeon(myUser), nil)
+    }
+    
+    /// updateToken
     public func updateTokenToken(_ token: String?, completion: @escaping (FlutterError?) -> Void) {
         self.debug("updateToken")
-        let flutterResult = completion
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(
+                FlutterError(
+                    code: "ERROR",
+                    message: "Client has not been initialized.",
+                    details: nil))
+        }
 
         guard let token = token else {
-            return flutterResult(
+            return completion(
                 FlutterError(
                     code: "MISSING_PARAMS",
                     message: "Missing 'token' parameter",
                     details: nil))
         }
 
-        SwiftTwilioConversationsPlugin.instance?.client?.updateToken(token, completion: {(result: TCHResult) -> Void in
+        client.updateToken(token, completion: {(result: TCHResult) -> Void in
             if result.isSuccessful {
                 self.debug("updateToken => onSuccess")
-                flutterResult(nil)
+                completion(nil)
             } else {
-                if let error = result.error as NSError? {
-                    self.debug("updateToken => onError: \(error)")
-                    flutterResult(FlutterError(code: "\(error.code)", message: "\(error.description)", details: nil))
-                }
+                let errorMessage = String(describing: result.error)
+                self.debug("updateToken => onError: \(errorMessage)")
+                completion(
+                    FlutterError(
+                        code: "ERROR",
+                        message: "Error updating token: \(errorMessage)",
+                        details: nil))
             }
         } as TCHCompletion)
     }
 
+    /// shutdown
     public func shutdownWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
         self.debug("shutdown")
         SwiftTwilioConversationsPlugin.instance?.client?.shutdown()
         disposeListeners()
     }
 
+    /// createConversation
     public func createConversationFriendlyName(
         _ friendlyName: String?,
         completion: @escaping (TWCONConversationData?, FlutterError?) -> Void) {
+        self.debug("createConversation => friendlyName: \(String(describing: friendlyName))")
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(
+                nil,
+                FlutterError(
+                    code: "ERROR",
+                    message: "Client has not been initialized.",
+                    details: nil))
+        }
+
         guard let friendlyName = friendlyName else {
             return completion(
                 nil,
                 FlutterError(
                     code: "MISSING_PARAMS",
                     message: "Missing 'friendlyName' parameter",
-                    details: nil))
-        }
-
-        self.debug("createConversation => friendlyName: \(friendlyName)")
-        let flutterResult = completion
-
-        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
-            return flutterResult(
-                nil,
-                FlutterError(
-                    code: "ERROR",
-                    message: "Client has not been initialized.",
                     details: nil))
         }
 
@@ -122,6 +167,7 @@ class ConversationClientMethods: NSObject, TWCONConversationClientApi {
         })
     }
 
+    /// registerForNotifications
     public func register(
         forNotificationTokenData tokenData: TWCONTokenData?,
         completion: @escaping (FlutterError?) -> Void) {
@@ -141,6 +187,7 @@ class ConversationClientMethods: NSObject, TWCONConversationClientApi {
         completion(nil)
     }
 
+    /// unregisterForNotifications
     public func unregister(
         forNotificationTokenData tokenData: TWCONTokenData?,
         completion: @escaping (FlutterError?) -> Void) {

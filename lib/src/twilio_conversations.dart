@@ -17,10 +17,12 @@ class TwilioConversations extends FlutterLoggingApi {
     PluginApi? pluginApi,
     ConversationApi? conversationApi,
     ParticipantApi? participantApi,
+    UserApi? userApi,
   }) {
     _pluginApi = pluginApi ?? PluginApi();
     _conversationApi = conversationApi ?? ConversationApi();
     _participantApi = participantApi ?? ParticipantApi();
+    _userApi = userApi ?? UserApi();
     FlutterLoggingApi.setup(this);
   }
 
@@ -29,11 +31,13 @@ class TwilioConversations extends FlutterLoggingApi {
     PluginApi? pluginApi,
     ConversationApi? conversationApi,
     ParticipantApi? participantApi,
+    UserApi? userApi,
   }) {
     _instance = TwilioConversations._(
       pluginApi: pluginApi,
       conversationApi: conversationApi,
       participantApi: participantApi,
+      userApi: userApi,
     );
     return _instance!;
   }
@@ -52,6 +56,9 @@ class TwilioConversations extends FlutterLoggingApi {
 
   final _messageApi = MessageApi();
   MessageApi get messageApi => _messageApi;
+
+  late UserApi _userApi;
+  UserApi get userApi => _userApi;
 
   // TODO: deprecate media progress channel and use pigeon instead
   static const EventChannel mediaProgressChannel =

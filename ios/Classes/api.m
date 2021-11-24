@@ -587,7 +587,7 @@ void TWCONPluginApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<TW
       return [TWCONAttributesData fromMap:[self readValue]];
     
     case 129:     
-      return [TWCONConversationData fromMap:[self readValue]];
+      return [TWCONAttributesData fromMap:[self readValue]];
     
     case 130:     
       return [TWCONConversationData fromMap:[self readValue]];
@@ -596,10 +596,16 @@ void TWCONPluginApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<TW
       return [TWCONConversationData fromMap:[self readValue]];
     
     case 132:     
-      return [TWCONTokenData fromMap:[self readValue]];
+      return [TWCONConversationData fromMap:[self readValue]];
     
     case 133:     
       return [TWCONTokenData fromMap:[self readValue]];
+    
+    case 134:     
+      return [TWCONTokenData fromMap:[self readValue]];
+    
+    case 135:     
+      return [TWCONUserData fromMap:[self readValue]];
     
     default:    
       return [super readValueOfType:type];
@@ -617,7 +623,7 @@ void TWCONPluginApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<TW
     [self writeByte:128];
     [self writeValue:[value toMap]];
   } else 
-  if ([value isKindOfClass:[TWCONConversationData class]]) {
+  if ([value isKindOfClass:[TWCONAttributesData class]]) {
     [self writeByte:129];
     [self writeValue:[value toMap]];
   } else 
@@ -629,12 +635,20 @@ void TWCONPluginApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<TW
     [self writeByte:131];
     [self writeValue:[value toMap]];
   } else 
-  if ([value isKindOfClass:[TWCONTokenData class]]) {
+  if ([value isKindOfClass:[TWCONConversationData class]]) {
     [self writeByte:132];
     [self writeValue:[value toMap]];
   } else 
   if ([value isKindOfClass:[TWCONTokenData class]]) {
     [self writeByte:133];
+    [self writeValue:[value toMap]];
+  } else 
+  if ([value isKindOfClass:[TWCONTokenData class]]) {
+    [self writeByte:134];
+    [self writeValue:[value toMap]];
+  } else 
+  if ([value isKindOfClass:[TWCONUserData class]]) {
+    [self writeByte:135];
     [self writeValue:[value toMap]];
   } else 
 {
@@ -754,6 +768,24 @@ void TWCONConversationClientApiSetup(id<FlutterBinaryMessenger> binaryMessenger,
         NSArray *args = message;
         NSString *arg_conversationSidOrUniqueName = args[0];
         [api getConversationConversationSidOrUniqueName:arg_conversationSidOrUniqueName completion:^(TWCONConversationData *_Nullable output, FlutterError *_Nullable error) {
+          callback(wrapResult(output, error));
+        }];
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [FlutterBasicMessageChannel
+        messageChannelWithName:@"dev.flutter.pigeon.ConversationClientApi.getMyUser"
+        binaryMessenger:binaryMessenger
+        codec:TWCONConversationClientApiGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(getMyUserWithCompletion:)], @"TWCONConversationClientApi api (%@) doesn't respond to @selector(getMyUserWithCompletion:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        [api getMyUserWithCompletion:^(TWCONUserData *_Nullable output, FlutterError *_Nullable error) {
           callback(wrapResult(output, error));
         }];
       }];
@@ -1702,6 +1734,61 @@ void TWCONMessageApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<T
         NSNumber *arg_messageIndex = args[1];
         [api getMediaContentTemporaryUrlConversationSid:arg_conversationSid messageIndex:arg_messageIndex completion:^(NSString *_Nullable output, FlutterError *_Nullable error) {
           callback(wrapResult(output, error));
+        }];
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
+}
+@interface TWCONUserApiCodecReader : FlutterStandardReader
+@end
+@implementation TWCONUserApiCodecReader
+@end
+
+@interface TWCONUserApiCodecWriter : FlutterStandardWriter
+@end
+@implementation TWCONUserApiCodecWriter
+@end
+
+@interface TWCONUserApiCodecReaderWriter : FlutterStandardReaderWriter
+@end
+@implementation TWCONUserApiCodecReaderWriter
+- (FlutterStandardWriter *)writerWithData:(NSMutableData *)data {
+  return [[TWCONUserApiCodecWriter alloc] initWithData:data];
+}
+- (FlutterStandardReader *)readerWithData:(NSData *)data {
+  return [[TWCONUserApiCodecReader alloc] initWithData:data];
+}
+@end
+
+NSObject<FlutterMessageCodec> *TWCONUserApiGetCodec() {
+  static dispatch_once_t s_pred = 0;
+  static FlutterStandardMessageCodec *s_sharedObject = nil;
+  dispatch_once(&s_pred, ^{
+    TWCONUserApiCodecReaderWriter *readerWriter = [[TWCONUserApiCodecReaderWriter alloc] init];
+    s_sharedObject = [FlutterStandardMessageCodec codecWithReaderWriter:readerWriter];
+  });
+  return s_sharedObject;
+}
+
+
+void TWCONUserApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<TWCONUserApi> *api) {
+  {
+    FlutterBasicMessageChannel *channel =
+      [FlutterBasicMessageChannel
+        messageChannelWithName:@"dev.flutter.pigeon.UserApi.setFriendlyName"
+        binaryMessenger:binaryMessenger
+        codec:TWCONUserApiGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(setFriendlyNameIdentity:friendlyName:completion:)], @"TWCONUserApi api (%@) doesn't respond to @selector(setFriendlyNameIdentity:friendlyName:completion:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        NSString *arg_identity = args[0];
+        NSString *arg_friendlyName = args[1];
+        [api setFriendlyNameIdentity:arg_identity friendlyName:arg_friendlyName completion:^(FlutterError *_Nullable error) {
+          callback(wrapResult(nil, error));
         }];
       }];
     }

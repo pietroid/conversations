@@ -13,6 +13,7 @@ public class SwiftTwilioConversationsPlugin: NSObject, FlutterPlugin {
     static let conversationApi: ConversationMethods = ConversationMethods()
     static let participantApi: ParticipantMethods = ParticipantMethods()
     static let messageApi: MessageMethods = MessageMethods()
+    static let userApi: UserMethods = UserMethods()
 
     // Host > Flutter APIs
     static var flutterClientApi: TWCONFlutterConversationClientApi?
@@ -61,6 +62,7 @@ public class SwiftTwilioConversationsPlugin: NSObject, FlutterPlugin {
         TWCONConversationApiSetup(registrar.messenger(), SwiftTwilioConversationsPlugin.conversationApi)
         TWCONParticipantApiSetup(registrar.messenger(), SwiftTwilioConversationsPlugin.participantApi)
         TWCONMessageApiSetup(registrar.messenger(), SwiftTwilioConversationsPlugin.messageApi)
+        TWCONUserApiSetup(registrar.messenger(), SwiftTwilioConversationsPlugin.userApi)
 
         registrar.addApplicationDelegate(self)
     }

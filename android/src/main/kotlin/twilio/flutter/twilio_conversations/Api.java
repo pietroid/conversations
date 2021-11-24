@@ -771,7 +771,7 @@ public class Api {
           return AttributesData.fromMap((Map<String, Object>) readValue(buffer));
         
         case (byte)129:         
-          return ConversationData.fromMap((Map<String, Object>) readValue(buffer));
+          return AttributesData.fromMap((Map<String, Object>) readValue(buffer));
         
         case (byte)130:         
           return ConversationData.fromMap((Map<String, Object>) readValue(buffer));
@@ -780,10 +780,16 @@ public class Api {
           return ConversationData.fromMap((Map<String, Object>) readValue(buffer));
         
         case (byte)132:         
-          return TokenData.fromMap((Map<String, Object>) readValue(buffer));
+          return ConversationData.fromMap((Map<String, Object>) readValue(buffer));
         
         case (byte)133:         
           return TokenData.fromMap((Map<String, Object>) readValue(buffer));
+        
+        case (byte)134:         
+          return TokenData.fromMap((Map<String, Object>) readValue(buffer));
+        
+        case (byte)135:         
+          return UserData.fromMap((Map<String, Object>) readValue(buffer));
         
         default:        
           return super.readValueOfType(type, buffer);
@@ -796,9 +802,9 @@ public class Api {
         stream.write(128);
         writeValue(stream, ((AttributesData) value).toMap());
       } else 
-      if (value instanceof ConversationData) {
+      if (value instanceof AttributesData) {
         stream.write(129);
-        writeValue(stream, ((ConversationData) value).toMap());
+        writeValue(stream, ((AttributesData) value).toMap());
       } else 
       if (value instanceof ConversationData) {
         stream.write(130);
@@ -808,13 +814,21 @@ public class Api {
         stream.write(131);
         writeValue(stream, ((ConversationData) value).toMap());
       } else 
-      if (value instanceof TokenData) {
+      if (value instanceof ConversationData) {
         stream.write(132);
-        writeValue(stream, ((TokenData) value).toMap());
+        writeValue(stream, ((ConversationData) value).toMap());
       } else 
       if (value instanceof TokenData) {
         stream.write(133);
         writeValue(stream, ((TokenData) value).toMap());
+      } else 
+      if (value instanceof TokenData) {
+        stream.write(134);
+        writeValue(stream, ((TokenData) value).toMap());
+      } else 
+      if (value instanceof UserData) {
+        stream.write(135);
+        writeValue(stream, ((UserData) value).toMap());
       } else 
 {
         super.writeValue(stream, value);
@@ -829,6 +843,7 @@ public class Api {
     void createConversation(String friendlyName, Result<ConversationData> result);
     void getMyConversations(Result<List<ConversationData>> result);
     void getConversation(String conversationSidOrUniqueName, Result<ConversationData> result);
+    void getMyUser(Result<UserData> result);
     void registerForNotification(TokenData tokenData, Result<Void> result);
     void unregisterForNotification(TokenData tokenData, Result<Void> result);
 
@@ -979,6 +994,35 @@ public class Api {
               };
 
               api.getConversation(conversationSidOrUniqueNameArg, resultCallback);
+            }
+            catch (Error | RuntimeException exception) {
+              wrapped.put("error", wrapError(exception));
+              reply.reply(wrapped);
+            }
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.ConversationClientApi.getMyUser", getCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            Map<String, Object> wrapped = new HashMap<>();
+            try {
+              Result<UserData> resultCallback = new Result<UserData>() {
+                public void success(UserData result) {
+                  wrapped.put("result", result);
+                  reply.reply(wrapped);
+                }
+                public void error(Throwable error) {
+                  wrapped.put("error", wrapError(error));
+                  reply.reply(wrapped);
+                }
+              };
+
+              api.getMyUser(resultCallback);
             }
             catch (Error | RuntimeException exception) {
               wrapped.put("error", wrapError(exception));
@@ -2440,6 +2484,62 @@ public class Api {
               };
 
               api.getMediaContentTemporaryUrl(conversationSidArg, messageIndexArg.longValue(), resultCallback);
+            }
+            catch (Error | RuntimeException exception) {
+              wrapped.put("error", wrapError(exception));
+              reply.reply(wrapped);
+            }
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+    }
+  }
+  private static class UserApiCodec extends StandardMessageCodec {
+    public static final UserApiCodec INSTANCE = new UserApiCodec();
+    private UserApiCodec() {}
+  }
+
+  /** Generated interface from Pigeon that represents a handler of messages from Flutter.*/
+  public interface UserApi {
+    void setFriendlyName(String identity, String friendlyName, Result<Void> result);
+
+    /** The codec used by UserApi. */
+    static MessageCodec<Object> getCodec() {
+      return UserApiCodec.INSTANCE;
+    }
+
+    /** Sets up an instance of `UserApi` to handle messages through the `binaryMessenger`. */
+    static void setup(BinaryMessenger binaryMessenger, UserApi api) {
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.UserApi.setFriendlyName", getCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            Map<String, Object> wrapped = new HashMap<>();
+            try {
+              ArrayList<Object> args = (ArrayList<Object>)message;
+              String identityArg = (String)args.get(0);
+              if (identityArg == null) {
+                throw new NullPointerException("identityArg unexpectedly null.");
+              }
+              String friendlyNameArg = (String)args.get(1);
+              if (friendlyNameArg == null) {
+                throw new NullPointerException("friendlyNameArg unexpectedly null.");
+              }
+              Result<Void> resultCallback = new Result<Void>() {
+                public void success(Void result) {
+                  wrapped.put("result", null);
+                  reply.reply(wrapped);
+                }
+                public void error(Throwable error) {
+                  wrapped.put("error", wrapError(error));
+                  reply.reply(wrapped);
+                }
+              };
+
+              api.setFriendlyName(identityArg, friendlyNameArg, resultCallback);
             }
             catch (Error | RuntimeException exception) {
               wrapped.put("error", wrapError(exception));

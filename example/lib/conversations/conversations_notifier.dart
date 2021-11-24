@@ -12,6 +12,7 @@ class ConversationsNotifier extends ChangeNotifier {
   bool isClientInitialized = false;
   TextEditingController identityController = TextEditingController();
   String identity = '';
+  String? friendlyName;
 
   List<Conversation> conversations = [];
   Map<String, int> unreadMessageCounts = {};
@@ -35,6 +36,7 @@ class ConversationsNotifier extends ChangeNotifier {
     final uClient = client;
     if (uClient != null) {
       isClientInitialized = true;
+      await updateFriendlyName();
       notifyListeners();
 
       subscriptions.add(uClient.onConversationAdded.listen((event) {
@@ -83,6 +85,18 @@ class ConversationsNotifier extends ChangeNotifier {
   Future<void> leave(Conversation conversation) async {
     await conversation.leave();
     notifyListeners();
+  }
+
+  Future<void> setFriendlyName(String friendlyName) async {
+    final myUser = await TwilioConversations.conversationClient?.getMyUser();
+    await myUser?.setFriendlyName(friendlyName);
+    await updateFriendlyName();
+    notifyListeners();
+  }
+
+  Future<void> updateFriendlyName() async {
+    final myUser = await TwilioConversations.conversationClient?.getMyUser();
+    friendlyName = myUser?.friendlyName;
   }
 
   Future<Conversation?> createConversation(

@@ -147,6 +147,7 @@ NSObject<FlutterMessageCodec> *TWCONConversationClientApiGetCodec(void);
 - (void)createConversationFriendlyName:(nullable NSString *)friendlyName completion:(void(^)(TWCONConversationData *_Nullable, FlutterError *_Nullable))completion;
 - (void)getMyConversationsWithCompletion:(void(^)(NSArray<TWCONConversationData *> *_Nullable, FlutterError *_Nullable))completion;
 - (void)getConversationConversationSidOrUniqueName:(nullable NSString *)conversationSidOrUniqueName completion:(void(^)(TWCONConversationData *_Nullable, FlutterError *_Nullable))completion;
+- (void)getMyUserWithCompletion:(void(^)(TWCONUserData *_Nullable, FlutterError *_Nullable))completion;
 - (void)registerForNotificationTokenData:(nullable TWCONTokenData *)tokenData completion:(void(^)(FlutterError *_Nullable))completion;
 - (void)unregisterForNotificationTokenData:(nullable TWCONTokenData *)tokenData completion:(void(^)(FlutterError *_Nullable))completion;
 @end
@@ -207,6 +208,15 @@ NSObject<FlutterMessageCodec> *TWCONMessageApiGetCodec(void);
 @end
 
 extern void TWCONMessageApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<TWCONMessageApi> *_Nullable api);
+
+/// The codec used by TWCONUserApi.
+NSObject<FlutterMessageCodec> *TWCONUserApiGetCodec(void);
+
+@protocol TWCONUserApi
+- (void)setFriendlyNameIdentity:(nullable NSString *)identity friendlyName:(nullable NSString *)friendlyName completion:(void(^)(FlutterError *_Nullable))completion;
+@end
+
+extern void TWCONUserApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<TWCONUserApi> *_Nullable api);
 
 /// The codec used by TWCONFlutterConversationClientApi.
 NSObject<FlutterMessageCodec> *TWCONFlutterConversationClientApiGetCodec(void);

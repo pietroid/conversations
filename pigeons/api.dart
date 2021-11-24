@@ -131,6 +131,9 @@ abstract class ConversationClientApi {
   ConversationData getConversation(String conversationSidOrUniqueName);
 
   @async
+  UserData getMyUser();
+
+  @async
   void registerForNotification(TokenData tokenData);
 
   @async
@@ -244,6 +247,12 @@ abstract class ParticipantApi {
 abstract class MessageApi {
   @async
   String getMediaContentTemporaryUrl(String conversationSid, int messageIndex);
+}
+
+@HostApi()
+abstract class UserApi {
+  @async
+  void setFriendlyName(String identity, String friendlyName);
 }
 
 @FlutterApi()

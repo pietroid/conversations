@@ -15,6 +15,7 @@ import twilio.flutter.twilio_conversations.methods.ConversationClientMethods
 import twilio.flutter.twilio_conversations.methods.MessageMethods
 import twilio.flutter.twilio_conversations.methods.ParticipantMethods
 import twilio.flutter.twilio_conversations.methods.PluginMethods
+import twilio.flutter.twilio_conversations.methods.UserMethods
 
 /** TwilioConversationsPlugin */
 class TwilioConversationsPlugin : FlutterPlugin {
@@ -38,6 +39,9 @@ class TwilioConversationsPlugin : FlutterPlugin {
 
         @JvmStatic
         val messageApi: Api.MessageApi = MessageMethods()
+
+        @JvmStatic
+        val userApi: Api.UserApi = UserMethods()
 
         // Host > Flutter APIs
         @JvmStatic
@@ -82,6 +86,7 @@ class TwilioConversationsPlugin : FlutterPlugin {
         Api.ConversationApi.setup(flutterPluginBinding.binaryMessenger, conversationApi)
         Api.ParticipantApi.setup(flutterPluginBinding.binaryMessenger, participantApi)
         Api.MessageApi.setup(flutterPluginBinding.binaryMessenger, messageApi)
+        Api.UserApi.setup(flutterPluginBinding.binaryMessenger, userApi)
 
         flutterClientApi = Api.FlutterConversationClientApi(flutterPluginBinding.binaryMessenger)
         flutterLoggingApi = Api.FlutterLoggingApi(flutterPluginBinding.binaryMessenger)
