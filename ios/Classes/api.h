@@ -194,6 +194,7 @@ NSObject<FlutterMessageCodec> *TWCONParticipantApiGetCodec(void);
 @protocol TWCONParticipantApi
 - (void)getUserConversationSid:(nullable NSString *)conversationSid participantSid:(nullable NSString *)participantSid completion:(void(^)(TWCONUserData *_Nullable, FlutterError *_Nullable))completion;
 - (void)setAttributesConversationSid:(nullable NSString *)conversationSid participantSid:(nullable NSString *)participantSid attributes:(nullable TWCONAttributesData *)attributes completion:(void(^)(FlutterError *_Nullable))completion;
+- (void)removeConversationSid:(nullable NSString *)conversationSid participantSid:(nullable NSString *)participantSid completion:(void(^)(FlutterError *_Nullable))completion;
 @end
 
 extern void TWCONParticipantApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<TWCONParticipantApi> *_Nullable api);

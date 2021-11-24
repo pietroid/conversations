@@ -235,6 +235,9 @@ abstract class ParticipantApi {
   @async
   void setAttributes(
       String conversationSid, String participantSid, AttributesData attributes);
+
+  @async
+  void remove(String conversationSid, String participantSid);
 }
 
 @HostApi()

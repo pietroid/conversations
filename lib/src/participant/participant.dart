@@ -87,5 +87,11 @@ class Participant {
     }
   }
 
-//TODO: implement remove
+  Future<void> remove() async {
+    try {
+      await TwilioConversations().participantApi.remove(conversationSid, sid);
+    } on PlatformException catch (err) {
+      throw TwilioConversations.convertException(err);
+    }
+  }
 }

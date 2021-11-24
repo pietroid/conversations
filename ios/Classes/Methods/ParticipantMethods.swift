@@ -170,6 +170,72 @@ class ParticipantMethods: NSObject, TWCONParticipantApi {
         })
     }
 
+    /// remove
+    func removeConversationSid(_ conversationSid: String?, participantSid: String?, completion: @escaping (FlutterError?) -> Void) {
+        debug("remove => conversationSid: \(String(describing: conversationSid)), participantSid: \(String(describing: participantSid))")
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(
+                FlutterError(
+                    code: "ERROR",
+                    message: "Client has not been initialized.",
+                    details: nil))
+        }
+
+        guard let conversationSid = conversationSid else {
+            return completion(
+                FlutterError(
+                    code: "MISSING_PARAMS",
+                    message: "Missing 'conversationSid' parameter",
+                    details: nil))
+        }
+
+        guard let participantSid = participantSid else {
+            return completion(
+                FlutterError(
+                    code: "MISSING_PARAMS",
+                    message: "Missing 'participantSid' parameter",
+                    details: nil))
+        }
+
+        client.conversation(
+            withSidOrUniqueName: conversationSid,
+            completion: { (result: TCHResult, conversation: TCHConversation?) in
+            if result.isSuccessful, let conversation = conversation {
+                guard let participant = conversation.participant(withSid: participantSid) else {
+                    completion(
+                        FlutterError(
+                            code: "NOT_FOUND",
+                            message: "No participant found with sid: \(participantSid)",
+                            details: nil))
+                    return
+                }
+                participant.remove() { (result: TCHResult) in
+                    if result.isSuccessful {
+                        self.debug("remove => onSuccess")
+                        completion(nil)
+                    } else {
+                        let errorMessage = String(describing: result.error)
+                        self.debug("remove => onError: \(errorMessage)")
+                        completion(
+                            FlutterError(
+                                code: "ERROR",
+                                message: "remove => Error removing participant \(participantSid) "
+                                + "from conversation \(conversationSid): \(errorMessage)",
+                                details: nil))
+                    }
+                }
+            } else {
+                let errorMessage = String(describing: result.error)
+                self.debug("remove => onError: \(errorMessage)")
+                completion(
+                    FlutterError(
+                        code: "ERROR",
+                        message: "remove => Error retrieving conversation \(conversationSid): \(errorMessage)",
+                        details: nil))
+            }
+        })
+    }
+    
     private func debug(_ msg: String) {
         SwiftTwilioConversationsPlugin.debug("\(TAG)::\(msg)")
     }

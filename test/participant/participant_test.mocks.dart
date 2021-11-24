@@ -43,5 +43,12 @@ class MockParticipantApi extends _i1.Mock implements _i2.ParticipantApi {
           returnValue: Future<void>.value(),
           returnValueForMissingStub: Future<void>.value()) as _i3.Future<void>);
   @override
+  _i3.Future<void> remove(
+          String? arg_conversationSid, String? arg_participantSid) =>
+      (super.noSuchMethod(
+          Invocation.method(#remove, [arg_conversationSid, arg_participantSid]),
+          returnValue: Future<void>.value(),
+          returnValueForMissingStub: Future<void>.value()) as _i3.Future<void>);
+  @override
   String toString() => super.toString();
 }

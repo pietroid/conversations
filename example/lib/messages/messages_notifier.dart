@@ -91,7 +91,7 @@ class MessagesNotifier extends ChangeNotifier {
   }
 
   Future<void> removeParticipant(Participant participant) async {
-    await conversation.removeParticipant(participant);
+    await participant.remove();
     await getParticipants();
   }
 

@@ -2267,6 +2267,7 @@ public class Api {
   public interface ParticipantApi {
     void getUser(String conversationSid, String participantSid, Result<UserData> result);
     void setAttributes(String conversationSid, String participantSid, AttributesData attributes, Result<Void> result);
+    void remove(String conversationSid, String participantSid, Result<Void> result);
 
     /** The codec used by ParticipantApi. */
     static MessageCodec<Object> getCodec() {
@@ -2345,6 +2346,44 @@ public class Api {
               };
 
               api.setAttributes(conversationSidArg, participantSidArg, attributesArg, resultCallback);
+            }
+            catch (Error | RuntimeException exception) {
+              wrapped.put("error", wrapError(exception));
+              reply.reply(wrapped);
+            }
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.ParticipantApi.remove", getCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            Map<String, Object> wrapped = new HashMap<>();
+            try {
+              ArrayList<Object> args = (ArrayList<Object>)message;
+              String conversationSidArg = (String)args.get(0);
+              if (conversationSidArg == null) {
+                throw new NullPointerException("conversationSidArg unexpectedly null.");
+              }
+              String participantSidArg = (String)args.get(1);
+              if (participantSidArg == null) {
+                throw new NullPointerException("participantSidArg unexpectedly null.");
+              }
+              Result<Void> resultCallback = new Result<Void>() {
+                public void success(Void result) {
+                  wrapped.put("result", null);
+                  reply.reply(wrapped);
+                }
+                public void error(Throwable error) {
+                  wrapped.put("error", wrapError(error));
+                  reply.reply(wrapped);
+                }
+              };
+
+              api.remove(conversationSidArg, participantSidArg, resultCallback);
             }
             catch (Error | RuntimeException exception) {
               wrapped.put("error", wrapError(exception));
