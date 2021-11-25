@@ -253,6 +253,9 @@ abstract class MessageApi {
 abstract class UserApi {
   @async
   void setFriendlyName(String identity, String friendlyName);
+
+  @async
+  void setAttributes(String identity, AttributesData attributes);
 }
 
 @FlutterApi()

@@ -1671,6 +1671,27 @@ class MessageApi {
 
 class _UserApiCodec extends StandardMessageCodec {
   const _UserApiCodec();
+  @override
+  void writeValue(WriteBuffer buffer, Object? value) {
+    if (value is AttributesData) {
+      buffer.putUint8(128);
+      writeValue(buffer, value.encode());
+    } else 
+{
+      super.writeValue(buffer, value);
+    }
+  }
+  @override
+  Object? readValueOfType(int type, ReadBuffer buffer) {
+    switch (type) {
+      case 128:       
+        return AttributesData.decode(readValue(buffer)!);
+      
+      default:      
+        return super.readValueOfType(type, buffer);
+      
+    }
+  }
 }
 
 class UserApi {
@@ -1688,6 +1709,29 @@ class UserApi {
         'dev.flutter.pigeon.UserApi.setFriendlyName', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
         await channel.send(<Object>[arg_identity, arg_friendlyName]) as Map<Object?, Object?>?;
+    if (replyMap == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+        details: null,
+      );
+    } else if (replyMap['error'] != null) {
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      throw PlatformException(
+        code: (error['code'] as String?)!,
+        message: error['message'] as String?,
+        details: error['details'],
+      );
+    } else {
+      return;
+    }
+  }
+
+  Future<void> setAttributes(String arg_identity, AttributesData arg_attributes) async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.UserApi.setAttributes', codec, binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap =
+        await channel.send(<Object>[arg_identity, arg_attributes]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',

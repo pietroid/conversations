@@ -1,3 +1,4 @@
+import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/services.dart';
 import 'package:twilio_conversations/api.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
@@ -80,5 +81,16 @@ class User {
     }
   }
 
-  //TODO: implement setAttributes
+  Future<void> setAttributes(Attributes attributes) async {
+    try {
+      final attributesData = AttributesData()
+        ..type = EnumToString.convertToString(attributes.type)
+        ..data = attributes.data;
+      await TwilioConversations()
+          .userApi
+          .setAttributes(identity, attributesData);
+    } on PlatformException catch (err) {
+      throw TwilioConversations.convertException(err);
+    }
+  }
 }

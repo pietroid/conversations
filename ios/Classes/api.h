@@ -214,6 +214,7 @@ NSObject<FlutterMessageCodec> *TWCONUserApiGetCodec(void);
 
 @protocol TWCONUserApi
 - (void)setFriendlyNameIdentity:(nullable NSString *)identity friendlyName:(nullable NSString *)friendlyName completion:(void(^)(FlutterError *_Nullable))completion;
+- (void)setAttributesIdentity:(nullable NSString *)identity attributes:(nullable TWCONAttributesData *)attributes completion:(void(^)(FlutterError *_Nullable))completion;
 @end
 
 extern void TWCONUserApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<TWCONUserApi> *_Nullable api);

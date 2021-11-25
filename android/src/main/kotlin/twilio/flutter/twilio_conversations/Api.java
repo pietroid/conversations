@@ -2499,11 +2499,33 @@ public class Api {
   private static class UserApiCodec extends StandardMessageCodec {
     public static final UserApiCodec INSTANCE = new UserApiCodec();
     private UserApiCodec() {}
+    @Override
+    protected Object readValueOfType(byte type, ByteBuffer buffer) {
+      switch (type) {
+        case (byte)128:         
+          return AttributesData.fromMap((Map<String, Object>) readValue(buffer));
+        
+        default:        
+          return super.readValueOfType(type, buffer);
+        
+      }
+    }
+    @Override
+    protected void writeValue(ByteArrayOutputStream stream, Object value)     {
+      if (value instanceof AttributesData) {
+        stream.write(128);
+        writeValue(stream, ((AttributesData) value).toMap());
+      } else 
+{
+        super.writeValue(stream, value);
+      }
+    }
   }
 
   /** Generated interface from Pigeon that represents a handler of messages from Flutter.*/
   public interface UserApi {
     void setFriendlyName(String identity, String friendlyName, Result<Void> result);
+    void setAttributes(String identity, AttributesData attributes, Result<Void> result);
 
     /** The codec used by UserApi. */
     static MessageCodec<Object> getCodec() {
@@ -2540,6 +2562,44 @@ public class Api {
               };
 
               api.setFriendlyName(identityArg, friendlyNameArg, resultCallback);
+            }
+            catch (Error | RuntimeException exception) {
+              wrapped.put("error", wrapError(exception));
+              reply.reply(wrapped);
+            }
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.UserApi.setAttributes", getCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            Map<String, Object> wrapped = new HashMap<>();
+            try {
+              ArrayList<Object> args = (ArrayList<Object>)message;
+              String identityArg = (String)args.get(0);
+              if (identityArg == null) {
+                throw new NullPointerException("identityArg unexpectedly null.");
+              }
+              AttributesData attributesArg = (AttributesData)args.get(1);
+              if (attributesArg == null) {
+                throw new NullPointerException("attributesArg unexpectedly null.");
+              }
+              Result<Void> resultCallback = new Result<Void>() {
+                public void success(Void result) {
+                  wrapped.put("result", null);
+                  reply.reply(wrapped);
+                }
+                public void error(Throwable error) {
+                  wrapped.put("error", wrapError(error));
+                  reply.reply(wrapped);
+                }
+              };
+
+              api.setAttributes(identityArg, attributesArg, resultCallback);
             }
             catch (Error | RuntimeException exception) {
               wrapped.put("error", wrapError(exception));

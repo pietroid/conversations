@@ -1745,11 +1745,32 @@ void TWCONMessageApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<T
 @interface TWCONUserApiCodecReader : FlutterStandardReader
 @end
 @implementation TWCONUserApiCodecReader
+- (nullable id)readValueOfType:(UInt8)type 
+{
+  switch (type) {
+    case 128:     
+      return [TWCONAttributesData fromMap:[self readValue]];
+    
+    default:    
+      return [super readValueOfType:type];
+    
+  }
+}
 @end
 
 @interface TWCONUserApiCodecWriter : FlutterStandardWriter
 @end
 @implementation TWCONUserApiCodecWriter
+- (void)writeValue:(id)value 
+{
+  if ([value isKindOfClass:[TWCONAttributesData class]]) {
+    [self writeByte:128];
+    [self writeValue:[value toMap]];
+  } else 
+{
+    [super writeValue:value];
+  }
+}
 @end
 
 @interface TWCONUserApiCodecReaderWriter : FlutterStandardReaderWriter
@@ -1788,6 +1809,27 @@ void TWCONUserApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<TWCO
         NSString *arg_identity = args[0];
         NSString *arg_friendlyName = args[1];
         [api setFriendlyNameIdentity:arg_identity friendlyName:arg_friendlyName completion:^(FlutterError *_Nullable error) {
+          callback(wrapResult(nil, error));
+        }];
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [FlutterBasicMessageChannel
+        messageChannelWithName:@"dev.flutter.pigeon.UserApi.setAttributes"
+        binaryMessenger:binaryMessenger
+        codec:TWCONUserApiGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(setAttributesIdentity:attributes:completion:)], @"TWCONUserApi api (%@) doesn't respond to @selector(setAttributesIdentity:attributes:completion:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        NSString *arg_identity = args[0];
+        TWCONAttributesData *arg_attributes = args[1];
+        [api setAttributesIdentity:arg_identity attributes:arg_attributes completion:^(FlutterError *_Nullable error) {
           callback(wrapResult(nil, error));
         }];
       }];
