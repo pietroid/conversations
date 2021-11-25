@@ -82,6 +82,78 @@ class MessageMethods: NSObject, TWCONMessageApi {
         })
     }
 
+    /// getParticipant
+    func getParticipantConversationSid(_ conversationSid: String?, messageIndex: NSNumber?, completion: @escaping (TWCONParticipantData?, FlutterError?) -> Void) {
+        debug("getParticipant => conversationSid: \(String(describing: conversationSid)), "
+                + "messageIndex: \(String(describing: messageIndex))")
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(
+                nil,
+                FlutterError(
+                    code: "ERROR",
+                    message: "Client has not been initialized.",
+                    details: nil))
+        }
+
+        guard let conversationSid = conversationSid else {
+            return completion(
+                nil, FlutterError(
+                    code: "MISSING_PARAMS",
+                    message: "Missing conversationSid",
+                    details: nil))
+        }
+
+        guard let messageIndex = messageIndex else {
+            return completion(
+                nil,
+                FlutterError(
+                    code: "MISSING_PARAMS",
+                    message: "Missing messageIndex",
+                    details: nil))
+        }
+
+        client.conversation(
+            withSidOrUniqueName: conversationSid,
+            completion: { (result: TCHResult, conversation: TCHConversation?) in
+                if result.isSuccessful, let conversation = conversation {
+                    conversation.message(
+                        withIndex: messageIndex,
+                        completion: { (result: TCHResult, message: TCHMessage?) in
+                        if result.isSuccessful, let message = message {
+                            guard let participant = message.participant else {
+                                return completion(
+                                    nil,
+                                    FlutterError(
+                                        code: "ERROR",
+                                        message: "Participant not found for message: \(messageIndex).",
+                                        details: nil))
+                            }
+                            
+                            self.debug("getParticipant => onSuccess")
+                            let participantData = Mapper.participantToPigeon(participant, conversationSid: conversationSid)
+                            return completion(participantData, nil)
+                        } else {
+                            self.debug("getParticipant => onError: \(String(describing: result.error))")
+                            completion(
+                                nil,
+                                FlutterError(
+                                    code: "ERROR",
+                                    message: "Error getting message at index \(messageIndex) "
+                                        + "in conversation \(conversationSid)",
+                                    details: nil))
+                        }
+                    })
+                } else {
+                    completion(
+                        nil,
+                        FlutterError(
+                            code: "ERROR",
+                            message: "Error retrieving conversation \(conversationSid)",
+                            details: nil))
+                }
+        })
+    }
+    
     private func debug(_ msg: String) {
         SwiftTwilioConversationsPlugin.debug("\(TAG)::\(msg)")
     }

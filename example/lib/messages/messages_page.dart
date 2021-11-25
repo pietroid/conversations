@@ -197,8 +197,9 @@ class _MessagesPageState extends State<MessagesPage> {
             .getMessagesAfter(index: message.messageIndex!, count: 3);
         final messageByIndex = await messagesNotifier.conversation
             .getMessageByIndex(message.messageIndex!);
+        final participant = await message.getParticipant();
         print(
-            'message: $messageByIndex\n\tmessagesBefore: $messagesBefore\n\tmessagesAfter: $messagesAfter');
+            'message: ${messageByIndex.messageIndex}\n\tsentBy: ${participant?.sid}\n\tmessagesBefore: ${messagesBefore.length}\n\tmessagesAfter: ${messagesAfter.length}');
       },
       onLongPress: () => _showShouldRemoveMessageDialog(message),
       child: Column(

@@ -5,6 +5,7 @@ import com.twilio.conversations.Conversation
 import com.twilio.conversations.ErrorInfo
 import com.twilio.conversations.Message
 import twilio.flutter.twilio_conversations.Api
+import twilio.flutter.twilio_conversations.Mapper
 import twilio.flutter.twilio_conversations.TwilioConversationsPlugin
 
 class MessageMethods : Api.MessageApi {
@@ -45,6 +46,39 @@ class MessageMethods : Api.MessageApi {
 
             override fun onError(errorInfo: ErrorInfo) {
                 debug("getMediaContentTemporaryUrl => onError: $errorInfo")
+                result.error(RuntimeException(errorInfo.message))
+            }
+        })
+    }
+
+    override fun getParticipant(
+        conversationSid: String,
+        messageIndex: Long,
+        result: Api.Result<Api.ParticipantData>
+    ) {
+        debug("getParticipant => conversationSid: $conversationSid messageIndex: $messageIndex")
+        val client = TwilioConversationsPlugin.client
+            ?: return result.error(RuntimeException("Client is not initialized"))
+
+        client.getConversation(conversationSid, object : CallbackListener<Conversation> {
+            override fun onSuccess(conversation: Conversation) {
+                conversation.getMessageByIndex(messageIndex, object : CallbackListener<Message> {
+                    override fun onSuccess(message: Message) {
+                        val participant = message.participant
+                            ?: return result.error(RuntimeException("Participant not found for message: $messageIndex."))
+                        debug("getParticipant => onSuccess")
+                        return result.success(Mapper.participantToPigeon(participant))
+                    }
+
+                    override fun onError(errorInfo: ErrorInfo) {
+                        debug("getParticipant => onError: $errorInfo")
+                        result.error(RuntimeException(errorInfo.message))
+                    }
+                })
+            }
+
+            override fun onError(errorInfo: ErrorInfo) {
+                debug("getParticipant => onError: $errorInfo")
                 result.error(RuntimeException(errorInfo.message))
             }
         })

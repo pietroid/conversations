@@ -1690,11 +1690,39 @@ void TWCONParticipantApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObje
 @interface TWCONMessageApiCodecReader : FlutterStandardReader
 @end
 @implementation TWCONMessageApiCodecReader
+- (nullable id)readValueOfType:(UInt8)type 
+{
+  switch (type) {
+    case 128:     
+      return [TWCONAttributesData fromMap:[self readValue]];
+    
+    case 129:     
+      return [TWCONParticipantData fromMap:[self readValue]];
+    
+    default:    
+      return [super readValueOfType:type];
+    
+  }
+}
 @end
 
 @interface TWCONMessageApiCodecWriter : FlutterStandardWriter
 @end
 @implementation TWCONMessageApiCodecWriter
+- (void)writeValue:(id)value 
+{
+  if ([value isKindOfClass:[TWCONAttributesData class]]) {
+    [self writeByte:128];
+    [self writeValue:[value toMap]];
+  } else 
+  if ([value isKindOfClass:[TWCONParticipantData class]]) {
+    [self writeByte:129];
+    [self writeValue:[value toMap]];
+  } else 
+{
+    [super writeValue:value];
+  }
+}
 @end
 
 @interface TWCONMessageApiCodecReaderWriter : FlutterStandardReaderWriter
@@ -1733,6 +1761,27 @@ void TWCONMessageApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<T
         NSString *arg_conversationSid = args[0];
         NSNumber *arg_messageIndex = args[1];
         [api getMediaContentTemporaryUrlConversationSid:arg_conversationSid messageIndex:arg_messageIndex completion:^(NSString *_Nullable output, FlutterError *_Nullable error) {
+          callback(wrapResult(output, error));
+        }];
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [FlutterBasicMessageChannel
+        messageChannelWithName:@"dev.flutter.pigeon.MessageApi.getParticipant"
+        binaryMessenger:binaryMessenger
+        codec:TWCONMessageApiGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(getParticipantConversationSid:messageIndex:completion:)], @"TWCONMessageApi api (%@) doesn't respond to @selector(getParticipantConversationSid:messageIndex:completion:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        NSString *arg_conversationSid = args[0];
+        NSNumber *arg_messageIndex = args[1];
+        [api getParticipantConversationSid:arg_conversationSid messageIndex:arg_messageIndex completion:^(TWCONParticipantData *_Nullable output, FlutterError *_Nullable error) {
           callback(wrapResult(output, error));
         }];
       }];

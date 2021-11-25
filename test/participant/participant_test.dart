@@ -24,7 +24,6 @@ void main() {
     ParticipantTestStubs.stubSetAttributes(participantApi);
     final participantSid = Uuid().v4();
     final conversationSid = Uuid().v4();
-    // final conversation = Conversation(conversationSid);
     final participant = ParticipantTestStubs.createMockParticipant(
         conversationSid, participantSid);
     final expectedAttributes = 173.954;

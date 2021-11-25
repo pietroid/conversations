@@ -2443,11 +2443,40 @@ public class Api {
   private static class MessageApiCodec extends StandardMessageCodec {
     public static final MessageApiCodec INSTANCE = new MessageApiCodec();
     private MessageApiCodec() {}
+    @Override
+    protected Object readValueOfType(byte type, ByteBuffer buffer) {
+      switch (type) {
+        case (byte)128:         
+          return AttributesData.fromMap((Map<String, Object>) readValue(buffer));
+        
+        case (byte)129:         
+          return ParticipantData.fromMap((Map<String, Object>) readValue(buffer));
+        
+        default:        
+          return super.readValueOfType(type, buffer);
+        
+      }
+    }
+    @Override
+    protected void writeValue(ByteArrayOutputStream stream, Object value)     {
+      if (value instanceof AttributesData) {
+        stream.write(128);
+        writeValue(stream, ((AttributesData) value).toMap());
+      } else 
+      if (value instanceof ParticipantData) {
+        stream.write(129);
+        writeValue(stream, ((ParticipantData) value).toMap());
+      } else 
+{
+        super.writeValue(stream, value);
+      }
+    }
   }
 
   /** Generated interface from Pigeon that represents a handler of messages from Flutter.*/
   public interface MessageApi {
     void getMediaContentTemporaryUrl(String conversationSid, Long messageIndex, Result<String> result);
+    void getParticipant(String conversationSid, Long messageIndex, Result<ParticipantData> result);
 
     /** The codec used by MessageApi. */
     static MessageCodec<Object> getCodec() {
@@ -2484,6 +2513,44 @@ public class Api {
               };
 
               api.getMediaContentTemporaryUrl(conversationSidArg, messageIndexArg.longValue(), resultCallback);
+            }
+            catch (Error | RuntimeException exception) {
+              wrapped.put("error", wrapError(exception));
+              reply.reply(wrapped);
+            }
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.MessageApi.getParticipant", getCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            Map<String, Object> wrapped = new HashMap<>();
+            try {
+              ArrayList<Object> args = (ArrayList<Object>)message;
+              String conversationSidArg = (String)args.get(0);
+              if (conversationSidArg == null) {
+                throw new NullPointerException("conversationSidArg unexpectedly null.");
+              }
+              Number messageIndexArg = (Number)args.get(1);
+              if (messageIndexArg == null) {
+                throw new NullPointerException("messageIndexArg unexpectedly null.");
+              }
+              Result<ParticipantData> resultCallback = new Result<ParticipantData>() {
+                public void success(ParticipantData result) {
+                  wrapped.put("result", result);
+                  reply.reply(wrapped);
+                }
+                public void error(Throwable error) {
+                  wrapped.put("error", wrapError(error));
+                  reply.reply(wrapped);
+                }
+              };
+
+              api.getParticipant(conversationSidArg, messageIndexArg.longValue(), resultCallback);
             }
             catch (Error | RuntimeException exception) {
               wrapped.put("error", wrapError(exception));

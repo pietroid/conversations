@@ -247,6 +247,9 @@ abstract class ParticipantApi {
 abstract class MessageApi {
   @async
   String getMediaContentTemporaryUrl(String conversationSid, int messageIndex);
+
+  @async
+  ParticipantData getParticipant(String conversationSid, int messageIndex);
 }
 
 @HostApi()

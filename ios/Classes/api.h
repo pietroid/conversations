@@ -205,6 +205,7 @@ NSObject<FlutterMessageCodec> *TWCONMessageApiGetCodec(void);
 
 @protocol TWCONMessageApi
 - (void)getMediaContentTemporaryUrlConversationSid:(nullable NSString *)conversationSid messageIndex:(nullable NSNumber *)messageIndex completion:(void(^)(NSString *_Nullable, FlutterError *_Nullable))completion;
+- (void)getParticipantConversationSid:(nullable NSString *)conversationSid messageIndex:(nullable NSNumber *)messageIndex completion:(void(^)(TWCONParticipantData *_Nullable, FlutterError *_Nullable))completion;
 @end
 
 extern void TWCONMessageApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<TWCONMessageApi> *_Nullable api);

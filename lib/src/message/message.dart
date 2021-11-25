@@ -1,4 +1,5 @@
 import 'package:enum_to_string/enum_to_string.dart';
+import 'package:flutter/services.dart';
 import 'package:twilio_conversations/api.dart';
 import 'package:twilio_conversations/twilio_conversations.dart';
 
@@ -88,6 +89,19 @@ class Message {
     }
   }
 
+  Future<Participant?> getParticipant() async {
+    try {
+      final result = await TwilioConversations()
+          .messageApi
+          .getParticipant(conversationSid, messageIndex!);
+
+      final participant = Participant.fromPigeon(result);
+
+      return participant;
+    } on PlatformException catch (err) {
+      throw TwilioConversations.convertException(err);
+    }
+  }
   //TODO: implement getAggregatedDeliveryReceipt
   //TODO: implement getDetailedDeliveryReceiptList
   //TODO: implement updateMessageBody

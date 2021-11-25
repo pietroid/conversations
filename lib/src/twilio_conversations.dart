@@ -18,11 +18,13 @@ class TwilioConversations extends FlutterLoggingApi {
     ConversationApi? conversationApi,
     ParticipantApi? participantApi,
     UserApi? userApi,
+    MessageApi? messageApi,
   }) {
     _pluginApi = pluginApi ?? PluginApi();
     _conversationApi = conversationApi ?? ConversationApi();
     _participantApi = participantApi ?? ParticipantApi();
     _userApi = userApi ?? UserApi();
+    _messageApi = messageApi ?? MessageApi();
     FlutterLoggingApi.setup(this);
   }
 
@@ -32,12 +34,14 @@ class TwilioConversations extends FlutterLoggingApi {
     ConversationApi? conversationApi,
     ParticipantApi? participantApi,
     UserApi? userApi,
+    MessageApi? messageApi,
   }) {
     _instance = TwilioConversations._(
       pluginApi: pluginApi,
       conversationApi: conversationApi,
       participantApi: participantApi,
       userApi: userApi,
+      messageApi: messageApi,
     );
     return _instance!;
   }
@@ -54,7 +58,7 @@ class TwilioConversations extends FlutterLoggingApi {
   late ParticipantApi _participantApi;
   ParticipantApi get participantApi => _participantApi;
 
-  final _messageApi = MessageApi();
+  late MessageApi _messageApi;
   MessageApi get messageApi => _messageApi;
 
   late UserApi _userApi;
