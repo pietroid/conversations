@@ -250,6 +250,10 @@ abstract class MessageApi {
 
   @async
   ParticipantData getParticipant(String conversationSid, int messageIndex);
+
+  @async
+  void updateMessageBody(
+      String conversationSid, int messageIndex, String messageBody);
 }
 
 @HostApi()

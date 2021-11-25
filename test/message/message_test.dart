@@ -24,16 +24,34 @@ void main() {
     final participantSid = Uuid().v4();
     final conversationSid = Uuid().v4();
     final messageIndex = 9;
-    final mockParticipant = MessageTestStubs.createMockParticipant(
-        conversationSid, participantSid);
+    final mockParticipant =
+        MessageTestStubs.createMockParticipant(conversationSid, participantSid);
     MessageTestStubs.stubGetParticipant(messageApi, mockParticipant);
 
-    final message = MessageTestStubs.createMockMessage(conversationSid, messageIndex);
+    final message =
+        MessageTestStubs.createMockMessage(conversationSid, messageIndex);
 
-    final participantResult = await message.getParticipant();
+    await message.getParticipant();
 
     final invocation = MessageTestStubs.invocation;
     expect(invocation?.positionalArguments[0], conversationSid);
     expect(invocation?.positionalArguments[1], messageIndex);
+  });
+
+  test('Calls API to invoke update message body', () async {
+    final conversationSid = Uuid().v4();
+    final messageIndex = 9;
+    MessageTestStubs.stubUpdateMessageBody(messageApi);
+    final expectedMessageBody = "expectedMessageBody";
+
+    final message =
+        MessageTestStubs.createMockMessage(conversationSid, messageIndex);
+
+    await message.updateMessageBody(expectedMessageBody);
+
+    final invocation = MessageTestStubs.invocation;
+    expect(invocation?.positionalArguments[0], conversationSid);
+    expect(invocation?.positionalArguments[1], messageIndex);
+    expect(invocation?.positionalArguments[2], expectedMessageBody);
   });
 }

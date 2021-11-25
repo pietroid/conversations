@@ -201,7 +201,8 @@ class _MessagesPageState extends State<MessagesPage> {
         print(
             'message: ${messageByIndex.messageIndex}\n\tsentBy: ${participant?.sid}\n\tmessagesBefore: ${messagesBefore.length}\n\tmessagesAfter: ${messagesAfter.length}');
       },
-      onLongPress: () => _showShouldRemoveMessageDialog(message),
+      onLongPressEnd: (LongPressEndDetails details) =>
+          _showMessageOptionsMenu(message, details.globalPosition),
       child: Column(
         crossAxisAlignment:
             isMyMessage ? CrossAxisAlignment.end : CrossAxisAlignment.start,
@@ -628,50 +629,104 @@ class _MessagesPageState extends State<MessagesPage> {
     return name;
   }
 
-  Future _showShouldRemoveMessageDialog(Message message) async {
-    final shouldRemove = (await showDialog(
-            context: context,
-            builder: (context) {
-              return AlertDialog(
-                title: Text('Remove Message?'),
-                actions: <Widget>[
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop(false);
-                    },
-                    child: Text('CANCEL'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop(true);
-                    },
-                    child: Text('REMOVE'),
+  Future _showMessageOptionsMenu(Message message, Offset position) async {
+    final option = (await showMenu<MessageOptions>(
+        context: context,
+        position: RelativeRect.fromLTRB(
+            position.dx, position.dy, position.dx, position.dy),
+        items: [
+          PopupMenuItem(
+            value: MessageOptions.remove,
+            child: Text('Remove'),
+          ),
+          PopupMenuItem(
+            value: MessageOptions.updateMessageBody,
+            child: Text('Update'),
+          ),
+        ]));
+
+    switch (option) {
+      case MessageOptions.remove:
+        _removeMessage(message);
+        break;
+      case MessageOptions.updateMessageBody:
+        _showUpdateMessageBodyDialog(message);
+        break;
+      default:
+        break;
+    }
+  }
+
+  Future _removeMessage(Message message) async {
+    final removed = await messagesNotifier.removeMessage(message);
+
+    if (!removed) {
+      await showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Failed to Remove Message'),
+            actions: <Widget>[
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+  Future<void> _showUpdateMessageBodyDialog(Message message) async {
+    final controller = TextEditingController(text: message.body);
+    final messageBody = await showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Update Message'),
+            content: Container(
+              height: 200,
+              width: 140,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          decoration:
+                              InputDecoration(label: Text('Message Body')),
+                          controller: controller,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
-              );
-            })) ??
-        false;
+              ),
+            ),
+            actions: <Widget>[
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('CANCEL'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop(controller.text);
+                },
+                child: Text('UPDATE'),
+              ),
+            ],
+          );
+        });
 
-    if (shouldRemove) {
-      final removed = await messagesNotifier.removeMessage(message);
-
-      if (!removed) {
-        await showDialog(
-            context: context,
-            builder: (context) {
-              return AlertDialog(
-                title: Text('Failed to Remove Message'),
-                actions: <Widget>[
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Text('OK'),
-                  ),
-                ],
-              );
-            });
-      }
+    if (messageBody != null) {
+      message.updateMessageBody(messageBody);
     }
   }
 }
@@ -682,3 +737,5 @@ enum MessagesPageMenuOptions {
   swapAttributes,
   myAttributes,
 }
+
+enum MessageOptions { remove, updateMessageBody }

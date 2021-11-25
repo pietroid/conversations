@@ -1790,6 +1790,28 @@ void TWCONMessageApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<T
       [channel setMessageHandler:nil];
     }
   }
+  {
+    FlutterBasicMessageChannel *channel =
+      [FlutterBasicMessageChannel
+        messageChannelWithName:@"dev.flutter.pigeon.MessageApi.updateMessageBody"
+        binaryMessenger:binaryMessenger
+        codec:TWCONMessageApiGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(updateMessageBodyConversationSid:messageIndex:messageBody:completion:)], @"TWCONMessageApi api (%@) doesn't respond to @selector(updateMessageBodyConversationSid:messageIndex:messageBody:completion:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        NSString *arg_conversationSid = args[0];
+        NSNumber *arg_messageIndex = args[1];
+        NSString *arg_messageBody = args[2];
+        [api updateMessageBodyConversationSid:arg_conversationSid messageIndex:arg_messageIndex messageBody:arg_messageBody completion:^(FlutterError *_Nullable error) {
+          callback(wrapResult(nil, error));
+        }];
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
 }
 @interface TWCONUserApiCodecReader : FlutterStandardReader
 @end

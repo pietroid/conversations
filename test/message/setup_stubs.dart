@@ -22,6 +22,13 @@ class MessageTestStubs {
     });
   }
 
+  static void stubUpdateMessageBody(MockMessageApi participantApi) {
+    when(participantApi.updateMessageBody(any, any, any))
+        .thenAnswer((realInvocation) async {
+      invocation = realInvocation;
+    });
+  }
+
   static Participant createMockParticipant(
       String conversationSid, String participantSid) {
     final participant = Participant(

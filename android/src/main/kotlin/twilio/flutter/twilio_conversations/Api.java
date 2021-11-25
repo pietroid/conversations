@@ -2477,6 +2477,7 @@ public class Api {
   public interface MessageApi {
     void getMediaContentTemporaryUrl(String conversationSid, Long messageIndex, Result<String> result);
     void getParticipant(String conversationSid, Long messageIndex, Result<ParticipantData> result);
+    void updateMessageBody(String conversationSid, Long messageIndex, String messageBody, Result<Void> result);
 
     /** The codec used by MessageApi. */
     static MessageCodec<Object> getCodec() {
@@ -2551,6 +2552,48 @@ public class Api {
               };
 
               api.getParticipant(conversationSidArg, messageIndexArg.longValue(), resultCallback);
+            }
+            catch (Error | RuntimeException exception) {
+              wrapped.put("error", wrapError(exception));
+              reply.reply(wrapped);
+            }
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.MessageApi.updateMessageBody", getCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            Map<String, Object> wrapped = new HashMap<>();
+            try {
+              ArrayList<Object> args = (ArrayList<Object>)message;
+              String conversationSidArg = (String)args.get(0);
+              if (conversationSidArg == null) {
+                throw new NullPointerException("conversationSidArg unexpectedly null.");
+              }
+              Number messageIndexArg = (Number)args.get(1);
+              if (messageIndexArg == null) {
+                throw new NullPointerException("messageIndexArg unexpectedly null.");
+              }
+              String messageBodyArg = (String)args.get(2);
+              if (messageBodyArg == null) {
+                throw new NullPointerException("messageBodyArg unexpectedly null.");
+              }
+              Result<Void> resultCallback = new Result<Void>() {
+                public void success(Void result) {
+                  wrapped.put("result", null);
+                  reply.reply(wrapped);
+                }
+                public void error(Throwable error) {
+                  wrapped.put("error", wrapError(error));
+                  reply.reply(wrapped);
+                }
+              };
+
+              api.updateMessageBody(conversationSidArg, messageIndexArg.longValue(), messageBodyArg, resultCallback);
             }
             catch (Error | RuntimeException exception) {
               wrapped.put("error", wrapError(exception));

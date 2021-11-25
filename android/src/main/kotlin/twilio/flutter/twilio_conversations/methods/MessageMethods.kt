@@ -4,6 +4,7 @@ import com.twilio.conversations.CallbackListener
 import com.twilio.conversations.Conversation
 import com.twilio.conversations.ErrorInfo
 import com.twilio.conversations.Message
+import com.twilio.conversations.StatusListener
 import twilio.flutter.twilio_conversations.Api
 import twilio.flutter.twilio_conversations.Mapper
 import twilio.flutter.twilio_conversations.TwilioConversationsPlugin
@@ -79,6 +80,47 @@ class MessageMethods : Api.MessageApi {
 
             override fun onError(errorInfo: ErrorInfo) {
                 debug("getParticipant => onError: $errorInfo")
+                result.error(RuntimeException(errorInfo.message))
+            }
+        })
+    }
+
+    override fun updateMessageBody(
+        conversationSid: String,
+        messageIndex: Long,
+        messageBody: String,
+        result: Api.Result<Void>
+    ) {
+        debug("updateMessageBody => conversationSid: $conversationSid messageIndex: $messageIndex")
+        val client = TwilioConversationsPlugin.client
+            ?: return result.error(RuntimeException("Client is not initialized"))
+
+        client.getConversation(conversationSid, object : CallbackListener<Conversation> {
+            override fun onSuccess(conversation: Conversation) {
+                conversation.getMessageByIndex(messageIndex, object : CallbackListener<Message> {
+                    override fun onSuccess(message: Message) {
+                        message.updateMessageBody(messageBody, object : StatusListener {
+                            override fun onSuccess() {
+                                debug("updateMessageBody => onSuccess")
+                                result.success(null)
+                            }
+
+                            override fun onError(errorInfo: ErrorInfo) {
+                                debug("updateMessageBody => onError: $errorInfo")
+                                result.error(RuntimeException(errorInfo.message))
+                            }
+                        })
+                    }
+
+                    override fun onError(errorInfo: ErrorInfo) {
+                        debug("updateMessageBody => onError: $errorInfo")
+                        result.error(RuntimeException(errorInfo.message))
+                    }
+                })
+            }
+
+            override fun onError(errorInfo: ErrorInfo) {
+                debug("updateMessageBody => onError: $errorInfo")
                 result.error(RuntimeException(errorInfo.message))
             }
         })

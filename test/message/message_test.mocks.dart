@@ -43,5 +43,13 @@ class MockMessageApi extends _i1.Mock implements _i2.MessageApi {
                   Future<_i2.ParticipantData>.value(_FakeParticipantData_0()))
           as _i3.Future<_i2.ParticipantData>);
   @override
+  _i3.Future<void> updateMessageBody(String? arg_conversationSid,
+          int? arg_messageIndex, String? arg_messageBody) =>
+      (super.noSuchMethod(
+          Invocation.method(#updateMessageBody,
+              [arg_conversationSid, arg_messageIndex, arg_messageBody]),
+          returnValue: Future<void>.value(),
+          returnValueForMissingStub: Future<void>.value()) as _i3.Future<void>);
+  @override
   String toString() => super.toString();
 }

@@ -154,6 +154,84 @@ class MessageMethods: NSObject, TWCONMessageApi {
         })
     }
     
+    /// updateMessageBody
+    func updateMessageBodyConversationSid(_ conversationSid: String?, messageIndex: NSNumber?, messageBody: String?, completion: @escaping (FlutterError?) -> Void) {
+        debug("updateMessageBody => conversationSid: \(String(describing: conversationSid)), "
+                + "messageIndex: \(String(describing: messageIndex))")
+        guard let client = SwiftTwilioConversationsPlugin.instance?.client else {
+            return completion(
+                FlutterError(
+                    code: "ERROR",
+                    message: "Client has not been initialized.",
+                    details: nil))
+        }
+
+        guard let conversationSid = conversationSid else {
+            return completion(
+                FlutterError(
+                    code: "MISSING_PARAMS",
+                    message: "Missing conversationSid",
+                    details: nil))
+        }
+
+        guard let messageIndex = messageIndex else {
+            return completion(
+                FlutterError(
+                    code: "MISSING_PARAMS",
+                    message: "Missing messageIndex",
+                    details: nil))
+        }
+
+        guard let messageBody = messageBody else {
+            return completion(
+                FlutterError(
+                    code: "MISSING_PARAMS",
+                    message: "Missing messageBody",
+                    details: nil))
+        }
+
+        client.conversation(
+            withSidOrUniqueName: conversationSid,
+            completion: { (result: TCHResult, conversation: TCHConversation?) in
+                if result.isSuccessful, let conversation = conversation {
+                    conversation.message(
+                        withIndex: messageIndex,
+                        completion: { (result: TCHResult, message: TCHMessage?) in
+                        if result.isSuccessful, let message = message {
+                            message.updateBody(messageBody) { (result: TCHResult) in
+                                if result.isSuccessful {
+                                    self.debug("updateMessageBody => onSuccess")
+                                    return completion(nil)
+                                } else {
+                                    self.debug("updateMessageBody => onError: \(String(describing: result.error))")
+                                    return completion(
+                                        FlutterError(
+                                            code: "ERROR",
+                                            message: "Error updating message at index \(messageIndex) "
+                                                + "in conversation \(conversationSid)",
+                                            details: nil))
+                                }
+                            }
+                        } else {
+                            self.debug("updateMessageBody => onError: \(String(describing: result.error))")
+                            completion(
+                                FlutterError(
+                                    code: "ERROR",
+                                    message: "Error getting message at index \(messageIndex) "
+                                        + "in conversation \(conversationSid)",
+                                    details: nil))
+                        }
+                    })
+                } else {
+                    completion(
+                        FlutterError(
+                            code: "ERROR",
+                            message: "Error retrieving conversation \(conversationSid)",
+                            details: nil))
+                }
+        })
+    }
+    
     private func debug(_ msg: String) {
         SwiftTwilioConversationsPlugin.debug("\(TAG)::\(msg)")
     }

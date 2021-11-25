@@ -102,6 +102,16 @@ class Message {
       throw TwilioConversations.convertException(err);
     }
   }
+
+  Future<void> updateMessageBody(String messageBody) async {
+    try {
+      await TwilioConversations()
+          .messageApi
+          .updateMessageBody(conversationSid, messageIndex!, messageBody);
+    } on PlatformException catch (err) {
+      throw TwilioConversations.convertException(err);
+    }
+  }
   //TODO: implement getAggregatedDeliveryReceipt
   //TODO: implement getDetailedDeliveryReceiptList
   //TODO: implement updateMessageBody

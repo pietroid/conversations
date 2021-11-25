@@ -49,6 +49,9 @@ class MessagesNotifier extends ChangeNotifier {
     subscriptions.add(conversation.onMessageDeleted.listen((message) {
       loadConversation();
     }));
+    subscriptions.add(conversation.onMessageUpdated.listen((message) {
+      loadConversation();
+    }));
     subscriptions.add(conversation.onTypingStarted.listen((event) {
       final identity = event.participant.identity;
       if (identity != null) {
