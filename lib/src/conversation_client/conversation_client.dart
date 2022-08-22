@@ -171,14 +171,13 @@ class ConversationClient extends FlutterConversationClientApi {
   }
 
   void _receiveTestMessages() {
-    final name = "message_test_channel_twilio";
+    final name = "twilio_conversations_test_channel";
     final MethodCodec codec = StandardMethodCodec();
     final MethodChannel methodChannel = MethodChannel(name, codec);
     final binaryMessenger = ServicesBinding.instance!.defaultBinaryMessenger;
     late StreamController<dynamic> controller;
     controller = StreamController<dynamic>.broadcast(onListen: () async {
-      binaryMessenger.setMessageHandler("message_test_channel_twilio",
-          (ByteData? reply) async {
+      binaryMessenger.setMessageHandler(name, (ByteData? reply) async {
         print('receiving data on flutter side');
         if (reply == null) {
           controller.close();
@@ -196,6 +195,10 @@ class ConversationClient extends FlutterConversationClientApi {
       } catch (exception, stack) {
         print('method channel error');
       }
+    });
+
+    controller.stream.listen((event) {
+      print("receiving data on flutter");
     });
   }
 

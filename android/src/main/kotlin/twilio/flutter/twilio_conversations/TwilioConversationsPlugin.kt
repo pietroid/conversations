@@ -57,9 +57,6 @@ class TwilioConversationsPlugin : FlutterPlugin {
 
         lateinit var applicationContext: Context
 
-        @JvmStatic
-        lateinit var testChannel: TestChannel
-
         var clientListener: ClientListener? = null
 
         var conversationListeners: HashMap<String, ConversationListener> = hashMapOf()
@@ -67,6 +64,9 @@ class TwilioConversationsPlugin : FlutterPlugin {
         var handler = Handler(Looper.getMainLooper())
         var nativeDebug: Boolean = false
         val LOG_TAG = "Twilio_Conversations"
+
+        @JvmStatic
+        var events:TestChannel.EventSink? = null
 
         @JvmStatic
         fun debug(msg: String) {
@@ -79,10 +79,10 @@ class TwilioConversationsPlugin : FlutterPlugin {
         }
 
         @JvmStatic
-        fun send(){
+        fun sendEvent(status: String){
             handler.post {
-                Log.d(LOG_TAG, "sending kotlin side")
-                testChannel.send()
+                Log.d(LOG_TAG, "send event kotlin side")
+                events?.success(status)
             }
         }
     }
@@ -102,7 +102,14 @@ class TwilioConversationsPlugin : FlutterPlugin {
         flutterClientApi = Api.FlutterConversationClientApi(flutterPluginBinding.binaryMessenger)
         flutterLoggingApi = Api.FlutterLoggingApi(flutterPluginBinding.binaryMessenger)
 
-        testChannel = TestChannel(flutterPluginBinding.binaryMessenger,"message_test_channel_twilio")
+        val eventChannel = TestChannel(flutterPluginBinding.binaryMessenger, "twilio_conversations_test_channel")
+        eventChannel.setStreamHandler(
+            object: TestChannel.StreamHandler {
+                override fun onListen(p0: Any?, streamEvents: TestChannel.EventSink?) {
+                    events = streamEvents
+                }
+            }
+        )
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {

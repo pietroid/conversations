@@ -2,9 +2,12 @@ package twilio.flutter.twilio_conversations;
 
 import io.flutter.plugin.common.StandardMethodCodec;
 import io.flutter.plugin.common.MethodCodec;
+import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.BinaryMessenger.BinaryMessageHandler;
+import io.flutter.plugin.common.BinaryMessenger.BinaryReply;
 import androidx.annotation.UiThread;
+import java.nio.ByteBuffer;
 
 public class TestChannel {
     private final BinaryMessenger messenger;
@@ -16,7 +19,7 @@ public class TestChannel {
         this.name = name;
         this.codec = StandardMethodCodec.INSTANCE;
     }
-    
+
     @UiThread
     public void setStreamHandler(final StreamHandler handler) {
         // We call the 2 parameter variant specifically to avoid breaking changes in
@@ -55,9 +58,11 @@ public class TestChannel {
 
         @Override
         public void onMessage(ByteBuffer message, final BinaryReply reply) {
+            System.out.println("receiving event");
             final MethodCall call = codec.decodeMethodCall(message);
             if (call.method.equals("listen")) {
-                System.out.println("listening");
+                System.out.println("listening java side");
+                onListen(call.arguments, reply);
             } 
         }
 
@@ -72,7 +77,7 @@ public class TestChannel {
         @Override
         @UiThread
         public void success(Object event) {
-          EventChannel.this.messenger.send(name, codec.encodeSuccessEnvelope(event));
+          TestChannel.this.messenger.send(name, codec.encodeSuccessEnvelope(event));
         }
       }
 }
