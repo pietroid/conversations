@@ -57,6 +57,9 @@ class TwilioConversationsPlugin : FlutterPlugin {
 
         lateinit var applicationContext: Context
 
+        @JvmStatic
+        lateinit var testChannel: TestChannel
+
         var clientListener: ClientListener? = null
 
         var conversationListeners: HashMap<String, ConversationListener> = hashMapOf()
@@ -72,6 +75,14 @@ class TwilioConversationsPlugin : FlutterPlugin {
                 handler.post {
                     flutterLoggingApi.logFromHost(msg) { }
                 }
+            }
+        }
+
+        @JvmStatic
+        fun send(){
+            handler.post {
+                Log.d(LOG_TAG, "sending kotlin side")
+                testChannel.send()
             }
         }
     }
@@ -90,6 +101,8 @@ class TwilioConversationsPlugin : FlutterPlugin {
 
         flutterClientApi = Api.FlutterConversationClientApi(flutterPluginBinding.binaryMessenger)
         flutterLoggingApi = Api.FlutterLoggingApi(flutterPluginBinding.binaryMessenger)
+
+        testChannel = TestChannel(flutterPluginBinding.binaryMessenger,"message_test_channel_twilio")
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {

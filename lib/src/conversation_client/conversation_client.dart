@@ -167,6 +167,36 @@ class ConversationClient extends FlutterConversationClientApi {
     onNotificationRegistered = _onNotificationRegisteredCtrl.stream;
 
     FlutterConversationClientApi.setup(this);
+    _receiveTestMessages();
+  }
+
+  void _receiveTestMessages() {
+    final name = "message_test_channel_twilio";
+    final MethodCodec codec = StandardMethodCodec();
+    final MethodChannel methodChannel = MethodChannel(name, codec);
+    final binaryMessenger = ServicesBinding.instance!.defaultBinaryMessenger;
+    late StreamController<dynamic> controller;
+    controller = StreamController<dynamic>.broadcast(onListen: () async {
+      binaryMessenger.setMessageHandler("message_test_channel_twilio",
+          (ByteData? reply) async {
+        print('receiving data on flutter side');
+        if (reply == null) {
+          controller.close();
+        } else {
+          try {
+            controller.add(codec.decodeEnvelope(reply));
+          } on PlatformException catch (e) {
+            controller.addError(e);
+          }
+        }
+        return null;
+      });
+      try {
+        await methodChannel.invokeMethod<void>('listen');
+      } catch (exception, stack) {
+        print('method channel error');
+      }
+    });
   }
 
   void updateFromMap(Map<String, dynamic> json) {

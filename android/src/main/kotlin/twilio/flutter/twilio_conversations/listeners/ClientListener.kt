@@ -14,7 +14,8 @@ class ClientListener : ConversationsClientListener {
 
     override fun onClientSynchronization(status: ConversationsClient.SynchronizationStatus) {
         debug("onClientSynchronization => status = $status")
-        TwilioConversationsPlugin.flutterClientApi.clientSynchronization(status.toString()) {}
+        TwilioConversationsPlugin.send()
+        //TwilioConversationsPlugin.flutterClientApi.clientSynchronization(status.toString()) {}
     }
 
     override fun onConversationSynchronizationChange(conversation: Conversation) {
