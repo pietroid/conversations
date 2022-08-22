@@ -167,6 +167,15 @@ class ConversationClient extends FlutterConversationClientApi {
     onNotificationRegistered = _onNotificationRegisteredCtrl.stream;
 
     FlutterConversationClientApi.setup(this);
+    _handleEvent();
+  }
+
+  void _handleEvent() {
+    const EventChannel _stream =
+        EventChannel('twilio_conversations_test_channel');
+    _stream.receiveBroadcastStream().listen((onData) {
+      print('receiving data finally');
+    });
   }
 
   void updateFromMap(Map<String, dynamic> json) {

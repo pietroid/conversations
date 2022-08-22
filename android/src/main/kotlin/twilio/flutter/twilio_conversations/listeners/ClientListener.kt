@@ -9,12 +9,15 @@ import twilio.flutter.twilio_conversations.Api
 import twilio.flutter.twilio_conversations.Mapper
 import twilio.flutter.twilio_conversations.TwilioConversationsPlugin
 
+import android.os.Handler
+import android.os.Looper
+
 class ClientListener : ConversationsClientListener {
     private val TAG = "ClientListener"
 
     override fun onClientSynchronization(status: ConversationsClient.SynchronizationStatus) {
         debug("onClientSynchronization => status = $status")
-        TwilioConversationsPlugin.flutterClientApi.clientSynchronization(status.toString()) {}
+        TwilioConversationsPlugin.sendEvent(status.toString())
     }
 
     override fun onConversationSynchronizationChange(conversation: Conversation) {

@@ -7,14 +7,17 @@ import com.twilio.conversations.Participant
 import twilio.flutter.twilio_conversations.Mapper
 import twilio.flutter.twilio_conversations.TwilioConversationsPlugin
 
+import android.os.Handler
+import android.os.Looper
+
 class ConversationListener(private val conversationSid: String) : ConversationListener {
     private val TAG = "ConversationListener"
 
     override fun onMessageAdded(message: Message) {
-        debug("onMessageAdded => messageSid = ${message.sid}")
-        TwilioConversationsPlugin.flutterClientApi.messageAdded(
-            conversationSid,
-            Mapper.messageToPigeon(message)) {}
+            debug("onMessageAdded => messageSid = ${message.sid}")
+            TwilioConversationsPlugin.flutterClientApi.messageAdded(
+                conversationSid,
+                Mapper.messageToPigeon(message)) {}
     }
 
     override fun onMessageUpdated(message: Message, reason: Message.UpdateReason) {
