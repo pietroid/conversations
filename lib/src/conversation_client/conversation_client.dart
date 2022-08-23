@@ -171,8 +171,10 @@ class ConversationClient extends FlutterConversationClientApi {
   }
 
   _setupFlutterConversationClientApiListeners() async {
-    await MethodChannel('com.twilio.conversation_client')
-        .invokeMethod('setupListeners');
+    try {
+      await MethodChannel('com.twilio.conversation_client')
+          .invokeMethod('setupListeners');
+    } catch (error) {}
   }
 
   void updateFromMap(Map<String, dynamic> json) {
