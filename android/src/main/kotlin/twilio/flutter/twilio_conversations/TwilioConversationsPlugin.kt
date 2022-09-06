@@ -10,6 +10,7 @@ import com.twilio.conversations.ConversationListener
 import com.twilio.conversations.ConversationsClient
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.BinaryMessenger
+import io.flutter.plugin.common.MethodChannel
 import twilio.flutter.twilio_conversations.listeners.ClientListener
 import twilio.flutter.twilio_conversations.methods.ConversationClientMethods
 import twilio.flutter.twilio_conversations.methods.MessageMethods
@@ -88,8 +89,14 @@ class TwilioConversationsPlugin : FlutterPlugin {
         Api.MessageApi.setup(flutterPluginBinding.binaryMessenger, messageApi)
         Api.UserApi.setup(flutterPluginBinding.binaryMessenger, userApi)
 
-        flutterClientApi = Api.FlutterConversationClientApi(flutterPluginBinding.binaryMessenger)
-        flutterLoggingApi = Api.FlutterLoggingApi(flutterPluginBinding.binaryMessenger)
+        MethodChannel(flutterPluginBinding.binaryMessenger, "com.twilio.conversation_client").setMethodCallHandler {
+            call, result -> 
+            if (call.method == "setupListeners") {
+                flutterClientApi = Api.FlutterConversationClientApi(flutterPluginBinding.binaryMessenger)
+                flutterLoggingApi = Api.FlutterLoggingApi(flutterPluginBinding.binaryMessenger)
+                result.success(null)
+            }
+        }
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
