@@ -233,6 +233,34 @@ class ConversationMethods: NSObject, TWCONConversationApi {
         if let messageBody = options.body {
             messageOptions.withBody(messageBody)
         }
+
+        var messageAttributes:TCHJsonAttributes?
+        if let attributesData:TWCONAttributesData = options.attributes {
+            do {
+                messageAttributes = try Mapper.pigeonToAttributes(attributesData)
+            } catch LocalizedConversionError.invalidData {
+                return completion(
+                    nil,
+                    FlutterError(
+                        code: "ConversionException",
+                        message: "Could not convert \(attributesData.data) to valid TCHJsonAttributes",
+                        details: nil)
+                )
+            } catch {
+                return completion(
+                    nil,
+                    FlutterError(
+                        code: "ConversionException",
+                        message: "\(attributesData.type) is not a valid type for TCHJsonAttributes.",
+                        details: nil)
+                )
+            }
+        }
+
+        if messageAttributes != nil {
+            messageOptions.withAttributes(messageAttributes!)
+        }
+
         if let input = options.inputPath {
             guard let mimeType = options.mimeType else {
                 return completion(
